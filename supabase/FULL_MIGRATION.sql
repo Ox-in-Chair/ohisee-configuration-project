@@ -796,15 +796,23 @@ DECLARE
   field_name TEXT;
   action_type TEXT;
   current_user_record RECORD;
+
+  -- Will hold the user_id responsible for the change
+  responsible_user_id UUID;
+
+  -- Booleans to detect existence of columns on the current table
+  has_created_by BOOLEAN := false;
+  has_raised_by_user_id BOOLEAN := false;
+  has_operator_id BOOLEAN := false;
+
   is_different BOOLEAN;
 BEGIN
   -- Determine action type
   IF TG_OP = 'INSERT' THEN
     action_type := 'created';
   ELSIF TG_OP = 'UPDATE' THEN
-    -- Detect specific actions
     IF OLD.status IS DISTINCT FROM NEW.status THEN
-      IF NEW.status = 'submitted' OR NEW.status = 'open' THEN
+      IF NEW.status IN ('submitted', 'open') THEN
         action_type := 'submitted';
       ELSIF NEW.status = 'closed' THEN
         action_type := 'closed';
@@ -818,24 +826,50 @@ BEGIN
     action_type := 'deleted';
   END IF;
 
-  -- Get current user info (from auth.uid() or set by application)
-  SELECT email, name, role INTO current_user_record
-  FROM users
-  WHERE id = COALESCE(auth.uid(), NEW.created_by, OLD.created_by);
+  -- Detect column existence on the target table
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = TG_TABLE_SCHEMA AND table_name = TG_TABLE_NAME AND column_name = 'created_by'
+  ) INTO has_created_by;
 
-  -- For UPDATE, track which fields changed
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = TG_TABLE_SCHEMA AND table_name = TG_TABLE_NAME AND column_name = 'raised_by_user_id'
+  ) INTO has_raised_by_user_id;
+
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = TG_TABLE_SCHEMA AND table_name = TG_TABLE_NAME AND column_name = 'operator_id'
+  ) INTO has_operator_id;
+
+  -- Resolve the responsible user id safely without touching non-existent fields
+  responsible_user_id :=
+    COALESCE(
+      auth.uid(),
+      CASE WHEN TG_OP IN ('INSERT','UPDATE') AND has_created_by THEN (to_jsonb(NEW)->>'created_by')::UUID END,
+      CASE WHEN TG_OP = 'DELETE' AND has_created_by THEN (to_jsonb(OLD)->>'created_by')::UUID END,
+      CASE WHEN TG_OP IN ('INSERT','UPDATE') AND has_raised_by_user_id THEN (to_jsonb(NEW)->>'raised_by_user_id')::UUID END,
+      CASE WHEN TG_OP = 'DELETE' AND has_raised_by_user_id THEN (to_jsonb(OLD)->>'raised_by_user_id')::UUID END,
+      CASE WHEN TG_OP IN ('INSERT','UPDATE') AND has_operator_id THEN (to_jsonb(NEW)->>'operator_id')::UUID END,
+      CASE WHEN TG_OP = 'DELETE' AND has_operator_id THEN (to_jsonb(OLD)->>'operator_id')::UUID END
+    );
+
+  -- Get current user info if possible
+  SELECT email, name, role
+    INTO current_user_record
+  FROM users
+  WHERE id = responsible_user_id;
+
+  -- For UPDATE, compute changed fields
   IF TG_OP = 'UPDATE' THEN
     changed_fields_array := ARRAY[]::TEXT[];
-
-    -- Compare OLD and NEW to find changed fields
     FOR field_name IN
       SELECT column_name
       FROM information_schema.columns
       WHERE table_schema = TG_TABLE_SCHEMA
-      AND table_name = TG_TABLE_NAME
-      AND column_name NOT IN ('id', 'created_at', 'updated_at')
+        AND table_name = TG_TABLE_NAME
+        AND column_name NOT IN ('id', 'created_at', 'updated_at')
     LOOP
-      -- Compare old and new values using DISTINCT FROM (handles NULLs)
       EXECUTE format('SELECT ($1).%I IS DISTINCT FROM ($2).%I', field_name, field_name)
       INTO is_different
       USING OLD, NEW;
@@ -846,7 +880,7 @@ BEGIN
     END LOOP;
   END IF;
 
-  -- Insert audit trail record
+  -- Insert audit record
   INSERT INTO audit_trail (
     entity_type,
     entity_id,
@@ -863,13 +897,13 @@ BEGIN
     TG_TABLE_NAME,
     COALESCE(NEW.id, OLD.id),
     action_type,
-    COALESCE(auth.uid(), NEW.created_by, OLD.created_by),
+    responsible_user_id,
     COALESCE(current_user_record.email, 'system@kangopak.com'),
     COALESCE(current_user_record.name, 'System'),
     COALESCE(current_user_record.role, 'system'),
     inet_client_addr(),
     CASE WHEN TG_OP = 'DELETE' THEN to_jsonb(OLD) ELSE NULL END,
-    CASE WHEN TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN to_jsonb(NEW) ELSE NULL END,
+    CASE WHEN TG_OP IN ('INSERT','UPDATE') THEN to_jsonb(NEW) ELSE NULL END,
     changed_fields_array
   );
 
