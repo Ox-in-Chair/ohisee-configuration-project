@@ -648,7 +648,7 @@ BEGIN
   -- All 10 items must be verified
   RETURN verified_count = 10;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE;
 
 COMMENT ON FUNCTION validate_hygiene_checklist IS 'BRCGS CRITICAL: Validates all 10 hygiene checklist items are verified';
 
@@ -1277,7 +1277,7 @@ BEGIN
     AND users.role = ANY(required_roles)
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 COMMENT ON FUNCTION user_has_role IS 'Helper function to check if current user has one of specified roles';
 
@@ -1293,7 +1293,7 @@ BEGIN
     WHERE id = auth.uid()
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 COMMENT ON FUNCTION get_user_role IS 'Returns current authenticated user role';
 
@@ -1306,7 +1306,7 @@ RETURNS BOOLEAN AS $$
 BEGIN
   RETURN user_has_role(ARRAY['qa-supervisor', 'operations-manager']);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 COMMENT ON FUNCTION can_close_nca IS 'Returns true if user can close NCAs (QA supervisor or operations manager)';
 
@@ -1319,7 +1319,7 @@ RETURNS BOOLEAN AS $$
 BEGIN
   RETURN user_has_role(ARRAY['qa-supervisor']);
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 COMMENT ON FUNCTION can_grant_hygiene_clearance IS 'BRCGS CRITICAL: Returns true if user can grant hygiene clearance (QA supervisor only)';
 
