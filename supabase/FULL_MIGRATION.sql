@@ -796,6 +796,7 @@ DECLARE
   field_name TEXT;
   action_type TEXT;
   current_user_record RECORD;
+  is_different BOOLEAN;
 BEGIN
   -- Determine action type
   IF TG_OP = 'INSERT' THEN
@@ -830,13 +831,13 @@ BEGIN
     FOR field_name IN
       SELECT column_name
       FROM information_schema.columns
-      WHERE table_name = TG_TABLE_NAME
+      WHERE table_schema = TG_TABLE_SCHEMA
+      AND table_name = TG_TABLE_NAME
       AND column_name NOT IN ('id', 'created_at', 'updated_at')
     LOOP
       -- Compare old and new values using DISTINCT FROM (handles NULLs)
       EXECUTE format('SELECT ($1).%I IS DISTINCT FROM ($2).%I', field_name, field_name)
-      INTO STRICT DECLARE
-        is_different BOOLEAN
+      INTO is_different
       USING OLD, NEW;
 
       IF is_different THEN
