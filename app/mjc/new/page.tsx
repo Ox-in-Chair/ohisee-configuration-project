@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CharacterCounter } from '@/components/ui/character-counter';
 import { mjcFormSchema, type MJCFormData } from '@/lib/validations/mjc-schema';
+import { createMJC, saveDraftMJC } from '@/app/actions/mjc-actions';
 
 /**
  * MJC Form Page Component
@@ -20,6 +21,8 @@ import { mjcFormSchema, type MJCFormData } from '@/lib/validations/mjc-schema';
 export default function NewMJCPage(): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [mjcNumber, setMjcNumber] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -124,26 +127,71 @@ export default function NewMJCPage(): React.ReactElement {
   const onSubmit = useCallback(
     async (data: MJCFormData) => {
       setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(false);
+
       try {
-        // TODO: API integration - submit to Supabase
-        console.log('Form data:', data);
+        // Call Server Action to submit MJC
+        const response = await createMJC(data);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (!response.success) {
+          setSubmitError(response.error || 'Failed to submit MJC');
+          return;
+        }
 
+        // Success!
         setSubmitSuccess(true);
+        setMjcNumber(response.data?.job_card_number || null);
         reset(); // Clear form after successful submission
 
-        // Reset success message after 3 seconds
-        setTimeout(() => setSubmitSuccess(false), 3000);
+        // Reset success message after 5 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setMjcNumber(null);
+        }, 5000);
       } catch (error) {
-        console.error('Submission error:', error);
+        console.error('Unexpected submission error:', error);
+        setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
       } finally {
         setIsSubmitting(false);
       }
     },
     [reset]
   );
+
+  // Draft save handler
+  const onSaveDraft = useCallback(async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Get current form data
+      const formData = watch();
+
+      // Call Server Action to save draft
+      const response = await saveDraftMJC(formData);
+
+      if (!response.success) {
+        setSubmitError(response.error || 'Failed to save draft');
+        return;
+      }
+
+      // Success!
+      setSubmitSuccess(true);
+      setMjcNumber(response.data?.job_card_number || null);
+
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setMjcNumber(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Unexpected error saving draft:', error);
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [watch]);
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
@@ -153,7 +201,15 @@ export default function NewMJCPage(): React.ReactElement {
 
       {submitSuccess && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-          MJC submitted successfully!
+          {mjcNumber
+            ? `MJC submitted successfully! Reference: ${mjcNumber}`
+            : 'MJC submitted successfully!'}
+        </div>
+      )}
+
+      {submitError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          Error: {submitError}
         </div>
       )}
 
@@ -694,8 +750,14 @@ export default function NewMJCPage(): React.ReactElement {
           <Button data-testid="btn-cancel" variant="outline" type="button" onClick={() => reset()}>
             Cancel
           </Button>
-          <Button data-testid="btn-save-draft" variant="secondary" type="button" disabled={isSubmitting}>
-            Save Draft
+          <Button
+            data-testid="btn-save-draft"
+            variant="secondary"
+            type="button"
+            disabled={isSubmitting}
+            onClick={onSaveDraft}
+          >
+            {isSubmitting ? 'Saving...' : 'Save Draft'}
           </Button>
           <Button data-testid="btn-submit" variant="default" type="submit" disabled={isSubmitting || !isValid}>
             {isSubmitting ? 'Submitting...' : 'Submit'}

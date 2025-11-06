@@ -4,8 +4,7 @@
  * NO STATIC CALLS - Always pass Supabase client as parameter
  */
 
-// TODO: Uncomment when @supabase/supabase-js is installed
-// import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
 // =============================================================================
@@ -17,10 +16,7 @@ import type { Database } from '@/types/database';
  * Uses service role key - BYPASSES RLS
  * ONLY use for trusted server-side operations
  */
-export function createServerClient(): any {
-  // TODO: Uncomment when @supabase/supabase-js is installed
-  throw new Error('createServerClient not yet implemented - Supabase dependency not installed');
-  /*
+export function createServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -36,7 +32,6 @@ export function createServerClient(): any {
       persistSession: false,
     },
   });
-  */
 }
 
 /**
@@ -44,10 +39,7 @@ export function createServerClient(): any {
  * Uses anon key - ENFORCES RLS
  * All queries filtered by auth.uid()
  */
-export function createBrowserClient(): any {
-  // TODO: Uncomment when @supabase/supabase-js is installed
-  throw new Error('createBrowserClient not yet implemented - Supabase dependency not installed');
-  /*
+export function createBrowserClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -64,7 +56,6 @@ export function createBrowserClient(): any {
       detectSessionInUrl: true,
     },
   });
-  */
 }
 
 // =============================================================================

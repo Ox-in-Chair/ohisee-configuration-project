@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ncaFormSchema, type NCAFormData } from '@/lib/validations/nca-schema';
+import { createNCA, saveDraftNCA } from '@/app/actions/nca-actions';
 
 /**
  * Character counter component with color-coded status
@@ -48,6 +49,8 @@ function CharacterCounter({
 export default function NewNCAPage(): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [ncaNumber, setNcaNumber] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -92,24 +95,69 @@ export default function NewNCAPage(): React.ReactElement {
   // Form submission handler
   const onSubmit = useCallback(async (data: NCAFormData) => {
     setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
     try {
-      // TODO: API integration - submit to Supabase
-      console.log('Form data:', data);
+      // Call Server Action to submit NCA
+      const response = await createNCA(data);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!response.success) {
+        setSubmitError(response.error || 'Failed to submit NCA');
+        return;
+      }
 
+      // Success!
       setSubmitSuccess(true);
+      setNcaNumber(response.data?.nca_number || null);
       reset(); // Clear form after successful submission
 
-      // Reset success message after 3 seconds
-      setTimeout(() => setSubmitSuccess(false), 3000);
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setNcaNumber(null);
+      }, 5000);
     } catch (error) {
-      console.error('Submission error:', error);
+      console.error('Unexpected submission error:', error);
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
   }, [reset]);
+
+  // Draft save handler
+  const onSaveDraft = useCallback(async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Get current form data
+      const formData = watch();
+
+      // Call Server Action to save draft
+      const response = await saveDraftNCA(formData);
+
+      if (!response.success) {
+        setSubmitError(response.error || 'Failed to save draft');
+        return;
+      }
+
+      // Success!
+      setSubmitSuccess(true);
+      setNcaNumber(response.data?.nca_number || null);
+
+      // Reset success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setNcaNumber(null);
+      }, 3000);
+    } catch (error) {
+      console.error('Unexpected error saving draft:', error);
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [watch]);
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
@@ -119,7 +167,15 @@ export default function NewNCAPage(): React.ReactElement {
 
       {submitSuccess && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-          NCA submitted successfully!
+          {ncaNumber
+            ? `NCA submitted successfully! Reference: ${ncaNumber}`
+            : 'NCA submitted successfully!'}
+        </div>
+      )}
+
+      {submitError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          Error: {submitError}
         </div>
       )}
 
@@ -676,8 +732,9 @@ export default function NewNCAPage(): React.ReactElement {
             variant="secondary"
             type="button"
             disabled={isSubmitting}
+            onClick={onSaveDraft}
           >
-            Save Draft
+            {isSubmitting ? 'Saving...' : 'Save Draft'}
           </Button>
           <Button
             data-testid="btn-submit"
