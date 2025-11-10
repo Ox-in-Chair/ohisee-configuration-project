@@ -12,6 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ncaFormSchema, type NCAFormData } from '@/lib/validations/nca-schema';
 import { createNCA, saveDraftNCA } from '@/app/actions/nca-actions';
+import { FileUpload } from '@/components/file-upload';
+import { uploadNCAFile, listNCAFiles, deleteNCAFile } from '@/app/actions/file-actions';
 
 /**
  * Character counter component with color-coded status
@@ -51,6 +53,7 @@ export default function NewNCAPage(): React.ReactElement {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ncaNumber, setNcaNumber] = useState<string | null>(null);
+  const [ncaId, setNcaId] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -110,7 +113,8 @@ export default function NewNCAPage(): React.ReactElement {
       // Success!
       setSubmitSuccess(true);
       setNcaNumber(response.data?.nca_number || null);
-      reset(); // Clear form after successful submission
+      setNcaId(response.data?.id || null);
+      // Don't reset form - allow file uploads after submission
 
       // Reset success message after 5 seconds
       setTimeout(() => {
@@ -648,14 +652,16 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('root_cause_analysis')}
               />
             </div>
-            <div>
-              <Label>Attachments</Label>
-              <Input
-                data-testid="root-cause-attachments"
-                type="file"
-                multiple
-              />
-            </div>
+            <FileUpload
+              entityId={ncaId}
+              uploadType="nca"
+              onUpload={uploadNCAFile}
+              onDelete={deleteNCAFile}
+              onList={listNCAFiles}
+              label="Root Cause Analysis Attachments"
+              allowedTypes={['PDF', 'Images', 'Word', 'Excel', 'Text', 'CSV']}
+              maxSizeMB={10}
+            />
           </CardContent>
         </Card>
 
@@ -673,14 +679,16 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('corrective_action')}
               />
             </div>
-            <div>
-              <Label>Attachments</Label>
-              <Input
-                data-testid="corrective-action-attachments"
-                type="file"
-                multiple
-              />
-            </div>
+            <FileUpload
+              entityId={ncaId}
+              uploadType="nca"
+              onUpload={uploadNCAFile}
+              onDelete={deleteNCAFile}
+              onList={listNCAFiles}
+              label="Corrective Action Attachments"
+              allowedTypes={['PDF', 'Images', 'Word', 'Excel', 'Text', 'CSV']}
+              maxSizeMB={10}
+            />
           </CardContent>
         </Card>
 
