@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CharacterCounter } from '@/components/ui/character-counter';
 import { mjcFormSchema, type MJCFormData } from '@/lib/validations/mjc-schema';
 import { createMJC, saveDraftMJC } from '@/app/actions/mjc-actions';
+import { FileUpload } from '@/components/file-upload';
+import { uploadMJCFile, listMJCFiles, deleteMJCFile } from '@/app/actions/file-actions';
 
 /**
  * MJC Form Page Component
@@ -23,6 +25,7 @@ export default function NewMJCPage(): React.ReactElement {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [mjcNumber, setMjcNumber] = useState<string | null>(null);
+  const [mjcId, setMjcId] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -142,7 +145,8 @@ export default function NewMJCPage(): React.ReactElement {
         // Success!
         setSubmitSuccess(true);
         setMjcNumber(response.data?.job_card_number || null);
-        reset(); // Clear form after successful submission
+        setMjcId(response.data?.id || null);
+        // Don't reset form - allow file uploads after submission
 
         // Reset success message after 5 seconds
         setTimeout(() => {
@@ -489,10 +493,16 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-1">{errors.maintenance_description.message}</p>
               )}
             </div>
-            <div>
-              <Label>Attachments (Photos/Documents)</Label>
-              <Input data-testid="maintenance-description-attachments" type="file" multiple />
-            </div>
+            <FileUpload
+              entityId={mjcId}
+              uploadType="mjc"
+              onUpload={uploadMJCFile}
+              onDelete={deleteMJCFile}
+              onList={listMJCFiles}
+              label="Maintenance Description Attachments"
+              allowedTypes={['PDF', 'Images', 'Word', 'Text']}
+              maxSizeMB={10}
+            />
           </CardContent>
         </Card>
 
