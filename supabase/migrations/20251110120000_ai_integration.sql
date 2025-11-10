@@ -68,14 +68,16 @@ CREATE TABLE knowledge_base_documents (
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 
   -- Constraints (BRCGS CRITICAL: Only ONE current version)
-  CONSTRAINT kb_current_version_unique UNIQUE (document_number, status)
-    WHERE status = 'current',
   CONSTRAINT kb_effective_after_revised CHECK (effective_date >= revised_date)
 );
 
 -- =============================================================================
 -- INDEXES: Optimized for AI retrieval and compliance queries
 -- =============================================================================
+-- BRCGS CRITICAL: Partial unique index ensures only ONE current version per document
+CREATE UNIQUE INDEX kb_current_version_unique ON knowledge_base_documents(document_number)
+  WHERE status = 'current';
+
 CREATE INDEX idx_kb_status ON knowledge_base_documents(status)
   WHERE status = 'current';
 CREATE INDEX idx_kb_document_number ON knowledge_base_documents(document_number);
@@ -94,7 +96,7 @@ COMMENT ON COLUMN knowledge_base_documents.status IS
   'AI must ONLY reference documents with status=current';
 COMMENT ON COLUMN knowledge_base_documents.embedding_vector IS
   'Vector embeddings for semantic search (RAG architecture), 1536 dimensions for OpenAI ada-002';
-COMMENT ON CONSTRAINT kb_current_version_unique ON knowledge_base_documents IS
+COMMENT ON INDEX kb_current_version_unique IS
   'BRCGS Section 3.6: Ensures only ONE current version per document number';
 
 -- =============================================================================
