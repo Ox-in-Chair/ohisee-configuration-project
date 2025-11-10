@@ -725,11 +725,11 @@ CREATE TABLE audit_trail (
 
   -- What was changed
   entity_type TEXT NOT NULL CHECK (entity_type IN (
-    'nca',
-    'mjc',
-    'work_order',
-    'user',
-    'machine'
+    'ncas',
+    'mjcs',
+    'work_orders',
+    'users',
+    'machines'
   )),
   entity_id UUID NOT NULL,
   action TEXT NOT NULL CHECK (action IN (
@@ -1060,7 +1060,7 @@ CREATE POLICY "Users can view audit trail" ON audit_trail
 -- COMMENTS: Documentation
 -- =============================================================================
 COMMENT ON TABLE audit_trail IS 'BRCGS-compliant immutable audit log - INSERT only via triggers';
-COMMENT ON COLUMN audit_trail.entity_type IS 'Type of record being audited (nca, mjc, work_order)';
+COMMENT ON COLUMN audit_trail.entity_type IS 'Type of record being audited (ncas, mjcs, work_orders)';
 COMMENT ON COLUMN audit_trail.action IS 'Type of action performed (created, updated, status_changed, etc)';
 COMMENT ON COLUMN audit_trail.changed_fields IS 'Array of field names that changed (for UPDATE actions)';
 COMMENT ON COLUMN audit_trail.ip_address IS 'Client IP address for security tracking';
