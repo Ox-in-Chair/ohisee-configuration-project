@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/database/client';
 import type { NCAInsert, Signature } from '@/types/database';
 import type { NCAFormData } from '@/lib/validations/nca-schema';
 import { revalidatePath } from 'next/cache';
+import type { INotificationService, NotificationPayload } from '@/lib/types/notification';
 
 /**
  * Server Action Response Type
@@ -67,6 +68,9 @@ function transformFormDataToInsert(
     time: timeString,
     raised_by_user_id: userId,
     created_by: userId,
+
+    // Work Order Link
+    wo_id: formData.wo_id || null,
 
     // Section 2: Classification
     nc_type: formData.nc_type,
@@ -133,11 +137,57 @@ function transformFormDataToInsert(
 }
 
 /**
+ * Send machine down alert if applicable
+ * Injected notification service for testability (DI pattern)
+ */
+async function sendMachineDownAlertIfNeeded(
+  ncaData: NCAInsert,
+  ncaNumber: string,
+  notificationService?: INotificationService
+): Promise<void> {
+  // Only send alert if machine status is 'down'
+  if (ncaData.machine_status !== 'down') {
+    return;
+  }
+
+  // Skip if no notification service provided (production will inject real service)
+  if (!notificationService) {
+    console.warn('Machine down alert skipped - notification service not configured');
+    return;
+  }
+
+  try {
+    // TODO: Fetch operator name from user_profiles table using raised_by_user_id
+    // For MVP, using hardcoded name
+    const operatorName = 'Operations Team';
+
+    // TODO: Extract machine name from nc_product_description or add machine_name field
+    // For MVP, using placeholder
+    const machineName = ncaData.nc_product_description?.split('-')[0]?.trim() || 'Unknown Machine';
+
+    const payload: NotificationPayload = {
+      nca_number: ncaNumber,
+      machine_name: machineName,
+      operator_name: operatorName,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Send alert (errors are logged internally, won't throw)
+    await notificationService.sendMachineDownAlert(payload);
+  } catch (error) {
+    // Log error but don't fail NCA creation if notification fails
+    console.error('Failed to send machine down alert:', error);
+  }
+}
+
+/**
  * Create and submit a new NCA
  * Server Action - called from client components
+ * Optional notificationService parameter for dependency injection (testing)
  */
 export async function createNCA(
-  formData: NCAFormData
+  formData: NCAFormData,
+  notificationService?: INotificationService
 ): Promise<ActionResponse<{ id: string; nca_number: string }>> {
   try {
     // Create server-side Supabase client (dependency injection)
@@ -171,6 +221,10 @@ export async function createNCA(
         error: 'No data returned from database',
       };
     }
+
+    // Send machine down alert if applicable (non-blocking)
+    // Errors are logged but won't fail NCA creation
+    await sendMachineDownAlertIfNeeded(ncaData, data.nca_number, notificationService);
 
     // Revalidate NCA list page
     revalidatePath('/nca');

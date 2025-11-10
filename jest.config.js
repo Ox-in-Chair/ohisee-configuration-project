@@ -9,6 +9,13 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests', '<rootDir>/lib'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '\\.spec\\.ts$', // Exclude Playwright .spec.ts files
+    '/e2e/',
+    'knowledge-base-actions.test.ts' // Uses Vitest, not Jest
+  ],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {

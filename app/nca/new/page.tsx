@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,11 @@ import { AIAssistantModal } from '@/components/ai-assistant-modal';
 import { QualityGateModal } from '@/components/quality-gate-modal';
 import { useAIQuality } from '@/hooks/useAIQuality';
 import type { Suggestion } from '@/lib/ai/types';
+
+// Work Order Service imports
+import { createClient } from '@supabase/supabase-js';
+import { createWorkOrderService } from '@/lib/services/work-order-service';
+import type { WorkOrder } from '@/lib/types/work-order';
 
 /**
  * Character counter component with color-coded status
@@ -69,6 +74,11 @@ export default function NewNCAPage(): React.ReactElement {
   const [currentSuggestion, setCurrentSuggestion] = useState<Suggestion | null>(null);
   const [currentFieldForSuggestion, setCurrentFieldForSuggestion] = useState<string | null>(null);
 
+  // Work Order Auto-Link State
+  const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
+  const [workOrderLoading, setWorkOrderLoading] = useState<boolean>(true);
+  const [workOrderError, setWorkOrderError] = useState<string | null>(null);
+
   // Initialize react-hook-form with Zod validation
   const {
     register,
@@ -85,6 +95,7 @@ export default function NewNCAPage(): React.ReactElement {
       nca_number: 'NCA-AUTO-GENERATED',
       raised_by: 'Current User',
       wo_number: '',
+      wo_id: null,
       sample_available: false,
       cross_contamination: false,
       back_tracking_completed: false,
@@ -94,6 +105,53 @@ export default function NewNCAPage(): React.ReactElement {
       nc_product_description: '',
     },
   });
+
+  // Fetch active work order on component mount
+  useEffect(() => {
+    const fetchActiveWorkOrder = async (): Promise<void> => {
+      try {
+        setWorkOrderLoading(true);
+        setWorkOrderError(null);
+
+        // Create Supabase client
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // Create work order service with dependency injection
+        const workOrderService = createWorkOrderService(supabase);
+
+        // TODO: Get real user ID from auth context
+        const userId = 'current-user-id';
+
+        // Fetch active work order
+        const workOrder = await workOrderService.getActiveWorkOrder(userId);
+
+        if (workOrder) {
+          setActiveWorkOrder(workOrder);
+          // Auto-populate work order fields
+          setValue('wo_number', workOrder.wo_number);
+          setValue('wo_id', workOrder.id);
+        } else {
+          setWorkOrderError('No active work order found');
+        }
+      } catch (error) {
+        console.error('Failed to fetch active work order:', error);
+        setWorkOrderError(
+          error instanceof Error ? error.message : 'Failed to load work order'
+        );
+      } finally {
+        setWorkOrderLoading(false);
+      }
+    };
+
+    fetchActiveWorkOrder();
+  }, [setValue]);
 
   // Initialize AI Quality Hook
   const aiQuality = useAIQuality({
@@ -342,12 +400,31 @@ export default function NewNCAPage(): React.ReactElement {
             </div>
             <div>
               <Label>WO Number</Label>
-              <Input
-                data-testid="nca-wo-number"
-                type="text"
-                placeholder="Auto-linked"
-                {...register('wo_number')}
-              />
+              <div className="relative">
+                <Input
+                  data-testid="nca-wo-number"
+                  type="text"
+                  placeholder="Auto-linked"
+                  {...register('wo_number')}
+                  readOnly
+                  className={workOrderError ? 'border-yellow-500' : ''}
+                />
+                {workOrderLoading && (
+                  <span className="absolute right-3 top-3 text-sm text-gray-500">
+                    Loading...
+                  </span>
+                )}
+              </div>
+              {workOrderError && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
+                  <strong>Warning:</strong> {workOrderError}. You can still submit this NCA, but it will not be linked to a work order.
+                </div>
+              )}
+              {activeWorkOrder && (
+                <div className="mt-2 text-sm text-green-600">
+                  Linked to: {activeWorkOrder.product} (Machine: {activeWorkOrder.machine_id})
+                </div>
+              )}
             </div>
             {/* Confidential Report Checkbox */}
             <div className="col-span-2 flex items-center space-x-2">
@@ -464,17 +541,17 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 4: NC Description - AI ENHANCED */}
+        {/* Section 4: NC Description */}
         <Card data-testid="nca-section-4" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 4: NC Description (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 4: NC Description</CardTitle>
           </CardHeader>
           <CardContent>
             <AIEnhancedTextarea
               label="Description"
               value={ncDescription}
               onChange={(value) => handleFieldChange('nc_description', value)}
-              onAIHelp={() => handleAIHelp('nc_description')}
+              onKangopakCore={() => handleAIHelp('nc_description')}
               qualityScore={aiQuality.qualityScore?.score}
               isCheckingQuality={aiQuality.isChecking}
               isSuggesting={aiQuality.isSuggesting}
@@ -483,7 +560,7 @@ export default function NewNCAPage(): React.ReactElement {
               maxLength={2000}
               rows={5}
               required={true}
-              placeholder="Describe what went wrong, when, where, and impact..."
+              placeholder="Example: Laminate delamination found on batch B-2045 during inspection at 14:30 in Finishing Area 2. Approximately 150 units affected. No product release yet."
               data-testid="nc-description-ai"
               error={errors.nc_description?.message}
             />
@@ -751,17 +828,17 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 9: Root Cause Analysis - AI ENHANCED */}
+        {/* Section 9: Root Cause Analysis */}
         <Card data-testid="nca-section-9" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 9: Root Cause Analysis (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 9: Root Cause Analysis</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <AIEnhancedTextarea
               label="Root Cause Analysis"
               value={rootCauseAnalysis}
               onChange={(value) => handleFieldChange('root_cause_analysis', value)}
-              onAIHelp={() => handleAIHelp('root_cause_analysis')}
+              onKangopakCore={() => handleAIHelp('root_cause_analysis')}
               qualityScore={aiQuality.qualityScore?.score}
               isCheckingQuality={aiQuality.isChecking}
               isSuggesting={aiQuality.isSuggesting}
@@ -769,7 +846,7 @@ export default function NewNCAPage(): React.ReactElement {
               minLength={50}
               maxLength={2000}
               rows={5}
-              placeholder="Use 5 Whys method to identify the root cause..."
+              placeholder="Example: Why did delamination occur? → Adhesive temperature too low. Why? → Heater malfunction. Why? → Sensor drift. Why? → Calibration overdue by 3 weeks. Why? → Maintenance schedule not followed."
               data-testid="root-cause-analysis-ai"
             />
             <FileUpload
@@ -785,17 +862,17 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 10: Corrective Action - AI ENHANCED */}
+        {/* Section 10: Corrective Action */}
         <Card data-testid="nca-section-10" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 10: Corrective Action (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 10: Corrective Action</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <AIEnhancedTextarea
               label="Corrective Action"
               value={correctiveAction}
               onChange={(value) => handleFieldChange('corrective_action', value)}
-              onAIHelp={() => handleAIHelp('corrective_action')}
+              onKangopakCore={() => handleAIHelp('corrective_action')}
               qualityScore={aiQuality.qualityScore?.score}
               isCheckingQuality={aiQuality.isChecking}
               isSuggesting={aiQuality.isSuggesting}
@@ -803,7 +880,7 @@ export default function NewNCAPage(): React.ReactElement {
               minLength={50}
               maxLength={2000}
               rows={5}
-              placeholder="What actions will prevent recurrence? Be specific and measurable..."
+              placeholder="Example: 1) Calibrate all adhesive temperature sensors immediately. 2) Implement weekly sensor checks per BRCGS 5.6. 3) Add automated alerts when calibration overdue. 4) Train team leaders on maintenance schedule tracking."
               data-testid="corrective-action-ai"
             />
             <FileUpload

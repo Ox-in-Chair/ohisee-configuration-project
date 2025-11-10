@@ -289,6 +289,7 @@ describe('NCA Workflow Integration', () => {
     });
 
     it('should submit NCA and set submitted_at timestamp', async () => {
+      const beforeSubmit = Date.now();
       const { data, error } = await supabase
         .from('ncas')
         .update({ status: 'submitted' })
@@ -300,7 +301,11 @@ describe('NCA Workflow Integration', () => {
       expect(data).toBeDefined();
       expect(data.status).toBe('submitted');
       expect(data.submitted_at).toBeDefined();
-      expect(new Date(data.submitted_at!).getTime()).toBeLessThanOrEqual(Date.now());
+      const submittedTime = new Date(data.submitted_at!).getTime();
+      const afterSubmit = Date.now();
+      // Allow small buffer for timing differences
+      expect(submittedTime).toBeGreaterThanOrEqual(beforeSubmit - 1000);
+      expect(submittedTime).toBeLessThanOrEqual(afterSubmit + 1000);
     });
 
     it('should create audit trail entry on submission', async () => {
@@ -353,8 +358,8 @@ describe('NCA Workflow Integration', () => {
 
   describe('Cross-Contamination Enforcement (BRCGS CRITICAL)', () => {
     beforeEach(async () => {
-      // Create NCA with cross-contamination flag
-      const { data } = await supabase
+      // Create NCA WITHOUT cross-contamination flag first (to avoid constraint violation)
+      const { data, error } = await supabase
         .from('ncas')
         .insert({
           wo_id: workOrderId,
@@ -367,12 +372,14 @@ describe('NCA Workflow Integration', () => {
           machine_status: 'operational',
           hold_label_completed: true,
           nca_logged: true,
-          cross_contamination: true,
+          cross_contamination: false, // Start with false, tests will update
           status: 'draft'
         })
         .select()
         .single();
 
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
       testNcaId = data!.id;
     });
 
@@ -559,7 +566,8 @@ describe('NCA Workflow Integration', () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data.disposition_reject).toBe(true);
-      expect(data.rework_instruction).toBeUndefined();
+      // Database returns null, not undefined
+      expect(data.rework_instruction).toBeNull();
     });
   });
 

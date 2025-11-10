@@ -99,10 +99,13 @@ export function createTestMachine(
   options: TestMachineOptions = {}
 ): MachineInsert {
   const timestamp = Date.now();
+  // Machine code format: ^[A-Z]+-[0-9]{2}$ (e.g., CMH-01, TEST-01)
+  const randomNum = String(Math.floor(Math.random() * 99) + 1).padStart(2, '0');
+  const machineCode = options.machine_code ?? `TEST-${randomNum}`;
 
   return {
     id: options.id ?? crypto.randomUUID(),
-    machine_code: options.machine_code ?? `TEST-MACH-${timestamp}`,
+    machine_code: machineCode,
     machine_name: options.machine_name ?? `Test Machine ${timestamp}`,
     department: options.department ?? 'pouching',
     status: options.status ?? 'operational',
@@ -133,10 +136,14 @@ export function createTestWorkOrder(
   options: TestWorkOrderOptions = {}
 ): WorkOrderInsert {
   const timestamp = Date.now();
+  // Work order number format: ^WO-[0-9]{8}-[A-Z]+-[0-9]{3}$ (e.g., WO-20251110-CMH-001)
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const randomNum = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+  const woNumber = options.wo_number ?? `WO-${dateStr}-TEST-${randomNum}`;
 
   return {
     id: options.id ?? crypto.randomUUID(),
-    wo_number: options.wo_number ?? `WO-TEST-${timestamp}`,
+    wo_number: woNumber,
     machine_id: options.machine_id ?? null,
     operator_id: options.operator_id ?? null,
     start_timestamp: new Date().toISOString(),

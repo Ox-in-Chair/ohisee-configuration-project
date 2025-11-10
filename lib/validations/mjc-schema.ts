@@ -39,6 +39,7 @@ export const mjcFormSchema = z
     raised_by: z.string().optional(),
     department: z.string().optional(),
     wo_number: z.string().optional(),
+    wo_id: z.string().uuid().nullable().optional(), // Work Order ID for linking
     wo_status: z.string().optional(),
 
     // Section 2: Machine/Equipment Identification (REQUIRED)

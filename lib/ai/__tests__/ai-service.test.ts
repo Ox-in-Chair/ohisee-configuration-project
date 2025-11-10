@@ -153,7 +153,13 @@ describe('AIService', () => {
       };
 
       await expect(aiService.analyzeFieldQuality(context)).rejects.toThrow(AIServiceError);
-      await expect(aiService.analyzeFieldQuality(context)).rejects.toThrow('rate_limit_exceeded');
+      try {
+        await aiService.analyzeFieldQuality(context);
+        fail('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(AIServiceError);
+        expect((error as AIServiceError).code).toBe('rate_limit_exceeded');
+      }
     });
 
     it('should handle API errors gracefully', async () => {
@@ -171,6 +177,36 @@ describe('AIService', () => {
 
   describe('generateSuggestions', () => {
     it('should generate comprehensive suggestion with procedure context', async () => {
+      // Mock a high-quality response that will score >= 75
+      mockAnthropicClient.messages.create = jest.fn().mockResolvedValue({
+        id: 'msg-123',
+        type: 'message',
+        role: 'assistant',
+        content: [{
+          type: 'text',
+          text: `## Immediate Correction
+Quarantine affected product and apply red hold label. Segregate non-conforming items per Procedure 5.7.
+
+## Root Cause
+Investigation revealed print registration calibration drift. Root cause analysis indicates equipment maintenance schedule deviation.
+
+## Corrective Action
+Recalibrate print station per Procedure 5.6. Monitor next 100 units for specification compliance. Update calibration schedule per Procedure 3.11.
+
+## Verification
+Monitor print registration for next 100 units. Verify calibration accuracy per Procedure 5.6.
+
+## Keywords Detected
+print, specification, tolerance, calibration, non-conformance
+
+## Procedure References
+5.7, 3.11, 5.6`
+        }],
+        model: 'claude-sonnet-4-5-20250929',
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 1000, output_tokens: 500 }
+      });
+
       const context: AnalysisContext = {
         user: mockUser,
         language_level: 4,
@@ -189,6 +225,36 @@ describe('AIService', () => {
     });
 
     it('should include historical similar cases in context', async () => {
+      // Mock a high-quality response that will score >= 75
+      mockAnthropicClient.messages.create = jest.fn().mockResolvedValue({
+        id: 'msg-123',
+        type: 'message',
+        role: 'assistant',
+        content: [{
+          type: 'text',
+          text: `## Immediate Correction
+Quarantine affected product and apply red hold label. Segregate non-conforming items per Procedure 5.7.
+
+## Root Cause
+Investigation revealed print registration calibration drift. Root cause analysis indicates equipment maintenance schedule deviation.
+
+## Corrective Action
+Recalibrate print station per Procedure 5.6. Monitor next 100 units for specification compliance. Update calibration schedule per Procedure 3.11.
+
+## Verification
+Monitor print registration for next 100 units. Verify calibration accuracy per Procedure 5.6.
+
+## Keywords Detected
+print, specification, tolerance, calibration, non-conformance
+
+## Procedure References
+5.7, 3.11, 5.6`
+        }],
+        model: 'claude-sonnet-4-5-20250929',
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 1000, output_tokens: 500 }
+      });
+
       const context: AnalysisContext = {
         user: mockUser,
         language_level: 4,
@@ -234,7 +300,13 @@ describe('AIService', () => {
       };
 
       await expect(aiService.generateSuggestions(context)).rejects.toThrow(AIServiceError);
-      await expect(aiService.generateSuggestions(context)).rejects.toThrow('low_confidence');
+      try {
+        await aiService.generateSuggestions(context);
+        fail('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(AIServiceError);
+        expect((error as AIServiceError).code).toBe('low_confidence');
+      }
     });
 
     it('should handle timeout gracefully', async () => {
@@ -256,7 +328,14 @@ describe('AIService', () => {
         nca: mockNCA
       };
 
-      await expect(fastService.generateSuggestions(context)).rejects.toThrow('timeout');
+      await expect(fastService.generateSuggestions(context)).rejects.toThrow(AIServiceError);
+      try {
+        await fastService.generateSuggestions(context);
+        fail('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(AIServiceError);
+        expect((error as AIServiceError).code).toBe('timeout');
+      }
     }, 10000);
   });
 
@@ -304,6 +383,36 @@ describe('AIService', () => {
 
   describe('validateBeforeSubmit', () => {
     it('should validate complete NCA and return validation result', async () => {
+      // Mock a high-quality text response that will score >= 75
+      // The quality scorer analyzes text for keywords, procedure references, etc.
+      mockAnthropicClient.messages.create = jest.fn().mockResolvedValue({
+        id: 'msg-123',
+        type: 'message',
+        role: 'assistant',
+        content: [{
+          type: 'text',
+          text: `Quality Assessment Score: 85
+
+## Completeness Analysis
+Quarantine affected product and apply red hold label. Segregate non-conforming items per Procedure 5.7. Root cause investigation revealed print registration calibration drift. Preventive action includes procedure training and review. Monitor next 100 units.
+
+## Accuracy Analysis
+Non-conformance disposition and corrective action documented per Procedure 3.11. Procedure references: 5.7, 3.11, 5.6. No placeholder text detected.
+
+## Clarity Analysis
+Clear structure with actionable language. Description exceeds 200 characters with specific details.
+
+## Hazard Identification
+Food safety consideration: contamination risk identified. Product safety verified through investigation.
+
+## Evidence
+Quantity and batch data provided. Supplier information available for traceability.`
+        }],
+        model: 'claude-sonnet-4-5-20250929',
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 1000, output_tokens: 500 }
+      });
+
       const completeNCA: NCA = {
         ...mockNCA,
         corrective_action: 'Recalibrate print station per Procedure 5.6. Monitor next 100 units. Update calibration schedule.'

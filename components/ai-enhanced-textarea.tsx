@@ -12,7 +12,7 @@ export interface AIEnhancedTextareaProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onAIHelp?: () => void;
+  onKangopakCore?: () => void;
   qualityScore?: number | null;
   isCheckingQuality?: boolean;
   isSuggesting?: boolean;
@@ -28,10 +28,10 @@ export interface AIEnhancedTextareaProps {
 }
 
 /**
- * AI-Enhanced Textarea Component
+ * Enhanced Textarea Component with Kangopak Core Integration
  *
- * Textarea with integrated AI quality feedback and suggestion button
- * Shows character counter, quality badge, and "Get AI Help" button
+ * Textarea with integrated quality feedback and Kangopak Core assistance button
+ * Shows character counter, quality badge, and "Kangopak Core" button
  *
  * @example
  * ```tsx
@@ -39,7 +39,7 @@ export interface AIEnhancedTextareaProps {
  *   label="Corrective Action"
  *   value={formData.corrective_action}
  *   onChange={(value) => setFormData({ ...formData, corrective_action: value })}
- *   onAIHelp={() => generateSuggestion(formData)}
+ *   onKangopakCore={() => generateSuggestion(formData)}
  *   qualityScore={qualityScore?.score}
  *   isCheckingQuality={isChecking}
  *   showQualityBadge={true}
@@ -52,7 +52,7 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
   label,
   value,
   onChange,
-  onAIHelp,
+  onKangopakCore,
   qualityScore = null,
   isCheckingQuality = false,
   isSuggesting = false,
@@ -87,32 +87,33 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Label with AI button */}
+      {/* Label with Kangopak Core button */}
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
 
-        {onAIHelp && (
+        {onKangopakCore && (
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={onAIHelp}
+            onClick={onKangopakCore}
             disabled={isSuggesting || disabled}
             className="flex items-center gap-2 text-xs"
             data-testid={`${testId}-ai-help`}
+            title="Get assistance from Kangopak Core knowledge base"
           >
             {isSuggesting ? (
               <>
                 <Loader2 className="h-3 w-3 animate-spin" />
-                <span>Generating...</span>
+                <span>Analyzing...</span>
               </>
             ) : (
               <>
                 <Sparkles className="h-3 w-3" />
-                <span>Get AI Help</span>
+                <span>Kangopak Core</span>
               </>
             )}
           </Button>

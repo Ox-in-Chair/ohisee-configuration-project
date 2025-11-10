@@ -27,6 +27,7 @@ export const ncaFormSchema = z
     nca_number: z.string().optional(),
     raised_by: z.string().optional(),
     wo_number: z.string().optional(),
+    wo_id: z.string().uuid().nullable().optional(), // Work Order ID for linking
 
     // Section 2: NC Classification (REQUIRED)
     nc_type: z.enum(['raw-material', 'finished-goods', 'wip', 'incident', 'other'], {

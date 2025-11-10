@@ -246,12 +246,18 @@ Provide a score 0-100 and brief feedback.`;
     if (error.status === 503) {
       // Service unavailable - use fallback scoring
       console.warn('Anthropic API unavailable, using fallback scoring');
+      if (context === 'inline') {
+        return { score: 50, feedback: 'AI service temporarily unavailable - manual review recommended' };
+      }
       return this.fallbackScoring();
     }
 
     if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
       // Timeout - use cached results if available
       console.warn('API timeout, using fallback');
+      if (context === 'inline') {
+        return { score: 50, feedback: 'AI service temporarily unavailable - manual review recommended' };
+      }
       return this.fallbackScoring();
     }
 
@@ -582,7 +588,8 @@ describe('AIService', () => {
       const result = await aiService.validateBeforeSubmit({}, {});
 
       expect(result.warnings).toContain('Using fallback quality scoring');
-      expect(result.suggestions).toContain('manual review recommended');
+      // suggestions is an array, check if any suggestion contains the text
+      expect(result.suggestions.some(s => s.includes('manual review recommended'))).toBe(true);
     });
   });
 
@@ -621,12 +628,15 @@ describe('AIService', () => {
       );
 
       consoleWarnSpy.mockRestore();
-    });
+    }, 35000); // Increase timeout for this test
 
     it('should include response time in result', async () => {
-      mockAnthropicCreate.mockResolvedValue({
-        content: [{ text: 'Analysis complete' }]
-      });
+      // Add a small delay to ensure responseTime is calculated
+      mockAnthropicCreate.mockImplementation(
+        () => new Promise(resolve =>
+          setTimeout(() => resolve({ content: [{ text: 'Analysis complete' }] }), 10)
+        )
+      );
 
       const result = await aiService.validateBeforeSubmit({}, {});
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,11 @@ import { createMJC, saveDraftMJC } from '@/app/actions/mjc-actions';
 import { FileUpload } from '@/components/file-upload';
 import { uploadMJCFile, listMJCFiles, deleteMJCFile } from '@/app/actions/file-actions';
 
+// Work Order Service imports
+import { createClient } from '@supabase/supabase-js';
+import { createWorkOrderService } from '@/lib/services/work-order-service';
+import type { WorkOrder } from '@/lib/types/work-order';
+
 /**
  * MJC Form Page Component
  * Production-ready with full validation, TypeScript typing, and BRCGS compliance
@@ -26,6 +31,11 @@ export default function NewMJCPage(): React.ReactElement {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [mjcNumber, setMjcNumber] = useState<string | null>(null);
   const [mjcId, setMjcId] = useState<string | null>(null);
+
+  // Work Order Auto-Link State
+  const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
+  const [workOrderLoading, setWorkOrderLoading] = useState<boolean>(true);
+  const [workOrderError, setWorkOrderError] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -45,6 +55,7 @@ export default function NewMJCPage(): React.ReactElement {
       raised_by: 'Current User',
       department: 'Auto-populated',
       wo_number: '',
+      wo_id: null,
       wo_status: 'Active',
       machine_equipment_id: '',
       maintenance_description: '',
@@ -61,6 +72,53 @@ export default function NewMJCPage(): React.ReactElement {
       production_cleared: false,
     },
   });
+
+  // Fetch active work order on component mount
+  useEffect(() => {
+    const fetchActiveWorkOrder = async (): Promise<void> => {
+      try {
+        setWorkOrderLoading(true);
+        setWorkOrderError(null);
+
+        // Create Supabase client
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase configuration missing');
+        }
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        // Create work order service with dependency injection
+        const workOrderService = createWorkOrderService(supabase);
+
+        // TODO: Get real user ID from auth context
+        const userId = 'current-user-id';
+
+        // Fetch active work order
+        const workOrder = await workOrderService.getActiveWorkOrder(userId);
+
+        if (workOrder) {
+          setActiveWorkOrder(workOrder);
+          // Auto-populate work order fields
+          setValue('wo_number', workOrder.wo_number);
+          setValue('wo_id', workOrder.id);
+        } else {
+          setWorkOrderError('No active work order found');
+        }
+      } catch (error) {
+        console.error('Failed to fetch active work order:', error);
+        setWorkOrderError(
+          error instanceof Error ? error.message : 'Failed to load work order'
+        );
+      } finally {
+        setWorkOrderLoading(false);
+      }
+    };
+
+    fetchActiveWorkOrder();
+  }, [setValue]);
 
   // Watch form fields for conditional rendering
   const machineStatus = watch('machine_status');
@@ -246,7 +304,31 @@ export default function NewMJCPage(): React.ReactElement {
             </div>
             <div>
               <Label>Kangopak WO Number</Label>
-              <Input data-testid="mjc-wo-number" type="text" placeholder="Auto-linked" {...register('wo_number')} />
+              <div className="relative">
+                <Input
+                  data-testid="mjc-wo-number"
+                  type="text"
+                  placeholder="Auto-linked"
+                  {...register('wo_number')}
+                  readOnly
+                  className={workOrderError ? 'border-yellow-500' : ''}
+                />
+                {workOrderLoading && (
+                  <span className="absolute right-3 top-3 text-sm text-gray-500">
+                    Loading...
+                  </span>
+                )}
+              </div>
+              {workOrderError && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
+                  <strong>Warning:</strong> {workOrderError}. You can still submit this MJC, but it will not be linked to a work order.
+                </div>
+              )}
+              {activeWorkOrder && (
+                <div className="mt-2 text-sm text-green-600">
+                  Linked to: {activeWorkOrder.product} (Machine: {activeWorkOrder.machine_id})
+                </div>
+              )}
             </div>
             <div>
               <Label>Work Order Status</Label>

@@ -108,6 +108,9 @@ function transformFormDataToInsert(
     raised_by_user_id: userId,
     created_by: userId,
 
+    // Work Order Link
+    wo_id: formData.wo_id || null,
+
     // Section 1: Department (TODO: Get from user profile)
     department: 'maintenance', // Default for now
 
