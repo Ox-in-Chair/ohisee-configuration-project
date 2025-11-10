@@ -5,6 +5,7 @@
 ## Pre-Deployment Checks
 
 ### 1. Environment Variables
+
 ```bash
 # Verify all required environment variables are set
 echo $NEXT_PUBLIC_SUPABASE_URL
@@ -22,6 +23,7 @@ echo $SUPABASE_SERVICE_ROLE_KEY
 ---
 
 ### 2. Migration Files Present
+
 ```bash
 ls -la supabase/migrations/
 
@@ -39,6 +41,7 @@ ls -la supabase/migrations/
 ---
 
 ### 3. TypeScript Types Generated
+
 ```bash
 ls -la types/
 
@@ -53,6 +56,7 @@ ls -la types/
 ## Database Schema Validation
 
 ### 4. Tables Created
+
 ```sql
 SELECT table_name
 FROM information_schema.tables
@@ -71,6 +75,7 @@ ORDER BY table_name;
 ### 5. Columns Present (Critical Tables)
 
 **NCAs Table:**
+
 ```sql
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns
@@ -89,6 +94,7 @@ ORDER BY ordinal_position;
 **Status:** [ ] PASS / [ ] FAIL
 
 **MJCs Table:**
+
 ```sql
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns
@@ -109,6 +115,7 @@ ORDER BY ordinal_position;
 ---
 
 ### 6. Check Constraints
+
 ```sql
 SELECT conname, contype, pg_get_constraintdef(oid)
 FROM pg_constraint
@@ -128,6 +135,7 @@ ORDER BY conname;
 ---
 
 ### 7. Foreign Key Constraints
+
 ```sql
 SELECT
   tc.table_name,
@@ -154,6 +162,7 @@ ORDER BY tc.table_name, kcu.column_name;
 ---
 
 ### 8. Indexes Created
+
 ```sql
 SELECT tablename, indexname, indexdef
 FROM pg_indexes
@@ -175,6 +184,7 @@ ORDER BY tablename, indexname;
 ---
 
 ### 9. Functions Created
+
 ```sql
 SELECT proname, pronargs
 FROM pg_proc
@@ -199,6 +209,7 @@ ORDER BY proname;
 ---
 
 ### 10. Triggers Created
+
 ```sql
 SELECT trigger_name, event_object_table, action_timing, event_manipulation
 FROM information_schema.triggers
@@ -224,6 +235,7 @@ ORDER BY event_object_table, trigger_name;
 ## RLS Policy Validation
 
 ### 11. RLS Enabled
+
 ```sql
 SELECT tablename, rowsecurity
 FROM pg_tables
@@ -238,6 +250,7 @@ WHERE schemaname = 'public';
 ---
 
 ### 12. RLS Policies Count
+
 ```sql
 SELECT schemaname, tablename, policyname, permissive, roles, cmd
 FROM pg_policies
@@ -260,6 +273,7 @@ ORDER BY tablename, policyname;
 ---
 
 ### 13. Critical RLS Policies Present
+
 ```sql
 SELECT tablename, policyname
 FROM pg_policies
@@ -285,6 +299,7 @@ ORDER BY tablename, policyname;
 ## Function Testing
 
 ### 14. NCA Number Generation
+
 ```sql
 SELECT generate_nca_number();
 
@@ -299,6 +314,7 @@ SELECT generate_nca_number();
 ---
 
 ### 15. MJC Number Generation
+
 ```sql
 SELECT generate_mjc_number();
 
@@ -313,6 +329,7 @@ SELECT generate_mjc_number();
 ---
 
 ### 16. Hygiene Checklist Validation (All Verified)
+
 ```sql
 SELECT validate_hygiene_checklist('[
   {"item": "Test 1", "verified": true},
@@ -336,6 +353,7 @@ SELECT validate_hygiene_checklist('[
 ---
 
 ### 17. Hygiene Checklist Validation (Incomplete)
+
 ```sql
 SELECT validate_hygiene_checklist('[
   {"item": "Test 1", "verified": true},
@@ -351,6 +369,7 @@ SELECT validate_hygiene_checklist('[
 ---
 
 ### 18. User Role Check
+
 ```sql
 SELECT user_has_role(ARRAY['qa-supervisor', 'operations-manager']);
 
@@ -365,6 +384,7 @@ SELECT user_has_role(ARRAY['qa-supervisor', 'operations-manager']);
 ## Seed Data Validation (If Applied)
 
 ### 19. Users Seeded
+
 ```sql
 SELECT COUNT(*), role FROM users GROUP BY role ORDER BY role;
 
@@ -384,6 +404,7 @@ SELECT COUNT(*), role FROM users GROUP BY role ORDER BY role;
 ---
 
 ### 20. Machines Seeded
+
 ```sql
 SELECT machine_code, machine_name, status FROM machines ORDER BY machine_code;
 
@@ -399,6 +420,7 @@ SELECT machine_code, machine_name, status FROM machines ORDER BY machine_code;
 ---
 
 ### 21. Work Orders Seeded
+
 ```sql
 SELECT wo_number, status FROM work_orders ORDER BY wo_number;
 
@@ -414,6 +436,7 @@ SELECT wo_number, status FROM work_orders ORDER BY wo_number;
 ---
 
 ### 22. Sample NCA Seeded
+
 ```sql
 SELECT nca_number, status, nc_type FROM ncas;
 
@@ -427,6 +450,7 @@ SELECT nca_number, status, nc_type FROM ncas;
 ---
 
 ### 23. Sample MJC Seeded
+
 ```sql
 SELECT job_card_number, status, urgency, machine_status FROM mjcs;
 
@@ -442,6 +466,7 @@ SELECT job_card_number, status, urgency, machine_status FROM mjcs;
 ## BRCGS Compliance Checks
 
 ### 24. Audit Trail Trigger Working
+
 ```sql
 -- Create test NCA
 INSERT INTO ncas (
@@ -479,6 +504,7 @@ WHERE entity_type = 'nca' AND action = 'created';
 ---
 
 ### 25. Machine Down Alert Logged
+
 ```sql
 -- Update NCA to Machine Down
 UPDATE ncas
@@ -499,6 +525,7 @@ WHERE action = 'machine_down_reported';
 ---
 
 ### 26. Cross-Contamination Constraint Enforced
+
 ```sql
 -- Attempt to set cross_contamination = true without back tracking
 -- Should FAIL
@@ -515,6 +542,7 @@ WHERE nca_number = 'NCA-2025-00000001';
 ---
 
 ### 27. Hygiene Clearance Blocked (Incomplete Checklist)
+
 ```sql
 -- Attempt to grant hygiene clearance with incomplete checklist
 -- Should FAIL
@@ -532,6 +560,7 @@ WHERE job_card_number = 'MJC-2025-00000001';
 ---
 
 ### 28. No DELETE on NCAs/MJCs (Immutable)
+
 ```sql
 -- Attempt to delete NCA
 -- Should FAIL (no DELETE policy)
@@ -548,6 +577,7 @@ DELETE FROM ncas WHERE nca_number = 'NCA-2025-00000001';
 ## Performance Checks
 
 ### 29. Query Performance (NCAs)
+
 ```sql
 EXPLAIN ANALYZE
 SELECT * FROM ncas
@@ -566,6 +596,7 @@ LIMIT 25;
 ---
 
 ### 30. Query Performance (MJCs)
+
 ```sql
 EXPLAIN ANALYZE
 SELECT * FROM mjcs
@@ -607,4 +638,3 @@ ORDER BY created_at DESC;
 ## Notes
 
 _Add any issues, warnings, or additional observations here:_
-

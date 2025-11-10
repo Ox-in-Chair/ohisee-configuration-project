@@ -62,6 +62,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
 ### Test Coverage Breakdown
 
 #### NCA Form (18 tests total)
+
 - Required field validation: 3 tests
 - Character counter validation: 3 tests
 - Conditional validation: 3 tests
@@ -71,6 +72,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
 - Form UI/UX: 3 tests
 
 #### MJC Form (17 tests total)
+
 - Required field validation: 3 tests
 - Character counter validation: 2 tests
 - Hygiene checklist: 3 tests
@@ -80,6 +82,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
 - Form UI/UX: 3 tests
 
 #### Cross-Form (3 tests)
+
 - Validation consistency: 3 tests
 
 ---
@@ -89,6 +92,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
 ### NCA Form Test Scenarios
 
 #### ✅ Complete Workflow Tests
+
 1. **Full form submission with valid data**
    - All required fields filled
    - Character counter validated (100+ chars)
@@ -139,6 +143,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
    - Real-time validation feedback
 
 #### ✅ Validation Tests (NCA)
+
 9. Empty form submission blocked
 10. NC product description: 10-500 characters
 11. NC description: 100-2000 characters
@@ -153,6 +158,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
 ### MJC Form Test Scenarios
 
 #### ✅ Complete Workflow Tests
+
 1. **Full form submission with valid data**
    - All required fields filled
    - All 10 hygiene items checked
@@ -216,6 +222,7 @@ Created comprehensive End-to-End (E2E) test suite using **Stagehand** for NCA an
     - Real-time validation feedback
 
 #### ✅ Validation Tests (MJC)
+
 11. Empty form submission blocked
 12. Machine equipment ID required (1-100 chars)
 13. Maintenance description: 100-2000 characters
@@ -462,12 +469,14 @@ const signature = 'MikeJ';
 ### Immediate Actions (To Execute Tests)
 
 1. **Start the development server**
+
    ```bash
    cd C:\Users\mike\projects\OHiSee_Control_of_Non-Conforming_Products\ohisee-reports
    npm run dev
    ```
 
 2. **Run the tests**
+
    ```bash
    npx playwright test tests/e2e/*.stagehand.spec.ts
    ```
@@ -480,6 +489,7 @@ const signature = 'MikeJ';
 ### Future Enhancements
 
 1. **Natural Language Actions** (when ready)
+
    ```typescript
    await stagehand.act("Fill out the NCA form for a raw material defect");
    await stagehand.act("Mark cross-contamination as yes and assign back tracking");
@@ -544,19 +554,23 @@ const signature = 'MikeJ';
 ### Common Issues
 
 **Tests failing due to timeout**
+
 - Increase timeout in playwright.config.ts
 - Check server is running on correct port (3008)
 
 **Character counter not updating**
+
 - Add small delay after filling text fields
 - Verify counter component is properly implemented
 
 **Submit button not enabling**
+
 - Verify all required fields are filled
 - Check form validation logic
 - Use verbose mode to see form state
 
 **Stagehand initialization fails**
+
 - Verify Stagehand is installed: `npm install @browserbasehq/stagehand`
 - Check Node.js version compatibility
 

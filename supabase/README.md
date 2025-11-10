@@ -9,7 +9,9 @@
 ## Migration Files
 
 ### 1. `20251106101800_initial_schema.sql`
+
 **Creates:**
+
 - `users` table with 6 roles (operator → operations-manager)
 - `machines` table with status tracking
 - `work_orders` table with traceability
@@ -17,6 +19,7 @@
 - Trigger function: `update_updated_at()`
 
 **Key Features:**
+
 - UUID primary keys on all tables
 - `created_at` and `updated_at` on all tables
 - Foreign key constraints with `ON DELETE RESTRICT`
@@ -26,7 +29,9 @@
 - WO number format validation (WO-YYYYMMDD-MACHINE-###)
 
 ### 2. `20251106101900_ncas_table.sql`
+
 **Creates:**
+
 - `ncas` table with all 11 sections from BRCGS specification
 - Auto-generated NCA numbers (NCA-YYYY-########)
 - Comprehensive check constraints:
@@ -39,12 +44,15 @@
 - Performance indexes (status, wo_id, machine_status, etc.)
 
 **BRCGS Critical Fields:**
+
 - `machine_status` = 'down' triggers alert
 - `cross_contamination` = true requires back tracking
 - `close_out_signature` required before status = 'closed'
 
 ### 3. `20251106102000_mjcs_table.sql`
+
 **Creates:**
+
 - `mjcs` table with all 11 sections including hygiene checklist
 - Auto-generated MJC numbers (MJC-YYYY-########)
 - Hygiene checklist JSONB array (10 items)
@@ -59,13 +67,16 @@
 - Partial indexes for workflow states (awaiting-clearance, overdue repairs)
 
 **BRCGS Critical Fields:**
+
 - `machine_status` = 'down' + `urgency` = 'critical' triggers alert
 - `hygiene_checklist` must have ALL 10 items verified
 - `hygiene_clearance_signature` QA-only, required before production resume
 - `temporary_repair` = true auto-sets `close_out_due_date` = TODAY + 14 days
 
 ### 4. `20251106102100_audit_trail.sql`
+
 **Creates:**
+
 - `audit_trail` table (immutable, INSERT-only)
 - Function: `log_audit_trail()` generic audit logging
 - Function: `log_machine_down_alert()` specific Machine Down tracking
@@ -73,38 +84,46 @@
 - Triggers on `ncas`, `mjcs`, `work_orders` for automatic audit logging
 
 **Audit Fields:**
+
 - Who: `user_id`, `user_email`, `user_name`, `user_role`
 - What: `action`, `changed_fields`, `old_value`, `new_value`
 - When: `timestamp`
 - Where: `ip_address`, `user_agent`
 
 **BRCGS Compliance:**
+
 - All changes logged automatically (no manual INSERT)
 - Immutable records (no UPDATE/DELETE)
 - IP address tracking for security
 - 3+ year retention required
 
 ### 5. `20251106102200_rls_policies.sql`
+
 **Creates:**
+
 - Row-Level Security policies for all tables
 - Helper functions: `user_has_role()`, `get_user_role()`, `can_close_nca()`, `can_grant_hygiene_clearance()`
 
 **RLS Policies:**
 
 **Users:**
+
 - All authenticated users can view users (for lookups)
 - Only operations-manager can modify users
 
 **Machines:**
+
 - All authenticated users can view machines
 - Only maintenance-manager and operations-manager can modify
 
 **Work Orders:**
+
 - All authenticated users can view work orders
 - Operators can create and update their own active work orders
 - Team leaders and managers can update any work order
 
 **NCAs:**
+
 - Operators can view/edit their own draft NCAs
 - Team leaders can view department NCAs
 - QA/Management can view all NCAs
@@ -112,6 +131,7 @@
 - NO DELETE (BRCGS immutable records)
 
 **MJCs:**
+
 - Operators can view/edit their own draft MJCs
 - Maintenance technicians can view assigned MJCs
 - QA supervisors can view all MJCs
@@ -121,12 +141,15 @@
 - NO DELETE (BRCGS immutable records)
 
 **Audit Trail:**
+
 - All users can view audit trail (read-only)
 - INSERT only via triggers (SECURITY DEFINER)
 - NO UPDATE or DELETE
 
 ### 6. `20251106102300_seed_data.sql`
+
 **Creates:**
+
 - 6 test users (one per role)
 - 3 machines (CMH-01, CMH-02, SLT-01)
 - 3 work orders (1 active, 1 paused, 1 completed)
@@ -188,6 +211,7 @@ psql postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
 Run these queries after applying migrations to verify everything is correct:
 
 ### 1. Verify Tables Created
+
 ```sql
 SELECT table_name
 FROM information_schema.tables
@@ -197,6 +221,7 @@ ORDER BY table_name;
 ```
 
 ### 2. Verify RLS Enabled
+
 ```sql
 SELECT tablename, rowsecurity
 FROM pg_tables
@@ -205,6 +230,7 @@ WHERE schemaname = 'public';
 ```
 
 ### 3. Verify Functions Created
+
 ```sql
 SELECT proname
 FROM pg_proc
@@ -214,6 +240,7 @@ ORDER BY proname;
 ```
 
 ### 4. Verify Triggers Created
+
 ```sql
 SELECT trigger_name, event_object_table, action_timing, event_manipulation
 FROM information_schema.triggers
@@ -223,6 +250,7 @@ ORDER BY event_object_table, trigger_name;
 ```
 
 ### 5. Verify Indexes Created
+
 ```sql
 SELECT tablename, indexname
 FROM pg_indexes
@@ -232,18 +260,21 @@ ORDER BY tablename, indexname;
 ```
 
 ### 6. Test NCA Number Generation
+
 ```sql
 SELECT generate_nca_number();
 -- Should return: NCA-2025-00000001
 ```
 
 ### 7. Test MJC Number Generation
+
 ```sql
 SELECT generate_mjc_number();
 -- Should return: MJC-2025-00000001
 ```
 
 ### 8. Test Hygiene Checklist Validation
+
 ```sql
 SELECT validate_hygiene_checklist('[
   {"item": "Test 1", "verified": true},
@@ -267,6 +298,7 @@ SELECT validate_hygiene_checklist('[
 ```
 
 ### 9. Verify Seed Data (if applied)
+
 ```sql
 SELECT COUNT(*) FROM users; -- Should return 6
 SELECT COUNT(*) FROM machines; -- Should return 3
@@ -276,6 +308,7 @@ SELECT COUNT(*) FROM mjcs; -- Should return 1
 ```
 
 ### 10. Test RLS Policies (requires authentication)
+
 ```sql
 -- As operator, should only see own NCAs
 SET LOCAL role authenticated;
@@ -292,18 +325,23 @@ SELECT COUNT(*) FROM ncas; -- Should return all NCAs
 ## Common Issues
 
 ### Issue: RLS policies blocking queries
+
 **Solution:** Ensure you're calling Supabase functions from authenticated context (auth.uid() must return valid user)
 
 ### Issue: Foreign key constraint violations
+
 **Solution:** Insert parent records first (users, machines, work_orders) before child records (ncas, mjcs)
 
 ### Issue: Check constraint violations
+
 **Solution:** Verify data matches enum values (e.g., role must be one of 6 allowed values)
 
 ### Issue: Sequence not resetting annually
+
 **Solution:** NCA/MJC number functions check for existing records and reset sequence automatically
 
 ### Issue: Hygiene clearance blocked
+
 **Solution:** Ensure ALL 10 hygiene checklist items have `verified: true` before attempting clearance
 
 ---
@@ -313,6 +351,7 @@ SELECT COUNT(*) FROM ncas; -- Should return all NCAs
 **IMPORTANT:** Supabase does not support automatic rollback. Create manual down migrations if needed.
 
 ### Example Rollback (20251106102300_seed_data.sql)
+
 ```sql
 -- Remove seed data
 DELETE FROM ncas WHERE id = '40000000-0000-0000-0000-000000000001';
@@ -331,6 +370,7 @@ DELETE FROM users WHERE id LIKE '10000000-0000-0000-0000-%';
 ```
 
 ### Full Schema Rollback (DESTRUCTIVE - Use with caution)
+
 ```sql
 -- Drop all tables (cascades to dependent objects)
 DROP TABLE IF EXISTS audit_trail CASCADE;
@@ -363,6 +403,7 @@ DROP SEQUENCE IF EXISTS mjc_number_seq CASCADE;
 ## Architecture Notes
 
 ### Dependency Injection (NO STATIC CALLS)
+
 All database operations MUST use injected Supabase client:
 
 ```typescript
@@ -379,11 +420,13 @@ export async function getNCA(id: string) {
 ```
 
 ### Server Components vs Client Components
+
 - **Server Components:** Fetch data server-side using service role client
 - **Client Components:** Use client-side Supabase client via context
 - **Server Actions:** Use service role client for mutations with proper validation
 
 ### RLS Enforcement
+
 - RLS enforced at database level (NEVER trust client)
 - All policies use `auth.uid()` for current user
 - Service role bypasses RLS (use with caution)
@@ -393,6 +436,6 @@ export async function getNCA(id: string) {
 ## Support
 
 **Database Administrator:** David Wilson (Operations Manager)
-**Email:** david.wilson@kangopak.com
+**Email:** <david.wilson@kangopak.com>
 **Supabase Project:** ohisee-nca-mjc (South Africa region)
 **BRCGS Compliance Officer:** Sarah Williams (QA Supervisor)
