@@ -144,8 +144,8 @@ export async function createNCA(
     const supabase = createServerClient();
 
     // TODO: Get real user ID from auth session
-    // For now, using hardcoded test user
-    const userId = '00000000-0000-0000-0000-000000000001';
+    // For now, using seed data operator user (John Smith)
+    const userId = '10000000-0000-0000-0000-000000000001';
 
     // Transform form data to database format
     const ncaData = transformFormDataToInsert(formData, userId);
@@ -200,7 +200,7 @@ export async function saveDraftNCA(
 ): Promise<ActionResponse<{ id: string; nca_number: string }>> {
   try {
     const supabase = createServerClient();
-    const userId = '00000000-0000-0000-0000-000000000001'; // TODO: Get from auth
+    const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth (using seed operator for now)
 
     const now = new Date();
     const dateString = now.toISOString().split('T')[0];

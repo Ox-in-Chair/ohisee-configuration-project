@@ -166,8 +166,9 @@ function transformFormDataToInsert(
       : null,
     hygiene_clearance_at: formData.production_cleared ? new Date().toISOString() : null,
 
-    // Status - default to open if not cleared, closed if cleared
-    status: formData.production_cleared ? 'closed' : 'open',
+    // Status - always 'open' on initial submission
+    // Use grantHygieneClearance() to move to 'closed' status with proper validation
+    status: 'open',
   };
 }
 
@@ -221,7 +222,8 @@ export async function createMJC(
     const supabase = createServerClient();
 
     // TODO: Get real user ID from auth session
-    const userId = '00000000-0000-0000-0000-000000000001';
+    // For now, using seed data operator user (John Smith)
+    const userId = '10000000-0000-0000-0000-000000000001';
 
     // Transform form data to database format
     const mjcData = transformFormDataToInsert(formData, userId);
@@ -276,7 +278,7 @@ export async function saveDraftMJC(
 ): Promise<ActionResponse<{ id: string; job_card_number: string }>> {
   try {
     const supabase = createServerClient();
-    const userId = '00000000-0000-0000-0000-000000000001'; // TODO: Get from auth
+    const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth (using seed operator for now)
 
     const now = new Date();
     const dateString = now.toISOString().split('T')[0];
