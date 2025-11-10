@@ -15,13 +15,6 @@ import { createNCA, saveDraftNCA } from '@/app/actions/nca-actions';
 import { FileUpload } from '@/components/file-upload';
 import { uploadNCAFile, listNCAFiles, deleteNCAFile } from '@/app/actions/file-actions';
 
-// AI Integration imports
-import { AIEnhancedTextarea } from '@/components/ai-enhanced-textarea';
-import { AIAssistantModal } from '@/components/ai-assistant-modal';
-import { QualityGateModal } from '@/components/quality-gate-modal';
-import { useAIQuality } from '@/hooks/useAIQuality';
-import type { Suggestion } from '@/lib/ai/types';
-
 /**
  * Character counter component with color-coded status
  */
@@ -52,8 +45,8 @@ function CharacterCounter({
 }
 
 /**
- * NCA Form Page Component - AI Integrated
- * Production-ready with AI quality checks and suggestions
+ * NCA Form Page Component
+ * Production-ready with full validation, TypeScript typing, and BRCGS compliance
  */
 export default function NewNCAPage(): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,13 +54,6 @@ export default function NewNCAPage(): React.ReactElement {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ncaNumber, setNcaNumber] = useState<string | null>(null);
   const [ncaId, setNcaId] = useState<string | null>(null);
-  const [isConfidential, setIsConfidential] = useState(false);
-
-  // AI Integration State
-  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
-  const [showQualityGate, setShowQualityGate] = useState(false);
-  const [currentSuggestion, setCurrentSuggestion] = useState<Suggestion | null>(null);
-  const [currentFieldForSuggestion, setCurrentFieldForSuggestion] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -79,7 +65,7 @@ export default function NewNCAPage(): React.ReactElement {
     reset,
   } = useForm<NCAFormData>({
     resolver: zodResolver(ncaFormSchema) as any,
-    mode: 'onChange',
+    mode: 'onChange', // Real-time validation
     defaultValues: {
       date: new Date().toLocaleDateString(),
       nca_number: 'NCA-AUTO-GENERATED',
@@ -95,165 +81,53 @@ export default function NewNCAPage(): React.ReactElement {
     },
   });
 
-  // Initialize AI Quality Hook
-  const aiQuality = useAIQuality({
-    formType: 'nca',
-    userId: 'current-user-id', // TODO: Get from auth
-    debounceMs: 3000, // Check quality 3 seconds after user stops typing
-  });
-
-  // Watch form fields
+  // Watch form fields for conditional rendering
   const machineStatus = watch('machine_status');
   const crossContamination = watch('cross_contamination');
   const dispositionAction = watch('disposition_action');
   const ncDescription = watch('nc_description') || '';
   const ncProductDescription = watch('nc_product_description') || '';
-  const rootCauseAnalysis = watch('root_cause_analysis') || '';
-  const correctiveAction = watch('corrective_action') || '';
 
-  // Trigger inline quality checks when fields change
-  const handleFieldChange = useCallback(
-    (fieldName: string, value: string) => {
-      setValue(fieldName as any, value);
+  // Character counter status calculation
+  const descriptionCounterStatus = useMemo(() => {
+    if (ncDescription.length >= 100) return 'success';
+    if (ncDescription.length >= 50) return 'warning';
+    return 'error';
+  }, [ncDescription.length]);
 
-      // Trigger AI quality check for critical fields
-      if (['nc_description', 'root_cause_analysis', 'corrective_action'].includes(fieldName)) {
-        const formData = watch();
-        aiQuality.checkQualityInline({
-          ...formData,
-          [fieldName]: value,
-        } as any);
-      }
-    },
-    [setValue, watch, aiQuality]
-  );
+  // Form submission handler
+  const onSubmit = useCallback(async (data: NCAFormData) => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
 
-  // Handle AI suggestion request
-  const handleAIHelp = useCallback(
-    async (fieldName: string) => {
-      setCurrentFieldForSuggestion(fieldName);
-      setShowSuggestionModal(true);
+    try {
+      // Call Server Action to submit NCA
+      const response = await createNCA(data);
 
-      const formData = watch();
-      await aiQuality.generateSuggestion(formData as any);
-
-      if (aiQuality.suggestions) {
-        setCurrentSuggestion(aiQuality.suggestions);
-      }
-    },
-    [watch, aiQuality]
-  );
-
-  // Handle accepting AI suggestion
-  const handleAcceptSuggestion = useCallback(
-    (suggestionText: string) => {
-      if (currentFieldForSuggestion && currentSuggestion) {
-        setValue(currentFieldForSuggestion as any, suggestionText);
-
-        // Record suggestion acceptance
-        aiQuality.acceptSuggestion(
-          currentSuggestion,
-          currentFieldForSuggestion,
-          suggestionText
-        );
+      if (!response.success) {
+        setSubmitError(response.error || 'Failed to submit NCA');
+        return;
       }
 
-      setShowSuggestionModal(false);
-      setCurrentSuggestion(null);
-      setCurrentFieldForSuggestion(null);
-    },
-    [currentFieldForSuggestion, currentSuggestion, setValue, aiQuality]
-  );
+      // Success!
+      setSubmitSuccess(true);
+      setNcaNumber(response.data?.nca_number || null);
+      setNcaId(response.data?.id || null);
+      // Don't reset form - allow file uploads after submission
 
-  // Handle rejecting AI suggestion
-  const handleRejectSuggestion = useCallback(() => {
-    setShowSuggestionModal(false);
-    setCurrentSuggestion(null);
-    setCurrentFieldForSuggestion(null);
-  }, []);
-
-  // Form submission handler with AI quality gate
-  const onSubmit = useCallback(
-    async (data: NCAFormData) => {
-      setIsSubmitting(true);
-      setSubmitError(null);
-      setSubmitSuccess(false);
-
-      try {
-        // Step 1: Run AI validation (quality gate)
-        const validation = await aiQuality.validateBeforeSubmit(data as any, isConfidential);
-
-        if (!validation.success) {
-          setSubmitError(validation.error || 'Validation failed');
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Step 2: Check if quality gate passed
-        if (
-          validation.data &&
-          !validation.data.ready_for_submission &&
-          !isConfidential
-        ) {
-          // Quality score < 75 - show quality gate modal
-          setShowQualityGate(true);
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Step 3: Quality passed or confidential - proceed with submission
-        const response = await createNCA(data);
-
-        if (!response.success) {
-          setSubmitError(response.error || 'Failed to submit NCA');
-          return;
-        }
-
-        // Success!
-        setSubmitSuccess(true);
-        setNcaNumber(response.data?.nca_number || null);
-        setNcaId(response.data?.id || null);
-
-        // Reset success message after 5 seconds
-        setTimeout(() => {
-          setSubmitSuccess(false);
-          setNcaNumber(null);
-        }, 5000);
-      } catch (error) {
-        console.error('Unexpected submission error:', error);
-        setSubmitError(
-          error instanceof Error ? error.message : 'An unexpected error occurred'
-        );
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [aiQuality, isConfidential]
-  );
-
-  // Handle quality gate "Go Back" button
-  const handleQualityGateGoBack = useCallback(() => {
-    setShowQualityGate(false);
-  }, []);
-
-  // Handle quality gate "Submit Anyway" (supervisor override)
-  const handleQualityGateSubmitAnyway = useCallback(async () => {
-    // TODO: Implement supervisor override logic
-    // For now, just close modal and allow submission
-    setShowQualityGate(false);
-
-    const data = watch();
-    const response = await createNCA(data);
-
-    if (!response.success) {
-      setSubmitError(response.error || 'Failed to submit NCA');
-      return;
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setNcaNumber(null);
+      }, 5000);
+    } catch (error) {
+      console.error('Unexpected submission error:', error);
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setSubmitSuccess(true);
-    setNcaNumber(response.data?.nca_number || null);
-    setNcaId(response.data?.id || null);
-  }, [watch]);
+  }, [reset]);
 
   // Draft save handler
   const onSaveDraft = useCallback(async () => {
@@ -261,7 +135,10 @@ export default function NewNCAPage(): React.ReactElement {
     setSubmitError(null);
 
     try {
+      // Get current form data
       const formData = watch();
+
+      // Call Server Action to save draft
       const response = await saveDraftNCA(formData);
 
       if (!response.success) {
@@ -269,18 +146,18 @@ export default function NewNCAPage(): React.ReactElement {
         return;
       }
 
+      // Success!
       setSubmitSuccess(true);
       setNcaNumber(response.data?.nca_number || null);
 
+      // Reset success message after 3 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
         setNcaNumber(null);
       }, 3000);
     } catch (error) {
       console.error('Unexpected error saving draft:', error);
-      setSubmitError(
-        error instanceof Error ? error.message : 'An unexpected error occurred'
-      );
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -349,18 +226,6 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('wo_number')}
               />
             </div>
-            {/* Confidential Report Checkbox */}
-            <div className="col-span-2 flex items-center space-x-2">
-              <Checkbox
-                id="confidential-report"
-                data-testid="confidential-report"
-                checked={isConfidential}
-                onCheckedChange={(checked) => setIsConfidential(Boolean(checked))}
-              />
-              <Label htmlFor="confidential-report" className="text-sm">
-                Confidential Report (BRCGS 1.1.3 - bypasses quality gate)
-              </Label>
-            </div>
           </CardContent>
         </Card>
 
@@ -394,7 +259,11 @@ export default function NewNCAPage(): React.ReactElement {
                 <Label htmlFor="finished-goods">Finished Goods</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="wip" id="wip" data-testid="nc-type-wip" />
+                <RadioGroupItem
+                  value="wip"
+                  id="wip"
+                  data-testid="nc-type-wip"
+                />
                 <Label htmlFor="wip">WIP</Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -406,7 +275,11 @@ export default function NewNCAPage(): React.ReactElement {
                 <Label htmlFor="incident">Incident</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="other" id="other" data-testid="nc-type-other" />
+                <RadioGroupItem
+                  value="other"
+                  id="other"
+                  data-testid="nc-type-other"
+                />
                 <Label htmlFor="other">Other</Label>
               </div>
             </RadioGroup>
@@ -464,29 +337,32 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 4: NC Description - AI ENHANCED */}
+        {/* Section 4: NC Description */}
         <Card data-testid="nca-section-4" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 4: NC Description (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 4: NC Description</CardTitle>
           </CardHeader>
           <CardContent>
-            <AIEnhancedTextarea
-              label="Description"
-              value={ncDescription}
-              onChange={(value) => handleFieldChange('nc_description', value)}
-              onAIHelp={() => handleAIHelp('nc_description')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
-              showQualityBadge={true}
-              minLength={100}
-              maxLength={2000}
-              rows={5}
-              required={true}
-              placeholder="Describe what went wrong, when, where, and impact..."
-              data-testid="nc-description-ai"
-              error={errors.nc_description?.message}
-            />
+            <div>
+              <Label>Description (minimum 100 characters)</Label>
+              <Textarea
+                data-testid="nc-description"
+                rows={5}
+                {...register('nc_description')}
+              />
+              <div data-testid="nc-description-char-count">
+                <CharacterCounter
+                  current={ncDescription.length}
+                  minimum={100}
+                  maximum={2000}
+                />
+              </div>
+              {errors.nc_description && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.nc_description.message}
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -529,11 +405,15 @@ export default function NewNCAPage(): React.ReactElement {
               </p>
             )}
 
+            {/* Conditional fields when machine is down */}
             {machineStatus === 'down' && (
               <div className="mt-4 space-y-4 border-l-4 border-red-500 pl-4">
                 <div>
                   <Label>Machine Down Since</Label>
-                  <Input type="datetime-local" {...register('machine_down_since')} />
+                  <Input
+                    type="datetime-local"
+                    {...register('machine_down_since')}
+                  />
                   {errors.machine_down_since && (
                     <p className="text-red-600 text-sm mt-1">
                       {errors.machine_down_since.message}
@@ -616,10 +496,14 @@ export default function NewNCAPage(): React.ReactElement {
               </RadioGroup>
             </div>
 
+            {/* Conditional field when cross-contamination is YES */}
             {crossContamination && (
               <div className="border-l-4 border-yellow-500 pl-4">
                 <Label>Back Tracking Person *</Label>
-                <Input type="text" {...register('back_tracking_person')} />
+                <Input
+                  type="text"
+                  {...register('back_tracking_person')}
+                />
                 {errors.back_tracking_person && (
                   <p className="text-red-600 text-sm mt-1">
                     {errors.back_tracking_person.message}
@@ -642,7 +526,9 @@ export default function NewNCAPage(): React.ReactElement {
               <Checkbox
                 id="nca-logged"
                 data-testid="nca-logged"
-                onCheckedChange={(checked) => setValue('nca_logged', Boolean(checked))}
+                onCheckedChange={(checked) =>
+                  setValue('nca_logged', Boolean(checked))
+                }
               />
               <Label htmlFor="nca-logged">NCA Logged</Label>
             </div>
@@ -717,6 +603,7 @@ export default function NewNCAPage(): React.ReactElement {
               </RadioGroup>
             </div>
 
+            {/* Conditional field when rework is selected */}
             {dispositionAction === 'rework' && (
               <div className="border-l-4 border-blue-500 pl-4">
                 <Label>Rework Instruction *</Label>
@@ -751,27 +638,20 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 9: Root Cause Analysis - AI ENHANCED */}
+        {/* Section 9: Root Cause Analysis */}
         <Card data-testid="nca-section-9" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 9: Root Cause Analysis (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 9: Root Cause Analysis</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <AIEnhancedTextarea
-              label="Root Cause Analysis"
-              value={rootCauseAnalysis}
-              onChange={(value) => handleFieldChange('root_cause_analysis', value)}
-              onAIHelp={() => handleAIHelp('root_cause_analysis')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
-              showQualityBadge={true}
-              minLength={50}
-              maxLength={2000}
-              rows={5}
-              placeholder="Use 5 Whys method to identify the root cause..."
-              data-testid="root-cause-analysis-ai"
-            />
+            <div>
+              <Label>Root Cause Analysis</Label>
+              <Textarea
+                data-testid="root-cause-analysis"
+                rows={5}
+                {...register('root_cause_analysis')}
+              />
+            </div>
             <FileUpload
               entityId={ncaId}
               uploadType="nca"
@@ -785,27 +665,20 @@ export default function NewNCAPage(): React.ReactElement {
           </CardContent>
         </Card>
 
-        {/* Section 10: Corrective Action - AI ENHANCED */}
+        {/* Section 10: Corrective Action */}
         <Card data-testid="nca-section-10" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 10: Corrective Action (AI-Enhanced)</CardTitle>
+            <CardTitle>Section 10: Corrective Action</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <AIEnhancedTextarea
-              label="Corrective Action"
-              value={correctiveAction}
-              onChange={(value) => handleFieldChange('corrective_action', value)}
-              onAIHelp={() => handleAIHelp('corrective_action')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
-              showQualityBadge={true}
-              minLength={50}
-              maxLength={2000}
-              rows={5}
-              placeholder="What actions will prevent recurrence? Be specific and measurable..."
-              data-testid="corrective-action-ai"
-            />
+            <div>
+              <Label>Corrective Action</Label>
+              <Textarea
+                data-testid="corrective-action"
+                rows={5}
+                {...register('corrective_action')}
+              />
+            </div>
             <FileUpload
               entityId={ncaId}
               uploadType="nca"
@@ -881,28 +754,6 @@ export default function NewNCAPage(): React.ReactElement {
           </Button>
         </div>
       </form>
-
-      {/* AI Assistant Modal (for suggestions) */}
-      <AIAssistantModal
-        isOpen={showSuggestionModal}
-        onClose={() => setShowSuggestionModal(false)}
-        onAccept={handleAcceptSuggestion}
-        onReject={handleRejectSuggestion}
-        suggestion={currentSuggestion}
-        isLoading={aiQuality.isSuggesting}
-      />
-
-      {/* Quality Gate Modal (pre-submission validation) */}
-      <QualityGateModal
-        isOpen={showQualityGate}
-        onClose={() => setShowQualityGate(false)}
-        onGoBack={handleQualityGateGoBack}
-        onSubmitAnyway={handleQualityGateSubmitAnyway}
-        validationResult={aiQuality.validationResult}
-        requiresSupervisorOverride={
-          (aiQuality.validationResult?.quality_assessment.score ?? 0) < 75
-        }
-      />
     </div>
   );
 }

@@ -70,8 +70,8 @@ async function runTestFile(testFile: string): Promise<TestResult> {
         const result = await fetch(`${SUPABASE_URL}/rest/v1/rpc/query`, {
           method: 'POST',
           headers: {
-            'apikey': SUPABASE_SERVICE_ROLE_KEY,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY!}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ query: testSQL })

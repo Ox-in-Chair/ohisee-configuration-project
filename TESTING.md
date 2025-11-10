@@ -32,24 +32,28 @@ Complete testing documentation for the BRCGS-compliant Non-Conformance Advice (N
 ### BRCGS Critical Controls Tested
 
 ✅ **MJC (Maintenance Job Cards)**
+
 - 10-item hygiene checklist (ALL must be verified)
 - QA-only hygiene clearance signature
 - 14-day temporary repair deadline auto-calculation
 - Machine down alerts (critical + down status)
 
 ✅ **NCA (Non-Conformance Advices)**
+
 - 100-character minimum description
 - Cross-contamination back tracking (FOOD SAFETY)
 - Rework disposition requires instruction
 - QA/Management-only close-out authorization
 
 ✅ **Audit Trail**
+
 - WHO: user_id, email, role
 - WHAT: entity, action, changed_fields
 - WHEN: immutable timestamps
 - WHERE: IP address
 
 ✅ **Row-Level Security**
+
 - Operators: Create own, view own, cannot close
 - QA Supervisors: Hygiene clearance (MJC), close NCAs
 - All roles: DELETE blocked (immutable records)
@@ -80,6 +84,7 @@ Complete testing documentation for the BRCGS-compliant Non-Conformance Advice (N
 ### Prerequisites
 
 1. **Environment Setup**
+
    ```bash
    # Copy environment template
    cp .env.example .env.local
@@ -90,11 +95,13 @@ Complete testing documentation for the BRCGS-compliant Non-Conformance Advice (N
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install --legacy-peer-deps
    ```
 
 3. **Apply Migrations**
+
    ```bash
    # Using Supabase CLI
    supabase db reset
@@ -313,6 +320,7 @@ await cleanupTestData(supabase, {
 ### Coverage Requirements
 
 Integration tests must maintain **80% coverage** across:
+
 - Branches
 - Functions
 - Lines
@@ -335,16 +343,19 @@ open coverage/lcov-report/index.html
 **Target: 100% of critical paths**
 
 ✅ **Schema Coverage**
+
 - All tables, columns, indexes
 - All constraints (CHECK, FK, UNIQUE, NOT NULL)
 - All triggers and functions
 
 ✅ **RLS Coverage**
+
 - All policies for all roles
 - Positive tests (should succeed)
 - Negative tests (should fail)
 
 ✅ **Business Logic Coverage**
+
 - Auto-numbering sequences
 - Workflow state transitions
 - BRCGS critical controls
@@ -354,6 +365,7 @@ open coverage/lcov-report/index.html
 **Target: 80% minimum**
 
 Current coverage:
+
 ```
 -----------------------------|---------|----------|---------|---------|
 File                         | % Stmts | % Branch | % Funcs | % Lines |
@@ -394,18 +406,22 @@ See [BRCGS_COMPLIANCE_MAPPING.md](./BRCGS_COMPLIANCE_MAPPING.md) for detailed ma
 ### Critical Controls
 
 **Hygiene Clearance (BRCGS 5.7)**
+
 - Tests: 05_triggers_mjc.test.sql (Tests 7-8), 07_rls_mjc.test.sql (Tests 4-8)
 - Validates: Only QA supervisors can grant clearance, all 10 items must be verified
 
 **Cross-Contamination Tracking (BRCGS 5.7)**
+
 - Tests: 04_constraints_nca.test.sql (Tests 3.1-3.4), nca-workflow.test.ts (Tests 3.1-3.6)
 - Validates: Back tracking required if contamination detected, cannot bypass
 
 **Immutable Records (BRCGS 3.9)**
+
 - Tests: 07_rls_mjc.test.sql (Tests 17-19), 08_rls_nca.test.sql (Tests 10-11)
 - Validates: No role can DELETE records, audit trail preserved
 
 **Audit Trail (BRCGS 3.9)**
+
 - Tests: 09_audit_trail.test.sql (all 65 tests)
 - Validates: WHO, WHAT, WHEN, WHERE tracked for all changes
 
@@ -483,6 +499,7 @@ npm run lint
 ```
 
 Install husky:
+
 ```bash
 npm install --save-dev husky
 npx husky install
@@ -497,6 +514,7 @@ npx husky install
 #### 1. "Missing Supabase credentials"
 
 **Error:**
+
 ```
 Error: Missing required environment variables:
   NEXT_PUBLIC_SUPABASE_URL: ✗
@@ -504,6 +522,7 @@ Error: Missing required environment variables:
 ```
 
 **Solution:**
+
 ```bash
 # Create .env.local with credentials
 cp .env.example .env.local
@@ -516,11 +535,13 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...your-key
 #### 2. "pgTAP extension not found"
 
 **Error:**
+
 ```
 ERROR:  extension "pgtap" does not exist
 ```
 
 **Solution:**
+
 ```bash
 # Apply pgTAP migration
 supabase migration up
@@ -532,12 +553,14 @@ CREATE EXTENSION IF NOT EXISTS pgtap;
 #### 3. "RLS policy blocks test operations"
 
 **Error:**
+
 ```
 Error: new row violates row-level security policy for table "mjcs"
 ```
 
 **Solution:**
 Use service role key (bypasses RLS):
+
 ```typescript
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -549,11 +572,13 @@ const supabase = createClient(
 #### 4. "Test timeout exceeded"
 
 **Error:**
+
 ```
 Timeout - Async callback was not invoked within the 5000 ms timeout
 ```
 
 **Solution:**
+
 ```typescript
 // In jest.config.js
 module.exports = {
@@ -570,12 +595,14 @@ it('slow test', async () => {
 #### 5. "Foreign key constraint violation"
 
 **Error:**
+
 ```
 ERROR:  insert or update on table "mjcs" violates foreign key constraint
 ```
 
 **Solution:**
 Create dependencies in correct order:
+
 ```typescript
 // 1. Users
 const user = await createTestUser(supabase, 'operator');
@@ -596,6 +623,7 @@ const mjc = await createTestMJC(supabase, user.id, { woId: wo.id });
 ### Debug Mode
 
 **Jest Integration Tests:**
+
 ```bash
 # Enable debug output
 DEBUG=* npm run test:integration
@@ -607,6 +635,7 @@ node --inspect-brk node_modules/.bin/jest --runInBand
 ```
 
 **pgTAP Tests:**
+
 ```bash
 # Verbose output
 supabase test db --verbose
@@ -626,6 +655,7 @@ If tests are slow:
 2. **Reduce test data size** (minimum viable data)
 3. **Parallelize independent tests** (Jest default)
 4. **Skip slow tests during development**:
+
    ```typescript
    it.skip('slow integration test', async () => {
      // ...
@@ -637,7 +667,7 @@ If tests are slow:
 1. **Check logs**: `tests/test-results/` and `coverage/`
 2. **Review README**: `tests/integration/README.md`
 3. **Check implementation notes**: `tests/integration/IMPLEMENTATION_NOTES.md`
-4. **Supabase status**: https://status.supabase.com/
+4. **Supabase status**: <https://status.supabase.com/>
 5. **GitHub issues**: Submit issue with error log and test file
 
 ---
