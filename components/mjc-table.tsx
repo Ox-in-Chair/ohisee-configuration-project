@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,24 +38,52 @@ import {
 interface MJCTableProps {
   data: MJCTableData[];
   isLoading?: boolean;
+  total?: number;
+  currentPage?: number;
+  totalPages?: number;
+  initialStatus?: string;
+  initialUrgency?: string;
+  initialSearch?: string;
+  initialSort?: string;
+  initialSortDir?: 'asc' | 'desc';
 }
 
 /**
  * MJC Table with advanced filtering, sorting, and search
  * All features implemented with React hooks and TypeScript
+ * Server-side pagination with URL parameter sync
  */
-export function MJCTable({ data, isLoading = false }: MJCTableProps) {
+export function MJCTable({
+  data,
+  isLoading = false,
+  total,
+  currentPage: initialPage = 1,
+  totalPages: initialTotalPages = 1,
+  initialStatus = 'all',
+  initialUrgency = 'all',
+  initialSearch = '',
+  initialSort = 'created_at',
+  initialSortDir = 'desc',
+}: MJCTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Filter state management using React hooks
-  const [filterState, setFilterState] = useState<MJCFilterState>(defaultMJCFilterState);
+  // Filter state management (initialize from URL params)
+  const [filterState, setFilterState] = useState<MJCFilterState>({
+    ...defaultMJCFilterState,
+    status: (initialStatus as MJCStatus) || 'all',
+    urgency: (initialUrgency as MJCUrgencyLevel) || 'all',
+    searchQuery: initialSearch || '',
+    sortField: (initialSort as MJCSortField) || 'created_at',
+    sortDirection: initialSortDir || 'desc',
+  });
 
   // Debounced search state
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pagination state (initialize from URL params)
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const itemsPerPage = 25;
 
   // Handle row click navigation
@@ -63,164 +91,100 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
     router.push(`/mjc/${mjcId}`);
   }, [router]);
 
-  // Debounce search input (300ms)
+  // Debounce search input (300ms) and update URL
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchInput);
       setFilterState((prev) => ({ ...prev, searchQuery: searchInput }));
+      updateURLParams({ search: searchInput, page: 1 });
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, updateURLParams]);
 
-  // Filter function - client-side filtering
-  const filteredData = useMemo(() => {
-    let result = [...data];
+  // Use server-side paginated data (no client-side filtering needed)
+  const paginatedData = data;
+  const totalPages = initialTotalPages;
+  const totalCount = total || data.length;
 
-    // Apply search filter across multiple fields
-    if (filterState.searchQuery) {
-      const query = filterState.searchQuery.toLowerCase();
-      result = result.filter(
-        (mjc) =>
-          mjc.mjc_number.toLowerCase().includes(query) ||
-          mjc.machine_equipment_id.toLowerCase().includes(query) ||
-          mjc.maintenance_description.toLowerCase().includes(query)
-      );
-    }
+  // Filter handlers (update URL params)
+  const handleStatusChange = useCallback(
+    (value: string) => {
+      setFilterState((prev) => ({
+        ...prev,
+        status: value === 'all' ? null : (value as MJCStatus),
+      }));
+      updateURLParams({ status: value, page: 1 });
+    },
+    [updateURLParams]
+  );
 
-    // Apply status filter
-    if (filterState.status) {
-      result = result.filter((mjc) => mjc.status === filterState.status);
-    }
+  const handleUrgencyChange = useCallback(
+    (value: string) => {
+      setFilterState((prev) => ({
+        ...prev,
+        urgency: value === 'all' ? null : (value as MJCUrgencyLevel),
+      }));
+      updateURLParams({ urgency: value, page: 1 });
+    },
+    [updateURLParams]
+  );
 
-    // Apply urgency filter
-    if (filterState.urgency) {
-      result = result.filter((mjc) => mjc.urgency_level === filterState.urgency);
-    }
+  const handleMaintenanceTypeChange = useCallback(
+    (value: string) => {
+      setFilterState((prev) => ({
+        ...prev,
+        maintenanceType: value === 'all' ? null : (value as MJCMaintenanceType),
+      }));
+      updateURLParams({ page: 1 });
+    },
+    [updateURLParams]
+  );
 
-    // Apply maintenance type filter
-    if (filterState.maintenanceType) {
-      result = result.filter((mjc) => mjc.maintenance_type === filterState.maintenanceType);
-    }
+  const handleMachineStatusChange = useCallback(
+    (value: string) => {
+      setFilterState((prev) => ({
+        ...prev,
+        machineStatus: value === 'all' ? null : (value as MJCMachineStatus),
+      }));
+      updateURLParams({ page: 1 });
+    },
+    [updateURLParams]
+  );
 
-    // Apply machine status filter
-    if (filterState.machineStatus) {
-      result = result.filter((mjc) => mjc.machine_status === filterState.machineStatus);
-    }
+  const handleTemporaryRepairToggle = useCallback(
+    (checked: boolean) => {
+      setFilterState((prev) => ({
+        ...prev,
+        temporaryRepairOnly: checked,
+      }));
+      updateURLParams({ page: 1 });
+    },
+    [updateURLParams]
+  );
 
-    // Apply temporary repair filter
-    if (filterState.temporaryRepairOnly) {
-      result = result.filter((mjc) => mjc.temporary_repair === 'yes');
-    }
-
-    return result;
-  }, [data, filterState]);
-
-  // Sort function
-  const sortedData = useMemo(() => {
-    const result = [...filteredData];
-
-    result.sort((a, b) => {
-      let comparison = 0;
-
-      switch (filterState.sortField) {
-        case 'created_at':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-        case 'mjc_number':
-          comparison = a.mjc_number.localeCompare(b.mjc_number);
-          break;
-        case 'urgency_level':
-          const urgencyOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-          comparison = urgencyOrder[a.urgency_level] - urgencyOrder[b.urgency_level];
-          break;
-        case 'status':
-          comparison = a.status.localeCompare(b.status);
-          break;
-        default:
-          comparison = 0;
-      }
-
-      return filterState.sortDirection === 'asc' ? comparison : -comparison;
-    });
-
-    return result;
-  }, [filteredData, filterState.sortField, filterState.sortDirection]);
-
-  /**
-   * Calculate pagination
-   */
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedData = useMemo(() => {
-    return sortedData.slice(startIndex, endIndex);
-  }, [sortedData, startIndex, endIndex]);
-
-  /**
-   * Reset to page 1 when filters change
-   */
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    filterState.status,
-    filterState.urgency,
-    filterState.maintenanceType,
-    filterState.machineStatus,
-    filterState.temporaryRepairOnly,
-    filterState.searchQuery,
-  ]);
-
-  // Filter handlers
-  const handleStatusChange = useCallback((value: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      status: value === 'all' ? null : (value as MJCStatus),
-    }));
-  }, []);
-
-  const handleUrgencyChange = useCallback((value: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      urgency: value === 'all' ? null : (value as MJCUrgencyLevel),
-    }));
-  }, []);
-
-  const handleMaintenanceTypeChange = useCallback((value: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      maintenanceType: value === 'all' ? null : (value as MJCMaintenanceType),
-    }));
-  }, []);
-
-  const handleMachineStatusChange = useCallback((value: string) => {
-    setFilterState((prev) => ({
-      ...prev,
-      machineStatus: value === 'all' ? null : (value as MJCMachineStatus),
-    }));
-  }, []);
-
-  const handleTemporaryRepairToggle = useCallback((checked: boolean) => {
-    setFilterState((prev) => ({
-      ...prev,
-      temporaryRepairOnly: checked,
-    }));
-  }, []);
-
-  const handleSort = useCallback((field: MJCSortField) => {
-    setFilterState((prev) => ({
-      ...prev,
-      sortField: field,
-      sortDirection:
-        prev.sortField === field && prev.sortDirection === 'asc' ? 'desc' : 'asc',
-    }));
-  }, []);
+  const handleSort = useCallback(
+    (field: MJCSortField) => {
+      setFilterState((prev) => {
+        const newDirection =
+          prev.sortField === field && prev.sortDirection === 'asc' ? 'desc' : 'asc';
+        updateURLParams({ sort: field, sortDir: newDirection });
+        return {
+          ...prev,
+          sortField: field,
+          sortDirection: newDirection,
+        };
+      });
+    },
+    [updateURLParams]
+  );
 
   const handleClearFilters = useCallback(() => {
     setFilterState(defaultMJCFilterState);
     setSearchInput('');
     setDebouncedSearch('');
-  }, []);
+    updateURLParams({ status: 'all', urgency: 'all', search: '', page: 1 });
+  }, [updateURLParams]);
 
   // Helper function to get urgency badge color
   const getUrgencyColor = (urgency: MJCUrgencyLevel): string => {
@@ -401,11 +365,10 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          {sortedData.length > 0 ? (
+          {totalCount > 0 ? (
             <>
-              Showing {startIndex + 1} to {Math.min(endIndex, sortedData.length)} of {sortedData.length} MJC
-              {sortedData.length !== 1 ? 's' : ''}
-              {sortedData.length !== data.length && ` (filtered from ${data.length} total)`}
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} MJC
+              {totalCount !== 1 ? 's' : ''}
             </>
           ) : (
             <>No MJCs found</>
@@ -562,15 +525,15 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            {sortedData.length > 0 && (
-              <>Showing {startIndex + 1} to {Math.min(endIndex, sortedData.length)} of {sortedData.length}</>
+            {totalCount > 0 && (
+              <>Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}</>
             )}
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => updateURLParams({ page: Math.max(1, currentPage - 1) })}
               disabled={currentPage === 1}
               data-testid="mjc-pagination-prev"
             >
@@ -597,7 +560,7 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
                     key={pageNum}
                     variant={currentPage === pageNum ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => updateURLParams({ page: pageNum })}
                     className="min-w-[40px]"
                     data-testid={`mjc-pagination-page-${pageNum}`}
                   >
@@ -610,7 +573,7 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => updateURLParams({ page: Math.min(totalPages, currentPage + 1) })}
               disabled={currentPage === totalPages}
               data-testid="mjc-pagination-next"
             >

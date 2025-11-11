@@ -10,6 +10,9 @@ import {
   TrendingUp,
   Wrench,
 } from "lucide-react";
+import { getNCTrendData, getMaintenanceResponseData } from '@/app/actions/dashboard-actions';
+import { NCTrendChart } from '@/components/dashboard/nc-trend-chart';
+import { MaintenanceResponseChart } from '@/components/dashboard/maintenance-response-chart';
 
 /**
  * Management Dashboard Page
@@ -123,9 +126,11 @@ async function getTemporaryRepairsApproachingDeadline(): Promise<TemporaryRepair
 }
 
 export default async function ManagementDashboardPage() {
-  const [kpis, tempRepairs] = await Promise.all([
+  const [kpis, tempRepairs, ncTrendData, maintenanceResponseData] = await Promise.all([
     getManagementKPIs(),
     getTemporaryRepairsApproachingDeadline(),
+    getNCTrendData(),
+    getMaintenanceResponseData(),
   ]);
 
   return (
@@ -250,13 +255,7 @@ export default async function ManagementDashboardPage() {
               <CardDescription>Non-conformance trends over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                {/* TODO: Implement chart with recharts or similar */}
-                <div className="text-center">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p>Chart visualization coming soon</p>
-                </div>
-              </div>
+              <NCTrendChart data={ncTrendData} />
             </CardContent>
           </Card>
 
@@ -270,13 +269,7 @@ export default async function ManagementDashboardPage() {
               <CardDescription>Average response time by urgency</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                {/* TODO: Implement chart with recharts or similar */}
-                <div className="text-center">
-                  <Clock className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p>Chart visualization coming soon</p>
-                </div>
-              </div>
+              <MaintenanceResponseChart data={maintenanceResponseData} />
             </CardContent>
           </Card>
         </div>

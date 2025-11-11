@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hygiene Clearance Request</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background-color: #ea580c; color: white; padding: 20px; border-radius: 5px 5px 0 0;">
+    <h1 style="margin: 0; font-size: 24px;">Hygiene Clearance Request</h1>
+  </div>
+  
+  <div style="background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 5px 5px;">
+    <p style="font-size: 16px; font-weight: bold; color: #ea580c; margin-top: 0;">
+      BRCGS Critical - Action Required
+    </p>
+    
+    <div style="background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold; width: 150px;">MJC Number:</td>
+          <td style="padding: 8px 0;">{{MJC_NUMBER}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Machine/Equipment:</td>
+          <td style="padding: 8px 0;">{{MACHINE_EQUIPMENT}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Technician:</td>
+          <td style="padding: 8px 0;">{{TECHNICIAN_NAME}}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: bold;">Date:</td>
+          <td style="padding: 8px 0;">{{TIMESTAMP}}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 15px 0; border-radius: 5px;">
+      <p style="margin: 0; font-size: 14px; color: #92400e;">
+        <strong>BRCGS Compliance Required:</strong> Maintenance work has been completed. 
+        Please verify all 10 hygiene checklist items before granting clearance for production to resume.
+      </p>
+    </div>
+    
+    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+      <p style="margin: 0; font-size: 14px; color: #1e40af;">
+        <strong>10-Item Hygiene Checklist:</strong> All items must be verified before granting clearance.
+        Access the MJC detail page to complete the hygiene clearance process.
+      </p>
+    </div>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+    
+    <p style="color: #666; font-size: 12px; margin: 0;">
+      This is an automated notification from the OHiSee MJC system.<br>
+      Please do not reply to this email.
+    </p>
+  </div>
+</body>
+</html>
+

@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/database/client';
 import type { MJCInsert, MJCUpdate, Signature, HygieneChecklistItem } from '@/types/database';
 import type { MJCFormData } from '@/lib/validations/mjc-schema';
 import { revalidatePath } from 'next/cache';
+import { createProductionNotificationService } from '@/lib/services/create-notification-service';
 
 /**
  * Server Action Response Type
@@ -251,6 +252,33 @@ export async function createMJC(
         success: false,
         error: 'No data returned from database',
       };
+    }
+
+    // Send notifications if required
+    const notificationService = createProductionNotificationService();
+    
+    // Send MJC Machine Down + Critical alert if applicable
+    if (formData.machine_status === 'down' && formData.urgency_level === 'critical') {
+      await notificationService.sendMJCMachineDownAlert({
+        mjc_number: (insertedData as any).job_card_number,
+        machine_name: formData.machine_equipment_id,
+        technician_name: 'Technician', // TODO: Get from auth
+        urgency: formData.urgency_level,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Send Hygiene Clearance Request if status is awaiting-clearance
+    if (formData.production_cleared && formData.hygiene_check_1 && formData.hygiene_check_2 &&
+        formData.hygiene_check_3 && formData.hygiene_check_4 && formData.hygiene_check_5 &&
+        formData.hygiene_check_6 && formData.hygiene_check_7 && formData.hygiene_check_8 &&
+        formData.hygiene_check_9 && formData.hygiene_check_10) {
+      await notificationService.sendHygieneClearanceRequest({
+        mjc_number: (insertedData as any).job_card_number,
+        machine_equipment: formData.machine_equipment_id,
+        technician_name: 'Technician', // TODO: Get from auth
+        timestamp: new Date().toISOString(),
+      });
     }
 
     // Revalidate MJC list page
@@ -514,6 +542,25 @@ export async function grantHygieneClearance(
         success: false,
         error: `Failed to grant clearance: ${updateError.message}`,
       };
+    }
+
+    // Fetch MJC details for notification
+    const { data: mjcDetails } = await supabase
+      .from('mjcs')
+      .select('job_card_number, machine_equipment, raised_by_user_id')
+      .eq('id', mjcId)
+      .single();
+
+    // Send Hygiene Clearance Request notification (when status changes to awaiting-clearance)
+    // Note: This is sent when clearance is requested, not when granted
+    if (mjcDetails) {
+      const notificationService = createProductionNotificationService();
+      await notificationService.sendHygieneClearanceRequest({
+        mjc_number: (mjcDetails as any).job_card_number,
+        machine_equipment: (mjcDetails as any).machine_equipment || 'Unknown',
+        technician_name: 'Technician', // TODO: Get from user profile
+        timestamp: new Date().toISOString(),
+      });
     }
 
     revalidatePath('/mjc');

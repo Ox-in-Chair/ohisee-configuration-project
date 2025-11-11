@@ -15,7 +15,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -63,6 +63,17 @@ interface NCATableProps {
    * Error message
    */
   error?: string;
+
+  /**
+   * Server-side pagination props
+   */
+  total?: number;
+  currentPage?: number;
+  totalPages?: number;
+  initialStatus?: string;
+  initialSearch?: string;
+  initialSort?: string;
+  initialSortDir?: 'asc' | 'desc';
 }
 
 /**
@@ -118,44 +129,125 @@ function formatDate(dateString: string): string {
 /**
  * NCA Table Component
  */
-export function NCATable({ ncas, loading = false, error }: NCATableProps) {
+export function NCATable({
+  ncas,
+  loading = false,
+  error,
+  total,
+  currentPage: initialPage = 1,
+  totalPages: initialTotalPages = 1,
+  initialStatus = 'all',
+  initialSearch = '',
+  initialSort = 'created_at',
+  initialSortDir = 'desc',
+}: NCATableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Filter state management
-  const [filterState, setFilterState] = useState<NCAFilterState>(DEFAULT_FILTER_STATE);
-  const [searchInput, setSearchInput] = useState('');
+  // Filter state management (initialize from URL params)
+  const [filterState, setFilterState] = useState<NCAFilterState>({
+    ...DEFAULT_FILTER_STATE,
+    status: (initialStatus as NCAStatus) || 'all',
+    searchQuery: initialSearch || '',
+    sortColumn: (initialSort as SortColumn) || 'created_at',
+    sortDirection: initialSortDir || 'desc',
+  });
+  const [searchInput, setSearchInput] = useState(initialSearch);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pagination state (initialize from URL params)
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const itemsPerPage = 25;
 
   // Debounce search query (300ms)
   const debouncedSearchQuery = useDebounce(searchInput, 300);
 
-  // Update filter state when debounced search changes
+  /**
+   * Update URL parameters when filters change
+   */
+  const updateURLParams = useCallback(
+    (updates: {
+      page?: number;
+      status?: string;
+      search?: string;
+      sort?: string;
+      sortDir?: 'asc' | 'desc';
+    }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      
+      if (updates.page !== undefined) {
+        if (updates.page === 1) {
+          params.delete('page');
+        } else {
+          params.set('page', updates.page.toString());
+        }
+      }
+      
+      if (updates.status !== undefined) {
+        if (updates.status === 'all') {
+          params.delete('status');
+        } else {
+          params.set('status', updates.status);
+        }
+      }
+      
+      if (updates.search !== undefined) {
+        if (!updates.search.trim()) {
+          params.delete('search');
+        } else {
+          params.set('search', updates.search);
+        }
+      }
+      
+      if (updates.sort !== undefined) {
+        params.set('sort', updates.sort);
+      }
+      
+      if (updates.sortDir !== undefined) {
+        params.set('sortDir', updates.sortDir);
+      }
+
+      // Reset to page 1 when filters change (except when explicitly setting page)
+      if (updates.page === undefined && (updates.status !== undefined || updates.search !== undefined)) {
+        params.delete('page');
+      }
+
+      router.push(`/nca/register?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
+
+  // Update filter state and URL when debounced search changes
   useEffect(() => {
     setFilterState(prev => ({
       ...prev,
       searchQuery: debouncedSearchQuery,
     }));
-  }, [debouncedSearchQuery]);
+    updateURLParams({ search: debouncedSearchQuery, page: 1 });
+  }, [debouncedSearchQuery, updateURLParams]);
 
   /**
    * Handle status filter change
    */
-  const handleStatusChange = useCallback((status: string) => {
-    setFilterState(prev => ({
-      ...prev,
-      status: status as NCAStatus,
-    }));
-  }, []);
+  const handleStatusChange = useCallback(
+    (status: string) => {
+      setFilterState(prev => ({
+        ...prev,
+        status: status as NCAStatus,
+      }));
+      updateURLParams({ status, page: 1 });
+    },
+    [updateURLParams]
+  );
 
   /**
    * Handle search input change
    */
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-  }, []);
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchInput(e.target.value);
+    },
+    []
+  );
 
   /**
    * Handle clear filters
@@ -163,25 +255,30 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
   const handleClearFilters = useCallback(() => {
     setFilterState(DEFAULT_FILTER_STATE);
     setSearchInput('');
-  }, []);
+    updateURLParams({ status: 'all', search: '', page: 1 });
+  }, [updateURLParams]);
 
   /**
    * Handle sort column click
    */
-  const handleSort = useCallback((column: SortColumn) => {
-    setFilterState(prev => {
-      const { sortColumn, sortDirection } = NCAFilterUtils.toggleSortDirection(
-        prev.sortColumn,
-        prev.sortDirection,
-        column
-      );
-      return {
-        ...prev,
-        sortColumn,
-        sortDirection,
-      };
-    });
-  }, []);
+  const handleSort = useCallback(
+    (column: SortColumn) => {
+      setFilterState(prev => {
+        const { sortColumn, sortDirection } = NCAFilterUtils.toggleSortDirection(
+          prev.sortColumn,
+          prev.sortDirection,
+          column
+        );
+        updateURLParams({ sort: sortColumn, sortDir: sortDirection });
+        return {
+          ...prev,
+          sortColumn,
+          sortDirection,
+        };
+      });
+    },
+    [updateURLParams]
+  );
 
   /**
    * Handle row click - navigate to detail view
@@ -196,28 +293,15 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
   );
 
   /**
-   * Apply filters and sorting (memoized)
+   * Use server-side paginated data (no client-side filtering needed)
    */
-  const filteredAndSortedNCAs = useMemo(() => {
-    return NCAFilterUtils.applyFilters(ncas, filterState);
-  }, [ncas, filterState]);
+  const paginatedNCAs = ncas;
+  const totalPages = initialTotalPages;
+  const totalCount = total || ncas.length;
 
-  /**
-   * Calculate pagination
-   */
-  const totalPages = Math.ceil(filteredAndSortedNCAs.length / itemsPerPage);
+  // Calculate pagination indices for display
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedNCAs = useMemo(() => {
-    return filteredAndSortedNCAs.slice(startIndex, endIndex);
-  }, [filteredAndSortedNCAs, startIndex, endIndex]);
-
-  /**
-   * Reset to page 1 when filters change
-   */
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterState.status, filterState.searchQuery]);
+  const endIndex = startIndex + paginatedNCAs.length;
 
   /**
    * Check if any filters are active
@@ -322,10 +406,10 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
       {/* Results Count and Pagination Info */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">
-          {filteredAndSortedNCAs.length > 0 ? (
+          {paginatedNCAs.length > 0 ? (
             <>
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedNCAs.length)} of {filteredAndSortedNCAs.length} NCAs
-              {filteredAndSortedNCAs.length !== ncas.length && ` (filtered from ${ncas.length} total)`}
+              Showing {startIndex + 1} to {endIndex} of {totalCount} NCAs
+              {hasActiveFilters && ` (filtered from ${totalCount} total)`}
             </>
           ) : (
             <>No NCAs found</>
@@ -442,15 +526,15 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            {filteredAndSortedNCAs.length > 0 && (
-              <>Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedNCAs.length)} of {filteredAndSortedNCAs.length}</>
+            {paginatedNCAs.length > 0 && (
+              <>Showing {startIndex + 1} to {endIndex} of {totalCount}</>
             )}
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => updateURLParams({ page: Math.max(1, currentPage - 1) })}
               disabled={currentPage === 1}
               data-testid="nca-pagination-prev"
             >
@@ -477,7 +561,7 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
                     key={pageNum}
                     variant={currentPage === pageNum ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => updateURLParams({ page: pageNum })}
                     className="min-w-[40px]"
                     data-testid={`nca-pagination-page-${pageNum}`}
                   >
@@ -490,7 +574,7 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => updateURLParams({ page: Math.min(totalPages, currentPage + 1) })}
               disabled={currentPage === totalPages}
               data-testid="nca-pagination-next"
             >

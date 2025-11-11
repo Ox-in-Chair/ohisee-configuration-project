@@ -9,6 +9,8 @@
 import { createServerClient } from '@/lib/database/client';
 import { revalidatePath } from 'next/cache';
 import type { Signature } from '@/types/database';
+import { createProductionNotificationService } from '@/lib/services/create-notification-service';
+import { generateEndOfDayPDF } from '@/lib/services/report-generator';
 
 interface EndOfDaySubmissionData {
   shiftNotes?: string;
@@ -225,8 +227,41 @@ export async function submitEndOfDay(
       }
     );
 
-    // TODO: Generate PDF report
-    // TODO: Email report to management
+    // Generate PDF report
+    const pdfBuffer = await generateEndOfDayPDF(
+      submissionData.userId,
+      {
+        ncaIds: entryIds.ncaIds,
+        mjcIds: entryIds.mjcIds,
+        workOrderIds: entryIds.workOrderIds,
+      },
+      submissionData.shiftNotes
+    );
+
+    // Send email report to management
+    const notificationService = createProductionNotificationService();
+    
+    // Fetch summary data for email
+    const { data: ncas } = await (supabase
+      .from('ncas') as any)
+      .select('nca_number')
+      .in('id', entryIds.ncaIds);
+    
+    const { data: mjcs } = await (supabase
+      .from('mjcs') as any)
+      .select('job_card_number')
+      .in('id', entryIds.mjcIds);
+
+    await notificationService.sendEndOfDaySummary({
+      operator_name: 'Operator', // TODO: Get from auth
+      date: new Date().toLocaleDateString('en-GB'),
+      work_orders_count: entryIds.workOrderIds.length,
+      ncas_count: entryIds.ncaIds.length,
+      mjcs_count: entryIds.mjcIds.length,
+      shift_notes: submissionData.shiftNotes,
+      ncas_list: (ncas || []).map((n: any) => n.nca_number),
+      mjcs_list: (mjcs || []).map((m: any) => m.job_card_number),
+    });
 
     revalidatePath('/dashboard/production');
     revalidatePath('/nca/register');
