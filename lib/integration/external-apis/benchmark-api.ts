@@ -110,6 +110,7 @@ export class BenchmarkAPIService {
         // Upsert benchmark data
         const { error } = await this.supabase
           .from('industry_benchmarks')
+          // @ts-ignore - Supabase type generation issue with industry_benchmarks table
           .upsert(
             {
               metric_name: benchmark.metricName,

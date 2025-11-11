@@ -102,6 +102,7 @@ export class BRCGSAPIService {
           // Mark existing document as superseded
           const { error } = await this.supabase
             .from('knowledge_base_documents')
+            // @ts-ignore - Supabase type generation issue with knowledge_base_documents table
             .update({
               status: 'superseded',
               updated_at: new Date().toISOString(),
@@ -118,6 +119,7 @@ export class BRCGSAPIService {
           // Insert or update document
           const { error } = await this.supabase
             .from('knowledge_base_documents')
+            // @ts-ignore - Supabase type generation issue with knowledge_base_documents table
             .upsert({
               document_number: update.standardCode,
               document_name: update.title,

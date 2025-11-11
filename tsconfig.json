@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "tests/e2e/**/*", "tests/playwright/**/*"]
+  "exclude": ["node_modules", "tests/e2e/**/*", "tests/playwright/**/*", "supabase/functions/**/*"]
 }

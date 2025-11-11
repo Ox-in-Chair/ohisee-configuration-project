@@ -196,6 +196,7 @@ export class DataSyncService {
     metadata?: Record<string, any>;
   }): Promise<void> {
     try {
+      // @ts-ignore - Supabase type generation issue with data_sync_log table
       const { error } = await this.supabase.from('data_sync_log').insert({
         source_type: data.sourceType,
         sync_type: data.syncType,
@@ -297,7 +298,7 @@ export class DataSyncService {
         return null;
       }
 
-      return new Date(data.sync_timestamp);
+      return new Date((data as { sync_timestamp: string }).sync_timestamp);
     } catch (error) {
       console.error('Error getting last successful sync:', error);
       return null;

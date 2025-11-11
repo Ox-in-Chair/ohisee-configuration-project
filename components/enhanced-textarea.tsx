@@ -7,6 +7,8 @@ import { HelpCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { getRequirementChecklist } from '@/lib/validations/quality-messages';
 import { cn } from '@/lib/utils';
 import { VoiceInput } from '@/components/fields/voice-input';
+import { TextToSpeech } from '@/components/fields/text-to-speech';
+import { RewriteAssistant } from '@/components/fields/rewrite-assistant';
 
 /**
  * EnhancedTextarea Props Interface
@@ -31,6 +33,10 @@ export interface EnhancedTextareaProps {
   fieldName?: string; // For requirement checklist (e.g., 'nc_description', 'root_cause_analysis')
   context?: { ncType?: string }; // Context for adaptive placeholders and checklists
   showChecklist?: boolean; // Show live requirement checklist
+  enableVoiceInput?: boolean; // Enable voice input (default: true)
+  enableTextToSpeech?: boolean; // Enable text-to-speech (default: true)
+  enableRewrite?: boolean; // Enable rewrite assistant (default: false)
+  onQualityCheck?: () => Promise<{ score: number; suggestions: string[] }>; // Quality check function for rewrite
 }
 
 /**
@@ -74,6 +80,10 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
   fieldName,
   context,
   showChecklist = false,
+  enableVoiceInput = true,
+  enableTextToSpeech = true,
+  enableRewrite = false,
+  onQualityCheck,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -153,14 +163,42 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
 
         <div className="flex items-center gap-2">
           {/* Voice Input (mobile-friendly) */}
-          <VoiceInput
-            onTranscript={(text) => {
-              // Append transcribed text to existing value
-              onChange(value ? `${value} ${text}` : text);
-            }}
-            disabled={disabled}
-            className="hidden sm:inline-flex"
-          />
+          {enableVoiceInput && (
+            <VoiceInput
+              onTranscript={(text) => {
+                // Append transcribed text to existing value
+                const newValue = value ? `${value} ${text}` : text;
+                onChange(newValue);
+                // Automatically trigger quality check after voice input if quality check is enabled
+                if (enableRewrite && onQualityCheck && newValue.trim().length > 0) {
+                  // Trigger quality check after a short delay to allow state to update
+                  setTimeout(() => {
+                    onQualityCheck().catch((err) => {
+                      console.error('Quality check failed after voice input:', err);
+                    });
+                  }, 500);
+                }
+              }}
+              disabled={disabled}
+              className="hidden sm:inline-flex"
+            />
+          )}
+
+          {/* Text-to-Speech */}
+          {enableTextToSpeech && value && value.trim().length > 0 && (
+            <TextToSpeech
+              text={value}
+              disabled={disabled}
+              buttonSize="sm"
+              buttonVariant="outline"
+              className="hidden sm:inline-flex"
+              onQualityCheck={
+                enableRewrite && onQualityCheck
+                  ? () => onQualityCheck()
+                  : undefined
+              }
+            />
+          )}
 
           {onGetHelp && (
             <Button
@@ -211,17 +249,42 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
           aria-invalid={!!error}
           aria-describedby={error ? `${testId}-error` : undefined}
         />
-        {/* Mobile Voice Input (shown on small screens) */}
-        <div className="absolute bottom-2 right-2 sm:hidden">
-          <VoiceInput
-            onTranscript={(text) => {
-              onChange(value ? `${value} ${text}` : text);
-            }}
-            disabled={disabled}
-            buttonSize="sm"
-            buttonVariant="ghost"
-          />
-        </div>
+        {/* Mobile Voice Input and Text-to-Speech (shown on small screens) */}
+        {enableVoiceInput && (
+          <div className="absolute bottom-2 right-2 sm:hidden flex items-center gap-1">
+            <VoiceInput
+              onTranscript={(text) => {
+                const newValue = value ? `${value} ${text}` : text;
+                onChange(newValue);
+                // Automatically trigger quality check after voice input if quality check is enabled
+                if (enableRewrite && onQualityCheck && newValue.trim().length > 0) {
+                  // Trigger quality check after a short delay to allow state to update
+                  setTimeout(() => {
+                    onQualityCheck().catch((err) => {
+                      console.error('Quality check failed after voice input:', err);
+                    });
+                  }, 500);
+                }
+              }}
+              disabled={disabled}
+              buttonSize="sm"
+              buttonVariant="ghost"
+            />
+            {enableTextToSpeech && value && value.trim().length > 0 && (
+              <TextToSpeech
+                text={value}
+                disabled={disabled}
+                buttonSize="sm"
+                buttonVariant="ghost"
+                onQualityCheck={
+                  enableRewrite && onQualityCheck
+                    ? () => onQualityCheck()
+                    : undefined
+                }
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Live Requirement Checklist */}
@@ -304,6 +367,22 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
         <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
           {error}
         </p>
+      )}
+
+      {/* Rewrite Assistant */}
+      {enableRewrite && value && value.trim().length > 0 && (
+        <div className="mt-2">
+          <RewriteAssistant
+            currentText={value}
+            onRewrite={(improvedText) => onChange(improvedText)}
+            onQualityCheck={onQualityCheck}
+            qualityScore={qualityScore}
+            isCheckingQuality={isCheckingQuality}
+            disabled={disabled}
+            buttonSize="sm"
+            buttonVariant="outline"
+          />
+        </div>
       )}
     </div>
   );

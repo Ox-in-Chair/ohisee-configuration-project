@@ -81,7 +81,7 @@ export const mjcFormSchema = z
 
     // Section 7: Maintenance Performed
     maintenance_performed: z.string().optional(),
-    maintenance_technician_signature: z.string().optional(),
+    maintenance_technician_signature: signatureSchema.nullable().optional(),
 
     // Section 8: Additional Comments
     additional_comments: z.string().optional(),
@@ -100,7 +100,7 @@ export const mjcFormSchema = z
 
     // Section 10: Post Hygiene Clearance Signature
     clearance_qa_supervisor: z.string().optional(),
-    clearance_signature: z.string().optional(),
+    clearance_signature: signatureSchema.nullable().optional(),
     production_cleared: z.boolean().default(false),
 
     // Section 11: Job Card Status & Closure
@@ -165,7 +165,7 @@ export const mjcFormSchema = z
 
     // If production clearance is granted, signature is required
     if (data.production_cleared) {
-      if (!data.clearance_signature || data.clearance_signature.trim().length === 0) {
+      if (!data.clearance_signature || !data.clearance_signature.data || data.clearance_signature.data.trim().length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Digital signature is required when granting production clearance',

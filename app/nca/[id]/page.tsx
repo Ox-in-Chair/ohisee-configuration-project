@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { UpdateSegregationArea } from '@/components/nca/update-segregation-area';
 
 interface NCADetailPageProps {
   params: Promise<{
@@ -391,6 +392,18 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               </p>
             </div>
           </div>
+          {nca.segregation_area && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Segregation Area</label>
+              <p className="text-gray-900">
+                {nca.segregation_area === 'raw-materials' && 'NC Product Area (Raw Materials)'}
+                {nca.segregation_area === 'wip' && 'NC Product Area (WIP)'}
+                {nca.segregation_area === 'finished-goods' && 'NC Product Area (Finished Goods)'}
+                {nca.segregation_area === 'other' && (nca.segregation_area_other || 'Other - Description required')}
+                {!['raw-materials', 'wip', 'finished-goods', 'other'].includes(nca.segregation_area) && nca.segregation_area}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -433,6 +446,20 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Update Segregation Area After Disposition */}
+      {nca.disposition_signature && (
+        <UpdateSegregationArea
+          ncaId={id}
+          currentSegregationArea={nca.segregation_area}
+          currentSegregationAreaOther={nca.segregation_area_other}
+          currentRelocationNotes={nca.relocation_notes}
+          dispositionComplete={!!nca.disposition_signature}
+          onUpdate={() => {
+            // Page will be revalidated by updateNCA action via router.refresh()
+          }}
+        />
+      )}
 
       {/* Section 9: Root Cause Analysis */}
       <Card className="mb-6" data-testid="nca-detail-section-9">

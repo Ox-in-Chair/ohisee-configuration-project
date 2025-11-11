@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { NCATable } from '@/components/nca-table';
 import type { NCAData } from '@/lib/types/nca-filter';
 
@@ -169,7 +169,9 @@ export default function NCARegisterPage() {
         </div>
 
         {/* NCA Table with Interactive Features */}
-        <NCATable ncas={ncas} loading={loading} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <NCATable ncas={ncas} loading={loading} />
+        </Suspense>
       </div>
     </div>
   );

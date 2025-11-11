@@ -74,6 +74,9 @@ export const ncaFormSchema = z
     back_tracking_completed: z.boolean().default(false),
     hold_label_completed: z.boolean().default(false),
     nca_logged: z.boolean().default(false),
+    segregation_area: z.enum(['raw-materials', 'wip', 'finished-goods', 'other']).nullable().optional(),
+    segregation_area_other: z.string().optional(),
+    relocation_notes: z.string().optional(),
 
     // Section 8: Disposition
     disposition_action: z

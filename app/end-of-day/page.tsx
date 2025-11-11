@@ -28,6 +28,7 @@ import { AlertTriangle, CheckCircle2, FileText, Wrench, Clock, X } from 'lucide-
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/database/client';
 import { submitEndOfDay } from '@/app/actions/end-of-day-actions';
+import { SignatureCapture } from '@/components/fields/signature-capture';
 
 interface ShiftSummary {
   workOrders: Array<{
@@ -159,8 +160,8 @@ export default function EndOfDayPage() {
         {
           shiftNotes,
           signature: {
-            type: 'digital',
-            data: signature,
+            type: 'manual' as const, // 'manual' maps to 'drawn' in transformSignature
+            data: signature || '',
             name: 'Operator', // TODO: Get from auth
             timestamp: new Date().toISOString(),
           },
@@ -436,23 +437,13 @@ export default function EndOfDayPage() {
               </Label>
             </div>
 
-            {/* Signature Placeholder */}
-            <div>
-              <Label>Digital Signature</Label>
-              <p className="text-sm text-gray-500 mb-2">
-                TODO: Implement signature capture component
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  // TODO: Open signature pad modal
-                  setSignature('signature-placeholder');
-                }}
-                disabled={!!signature}
-              >
-                {signature ? 'Signature Captured' : 'Capture Signature'}
-              </Button>
-            </div>
+            {/* Signature Capture */}
+            <SignatureCapture
+              label="Digital Signature"
+              value={signature}
+              onChange={(sig) => setSignature(sig || null)}
+              required
+            />
           </CardContent>
         </Card>
 

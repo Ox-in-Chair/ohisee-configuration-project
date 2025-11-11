@@ -17,6 +17,7 @@ import { FileUpload } from '@/components/file-upload';
 import { uploadMJCFile, listMJCFiles, deleteMJCFile } from '@/app/actions/file-actions';
 import { SmartInput } from '@/components/smart-input';
 import { EnhancedTextarea } from '@/components/enhanced-textarea';
+import { SignatureCapture } from '@/components/fields/signature-capture';
 
 // Visualization imports
 import { FiveWhyBuilder } from '@/components/visualizations/five-why-builder';
@@ -55,6 +56,10 @@ export default function NewMJCPage(): React.ReactElement {
   const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
   const [workOrderLoading, setWorkOrderLoading] = useState<boolean>(true);
   const [workOrderError, setWorkOrderError] = useState<string | null>(null);
+
+  // Signature State
+  const [maintenanceTechnicianSignature, setMaintenanceTechnicianSignature] = useState<string | null>(null);
+  const [clearanceSignature, setClearanceSignature] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -449,11 +454,17 @@ export default function NewMJCPage(): React.ReactElement {
               {/* Conditional field when maintenance type is "other" */}
               {maintenanceType === 'other' && (
                 <div className="mt-4 border-l-4 border-blue-500 pl-4">
-                  <Label>Please specify maintenance type *</Label>
-                  <Input type="text" {...register('maintenance_type_other')} />
-                  {errors.maintenance_type_other && (
-                    <p className="text-red-600 text-sm mt-1">{errors.maintenance_type_other.message}</p>
-                  )}
+                  <SmartInput
+                    label="Please specify maintenance type *"
+                    value={watch('maintenance_type_other') || ''}
+                    onChange={(value) => setValue('maintenance_type_other', value)}
+                    data-testid="maintenance-type-other"
+                    enableVoiceInput={true}
+                    enableTextToSpeech={true}
+                    enableRewrite={false}
+                    error={errors.maintenance_type_other?.message}
+                    required
+                  />
                 </div>
               )}
             </div>
@@ -627,16 +638,37 @@ export default function NewMJCPage(): React.ReactElement {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Maintenance Work Performed</Label>
-              <Textarea data-testid="maintenance-performed" rows={5} {...register('maintenance_performed')} />
+              <EnhancedTextarea
+                label="Maintenance Work Performed"
+                value={watch('maintenance_performed') || ''}
+                onChange={(value) => setValue('maintenance_performed', value)}
+                rows={5}
+                data-testid="maintenance-performed"
+                fieldName="maintenance_performed"
+                enableVoiceInput={true}
+                enableTextToSpeech={true}
+                enableRewrite={false}
+              />
             </div>
             <div className="space-y-2">
-              <Label>Maintenance Technician Signature</Label>
-              <Input
+              <SignatureCapture
+                label="Maintenance Technician Signature"
+                value={maintenanceTechnicianSignature}
+                onChange={(sig) => {
+                  setMaintenanceTechnicianSignature(sig);
+                  if (sig) {
+                    setValue('maintenance_technician_signature', {
+                      type: 'manual' as const,
+                      data: sig,
+                      name: 'Maintenance Technician', // TODO: Get from auth
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    setValue('maintenance_technician_signature', null);
+                  }
+                }}
+                required={false}
                 data-testid="maintenance-technician-signature"
-                type="text"
-                placeholder="Sign here"
-                {...register('maintenance_technician_signature')}
               />
             </div>
           </CardContent>
@@ -649,8 +681,17 @@ export default function NewMJCPage(): React.ReactElement {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Additional Observations and Recommendations</Label>
-              <Textarea data-testid="additional-comments" rows={4} {...register('additional_comments')} />
+              <EnhancedTextarea
+                label="Additional Observations and Recommendations"
+                value={watch('additional_comments') || ''}
+                onChange={(value) => setValue('additional_comments', value)}
+                rows={4}
+                data-testid="additional-comments"
+                fieldName="additional_comments"
+                enableVoiceInput={true}
+                enableTextToSpeech={true}
+                enableRewrite={false}
+              />
             </div>
           </CardContent>
         </Card>
@@ -803,23 +844,36 @@ export default function NewMJCPage(): React.ReactElement {
             )}
 
             <div className="space-y-2">
-              <Label>QA/Supervisor Name</Label>
-              <Input
+              <SmartInput
+                label="QA/Supervisor Name"
+                value={watch('clearance_qa_supervisor') || ''}
+                onChange={(value) => setValue('clearance_qa_supervisor', value)}
                 data-testid="clearance-qa-supervisor"
-                type="text"
-                {...register('clearance_qa_supervisor')}
+                enableVoiceInput={true}
+                enableTextToSpeech={true}
+                enableRewrite={false}
+                error={errors.clearance_qa_supervisor?.message}
               />
-              {errors.clearance_qa_supervisor && (
-                <p className="text-red-600 text-sm mt-1">{errors.clearance_qa_supervisor.message}</p>
-              )}
             </div>
             <div className="space-y-2">
-              <Label>Digital Signature</Label>
-              <Input
+              <SignatureCapture
+                label="Digital Signature"
+                value={clearanceSignature}
+                onChange={(sig) => {
+                  setClearanceSignature(sig);
+                  if (sig) {
+                    setValue('clearance_signature', {
+                      type: 'manual' as const,
+                      data: sig,
+                      name: 'QA Supervisor', // TODO: Get from auth
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    setValue('clearance_signature', null);
+                  }
+                }}
+                required={allHygieneItemsVerified}
                 data-testid="clearance-signature"
-                type="text"
-                placeholder="Sign here"
-                {...register('clearance_signature')}
               />
               {errors.clearance_signature && (
                 <p className="text-red-600 text-sm mt-1">{errors.clearance_signature.message}</p>

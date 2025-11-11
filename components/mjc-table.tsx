@@ -91,6 +91,65 @@ export function MJCTable({
     router.push(`/mjc/${mjcId}`);
   }, [router]);
 
+  /**
+   * Update URL parameters when filters change
+   */
+  const updateURLParams = useCallback(
+    (updates: {
+      page?: number;
+      status?: string;
+      urgency?: string;
+      search?: string;
+      sort?: string;
+      sortDir?: 'asc' | 'desc';
+    }) => {
+      const params = new URLSearchParams(searchParams.toString());
+      
+      if (updates.page !== undefined) {
+        if (updates.page === 1) {
+          params.delete('page');
+        } else {
+          params.set('page', updates.page.toString());
+        }
+      }
+      
+      if (updates.status !== undefined) {
+        if (updates.status === 'all') {
+          params.delete('status');
+        } else {
+          params.set('status', updates.status);
+        }
+      }
+      
+      if (updates.urgency !== undefined) {
+        if (updates.urgency === 'all') {
+          params.delete('urgency');
+        } else {
+          params.set('urgency', updates.urgency);
+        }
+      }
+      
+      if (updates.search !== undefined) {
+        if (updates.search === '') {
+          params.delete('search');
+        } else {
+          params.set('search', updates.search);
+        }
+      }
+      
+      if (updates.sort !== undefined) {
+        params.set('sort', updates.sort);
+      }
+      
+      if (updates.sortDir !== undefined) {
+        params.set('sortDir', updates.sortDir);
+      }
+      
+      router.push(`?${params.toString()}`);
+    },
+    [router, searchParams]
+  );
+
   // Debounce search input (300ms) and update URL
   useEffect(() => {
     const timer = setTimeout(() => {

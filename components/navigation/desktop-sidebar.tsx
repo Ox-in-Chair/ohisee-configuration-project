@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  TrendingUp,
 } from 'lucide-react';
 
 interface NavItem {
@@ -40,6 +41,7 @@ const navSections: NavSection[] = [
     items: [
       { title: 'New NCA', href: '/nca/new', icon: Plus },
       { title: 'NCA Register', href: '/nca/register', icon: FileText },
+      { title: 'NCA Trend Analysis', href: '/nca/trend-analysis', icon: TrendingUp },
     ],
   },
   {

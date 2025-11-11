@@ -9,6 +9,9 @@ import { cn } from '@/lib/utils';
 import { createPackagingSafetyService } from '@/lib/knowledge/packaging-safety-service';
 import { createIndustryBenchmarksService } from '@/lib/knowledge/industry-benchmarks-service';
 import type { PackagingMaterial } from '@/lib/knowledge/packaging-safety-service';
+import { VoiceInput } from '@/components/fields/voice-input';
+import { TextToSpeech } from '@/components/fields/text-to-speech';
+import { RewriteAssistant } from '@/components/fields/rewrite-assistant';
 
 // Constant empty array to prevent recreation on every render
 const EMPTY_SUGGESTIONS: string[] = [];
@@ -31,6 +34,13 @@ export interface SmartInputProps {
   type?: 'text' | 'email' | 'tel' | 'url';
   showSuggestions?: boolean; // Show autocomplete suggestions
   suggestions?: string[]; // External suggestions (e.g., from AI)
+  tooltip?: React.ReactNode; // Optional tooltip component to display next to label
+  enableVoiceInput?: boolean; // Enable voice input (default: true)
+  enableTextToSpeech?: boolean; // Enable text-to-speech (default: true)
+  enableRewrite?: boolean; // Enable rewrite assistant (default: false)
+  onQualityCheck?: () => Promise<{ score: number; suggestions: string[] }>; // Quality check function for rewrite
+  qualityScore?: number | null; // Current quality score
+  isCheckingQuality?: boolean; // Is quality check in progress
 }
 
 /**
@@ -69,6 +79,13 @@ export const SmartInput: FC<SmartInputProps> = ({
   type = 'text',
   showSuggestions = false,
   suggestions: externalSuggestions = EMPTY_SUGGESTIONS,
+  tooltip,
+  enableVoiceInput = true,
+  enableTextToSpeech = true,
+  enableRewrite = false,
+  onQualityCheck,
+  qualityScore = null,
+  isCheckingQuality = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<string[]>([]);
@@ -200,10 +217,13 @@ export const SmartInput: FC<SmartInputProps> = ({
     <div className="space-y-2 relative">
       {/* Label with Get Help button */}
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-medium">
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </Label>
+          {tooltip}
+        </div>
 
         {onGetHelp && (
           <Button
@@ -233,32 +253,71 @@ export const SmartInput: FC<SmartInputProps> = ({
 
       {/* Input with autocomplete */}
       <div className="relative">
-        <Input
-          type={type}
-          value={value}
-          onChange={handleChange}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            // Delay to allow suggestion click
-            setTimeout(() => setIsFocused(false), 200);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          required={required}
-          data-testid={testId}
-          className={cn(
-            'transition-smooth focus-glow',
-            isFocused ? 'ring-2 ring-blue-200 shadow-sm' : '',
-            error ? 'border-red-500' : '',
-            showAutocomplete && autocompleteSuggestions.length > 0 ? 'rounded-b-none' : ''
-          )}
-          aria-label={label}
-          aria-invalid={!!error}
-          aria-describedby={error ? `${testId}-error` : undefined}
-          aria-autocomplete="list"
-          aria-expanded={showAutocomplete}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            type={type}
+            value={value}
+            onChange={handleChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => {
+              // Delay to allow suggestion click
+              setTimeout(() => setIsFocused(false), 200);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            disabled={disabled}
+            required={required}
+            data-testid={testId}
+            className={cn(
+              'transition-smooth focus-glow flex-1',
+              isFocused ? 'ring-2 ring-blue-200 shadow-sm' : '',
+              error ? 'border-red-500' : '',
+              showAutocomplete && autocompleteSuggestions.length > 0 ? 'rounded-b-none' : ''
+            )}
+            aria-label={label}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${testId}-error` : undefined}
+            aria-autocomplete="list"
+            aria-expanded={showAutocomplete}
+          />
+          {/* Voice Input and Text-to-Speech buttons */}
+          <div className="flex items-center gap-1">
+            {enableVoiceInput && (
+              <VoiceInput
+                onTranscript={(transcript) => {
+                  onChange(transcript);
+                  // Automatically trigger quality check after voice input if quality check is enabled
+                  if (enableRewrite && onQualityCheck && transcript.trim().length > 0) {
+                    // Trigger quality check after a short delay to allow state to update
+                    setTimeout(() => {
+                      onQualityCheck().catch((err) => {
+                        console.error('Quality check failed after voice input:', err);
+                      });
+                    }, 500);
+                  }
+                }}
+                disabled={disabled}
+                buttonSize="sm"
+                buttonVariant="outline"
+                className="flex-shrink-0"
+              />
+            )}
+            {enableTextToSpeech && value && value.trim().length > 0 && (
+              <TextToSpeech
+                text={value}
+                disabled={disabled}
+                buttonSize="sm"
+                buttonVariant="outline"
+                className="flex-shrink-0"
+                onQualityCheck={
+                  enableRewrite && onQualityCheck
+                    ? () => onQualityCheck()
+                    : undefined
+                }
+              />
+            )}
+          </div>
+        </div>
 
         {/* Autocomplete suggestions dropdown */}
         {showAutocomplete && autocompleteSuggestions.length > 0 && isFocused && (
@@ -291,6 +350,22 @@ export const SmartInput: FC<SmartInputProps> = ({
         <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
           {error}
         </p>
+      )}
+
+      {/* Rewrite Assistant */}
+      {enableRewrite && value && value.trim().length > 0 && (
+        <div className="mt-2">
+          <RewriteAssistant
+            currentText={value}
+            onRewrite={(improvedText) => onChange(improvedText)}
+            onQualityCheck={onQualityCheck}
+            qualityScore={qualityScore}
+            isCheckingQuality={isCheckingQuality}
+            disabled={disabled}
+            buttonSize="sm"
+            buttonVariant="outline"
+          />
+        </div>
       )}
     </div>
   );

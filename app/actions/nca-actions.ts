@@ -7,10 +7,10 @@
  */
 
 import { createServerClient } from '@/lib/database/client';
-import type { NCAInsert, Signature } from '@/types/database';
+import type { NCAInsert, NCAUpdate, Signature } from '@/types/database';
 import type { NCAFormData } from '@/lib/validations/nca-schema';
 import { revalidatePath } from 'next/cache';
-import type { INotificationService, NotificationPayload } from '@/lib/types/notification';
+import type { INotificationService, NotificationPayload, SupplierNCANotificationPayload } from '@/lib/types/notification';
 import { createProductionNotificationService } from '@/lib/services/create-notification-service';
 
 /**
@@ -107,6 +107,8 @@ function transformFormDataToInsert(
     back_tracking_completed: formData.back_tracking_completed,
     hold_label_completed: formData.hold_label_completed,
     nca_logged: formData.nca_logged,
+    segregation_area: formData.segregation_area || null,
+    segregation_area_other: formData.segregation_area_other || null,
 
     // Section 8: Disposition - Convert single action to multiple booleans
     disposition_reject: formData.disposition_action === 'reject',
@@ -182,6 +184,70 @@ async function sendMachineDownAlertIfNeeded(
 }
 
 /**
+ * Send supplier NCA notification if applicable
+ * Procedure 5.7: NCA is emailed to the material supplier when Production Manager completes disposition
+ * Injected notification service for testability (DI pattern)
+ */
+async function sendSupplierNotificationIfNeeded(
+  ncaData: NCAInsert | { nc_type: string; supplier_name: string | null; date?: string; nc_product_description?: string; supplier_wo_batch?: string | null; supplier_reel_box?: string | null; quantity?: number | null; quantity_unit?: string | null; nc_description?: string },
+  ncaNumber: string,
+  formData?: NCAFormData,
+  notificationService?: INotificationService
+): Promise<void> {
+  // Only send notification if NC type is 'raw-material' and supplier name is provided
+  if (ncaData.nc_type !== 'raw-material' || !ncaData.supplier_name) {
+    return;
+  }
+
+  // Skip if no notification service provided (production will inject real service)
+  if (!notificationService) {
+    console.warn('Supplier notification skipped - notification service not configured');
+    return;
+  }
+
+  try {
+    // Look up supplier email from suppliers table
+    const supabase = createServerClient();
+    const { data: supplier, error: supplierError } = await supabase
+      .from('suppliers')
+      .select('contact_email, supplier_name')
+      .ilike('supplier_name', `%${ncaData.supplier_name}%`)
+      .limit(1)
+      .single();
+
+    // If supplier not found or no email, log warning but don't fail
+    if (supplierError || !supplier || !(supplier as { contact_email?: string }).contact_email) {
+      console.warn(`Supplier email not found for ${ncaData.supplier_name}. Notification not sent.`);
+      return;
+    }
+
+    const supplierData = supplier as { contact_email: string; supplier_name?: string };
+
+    // Format date for email
+    const dateString = ncaData.date || new Date().toISOString().split('T')[0];
+
+    const payload: SupplierNCANotificationPayload = {
+      nca_number: ncaNumber,
+      supplier_name: supplierData.supplier_name || ncaData.supplier_name,
+      supplier_email: supplierData.contact_email,
+      date: dateString,
+      product_description: ncaData.nc_product_description || 'N/A',
+      supplier_wo_batch: ncaData.supplier_wo_batch || undefined,
+      supplier_reel_box: ncaData.supplier_reel_box || undefined,
+      quantity: ncaData.quantity || undefined,
+      quantity_unit: ncaData.quantity_unit || undefined,
+      nc_description: ncaData.nc_description || 'No description provided',
+    };
+
+    // Send notification (errors are logged internally, won't throw)
+    await notificationService.sendSupplierNCANotification(payload);
+  } catch (error) {
+    // Log error but don't fail NCA creation if notification fails
+    console.error('Failed to send supplier notification:', error);
+  }
+}
+
+/**
  * Create and submit a new NCA
  * Server Action - called from client components
  * Optional notificationService parameter for dependency injection (testing)
@@ -223,10 +289,15 @@ export async function createNCA(
       };
     }
 
-    // Send machine down alert if applicable (non-blocking)
+    // Send notifications if applicable (non-blocking)
     // Use provided notification service (for testing) or create production service
     const service = notificationService || createProductionNotificationService();
+    
+    // Send machine down alert if applicable
     await sendMachineDownAlertIfNeeded(ncaData, data.nca_number, service);
+    
+    // NOTE: Supplier notification is NOT sent automatically on creation
+    // It will be sent by Production Manager when disposition is completed (see updateNCA function)
 
     // Revalidate NCA list page
     revalidatePath('/nca');
@@ -402,6 +473,123 @@ export async function listNCAs(filters?: {
     };
   } catch (error) {
     console.error('Unexpected error listing NCAs:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+/**
+ * Update NCA (typically for disposition completion by Production Manager)
+ * Sends supplier notification when disposition is completed for raw material NCAs
+ * Procedure 5.7: Supplier notification sent after Production Manager completes disposition
+ */
+export async function updateNCA(
+  ncaId: string,
+  updates: NCAUpdate,
+  notificationService?: INotificationService
+): Promise<ActionResponse<{ id: string; nca_number: string }>> {
+  try {
+    const supabase = createServerClient();
+
+    // Fetch current NCA to check if disposition was just completed
+    const { data: currentNCA, error: fetchError } = await supabase
+      .from('ncas')
+      .select('nca_number, nc_type, supplier_name, date, nc_product_description, supplier_wo_batch, supplier_reel_box, quantity, quantity_unit, nc_description, disposition_signature')
+      .eq('id', ncaId)
+      .single();
+
+    if (fetchError || !currentNCA) {
+      return {
+        success: false,
+        error: `NCA not found: ${fetchError?.message || 'Unknown error'}`,
+      };
+    }
+
+    // Type the current NCA
+    type CurrentNCAType = {
+      nca_number: string;
+      nc_type: string;
+      supplier_name: string | null;
+      date: string;
+      nc_product_description: string;
+      supplier_wo_batch: string | null;
+      supplier_reel_box: string | null;
+      quantity: number | null;
+      quantity_unit: string | null;
+      nc_description: string;
+      disposition_signature: Signature | null;
+    };
+    const typedCurrentNCA = currentNCA as CurrentNCAType;
+
+    // Check if disposition is being completed (disposition_signature is being set)
+    const wasDispositionComplete = typedCurrentNCA.disposition_signature !== null;
+    const isDispositionBeingCompleted = updates.disposition_signature !== undefined && updates.disposition_signature !== null;
+
+    // Update the NCA
+    const { data, error } = await (supabase
+      .from('ncas') as any)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', ncaId)
+      .select('id, nca_number, nc_type, supplier_name')
+      .single();
+
+    if (error) {
+      console.error('Supabase error updating NCA:', error);
+      return {
+        success: false,
+        error: `Database error: ${error.message}`,
+      };
+    }
+
+    if (!data) {
+      return {
+        success: false,
+        error: 'No data returned from database',
+      };
+    }
+
+    // Send supplier notification if disposition was just completed
+    // Only for raw material NCAs that haven't been notified yet
+    if (isDispositionBeingCompleted && !wasDispositionComplete) {
+      const service = notificationService || createProductionNotificationService();
+      
+      // Send supplier notification if applicable (raw material NCA)
+      await sendSupplierNotificationIfNeeded(
+        {
+          nc_type: data.nc_type || typedCurrentNCA.nc_type,
+          supplier_name: data.supplier_name || typedCurrentNCA.supplier_name,
+          date: typedCurrentNCA.date,
+          nc_product_description: typedCurrentNCA.nc_product_description,
+          supplier_wo_batch: typedCurrentNCA.supplier_wo_batch,
+          supplier_reel_box: typedCurrentNCA.supplier_reel_box,
+          quantity: typedCurrentNCA.quantity,
+          quantity_unit: typedCurrentNCA.quantity_unit,
+          nc_description: typedCurrentNCA.nc_description,
+        },
+        typedCurrentNCA.nca_number,
+        undefined,
+        service
+      );
+    }
+
+    // Revalidate NCA pages
+    revalidatePath('/nca');
+    revalidatePath(`/nca/${ncaId}`);
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        nca_number: typedCurrentNCA.nca_number,
+      },
+    };
+  } catch (error) {
+    console.error('Unexpected error updating NCA:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',

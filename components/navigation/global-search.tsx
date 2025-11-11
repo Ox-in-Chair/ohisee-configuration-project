@@ -87,7 +87,7 @@ export function GlobalSearch() {
         .limit(3);
 
       if (ncas) {
-        ncas.forEach((nca) => {
+        ncas.forEach((nca: { id: string; nca_number: string; nc_description?: string }) => {
           allResults.push({
             id: nca.id,
             type: 'nca',
@@ -106,7 +106,7 @@ export function GlobalSearch() {
         .limit(3);
 
       if (mjcs) {
-        mjcs.forEach((mjc) => {
+        mjcs.forEach((mjc: { id: string; job_card_number: string; maintenance_description?: string }) => {
           allResults.push({
             id: mjc.id,
             type: 'mjc',

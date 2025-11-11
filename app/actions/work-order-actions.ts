@@ -7,6 +7,7 @@
 
 import { createServerClient } from '@/lib/database/client';
 import { revalidatePath } from 'next/cache';
+import type { WorkOrderUpdate } from '@/types/database';
 
 interface ActionResponse<T = unknown> {
   success: boolean;
@@ -127,12 +128,14 @@ export async function closeWorkOrder(
   }
 
   // Close the work order
+  const updateData: WorkOrderUpdate & { updated_at?: string } = {
+    status: 'completed',
+    updated_at: new Date().toISOString(),
+  };
   const { data, error } = await supabase
     .from('work_orders')
-    .update({
-      status: 'completed',
-      updated_at: new Date().toISOString(),
-    })
+    // @ts-ignore - Supabase type generation issue with work_orders table
+    .update(updateData)
     .eq('id', woId)
     .select()
     .single();

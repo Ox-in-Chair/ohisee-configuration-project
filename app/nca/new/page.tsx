@@ -35,6 +35,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 
+// Training and Tooltips imports
+import { NCATrainingModule } from '@/components/nca/nca-training-module';
+import { NCAFieldTooltip } from '@/components/nca/nca-field-tooltip';
+import { BookOpen } from 'lucide-react';
+
+// Signature Capture import
+import { SignatureCapture } from '@/components/fields/signature-capture';
+
 // Work Order Service imports
 import { createClient } from '@supabase/supabase-js';
 import { createWorkOrderService } from '@/lib/services/work-order-service';
@@ -92,10 +100,18 @@ export default function NewNCAPage(): React.ReactElement {
   const [showTimeline, setShowTimeline] = useState(false);
   const [showFishbone, setShowFishbone] = useState(false);
 
+  // Training Module State
+  const [showTrainingModule, setShowTrainingModule] = useState(false);
+
   // Work Order Auto-Link State
   const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
   const [workOrderLoading, setWorkOrderLoading] = useState<boolean>(true);
   const [workOrderError, setWorkOrderError] = useState<string | null>(null);
+
+  // Signature State
+  const [concessionSignature, setConcessionSignature] = useState<string | null>(null);
+  const [dispositionSignature, setDispositionSignature] = useState<string | null>(null);
+  const [closeOutSignature, setCloseOutSignature] = useState<string | null>(null);
 
   // Initialize react-hook-form with Zod validation
   const {
@@ -390,6 +406,18 @@ export default function NewNCAPage(): React.ReactElement {
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
+      {/* Training Module Button */}
+      <div className="mb-4 flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowTrainingModule(true)}
+          className="flex items-center gap-2"
+        >
+          <BookOpen className="h-4 w-4" />
+          Training Module
+        </Button>
+      </div>
       <h1 data-testid="nca-form-title" className="text-3xl font-bold mb-8">
         Non-Conformance Advice Form
       </h1>
@@ -488,7 +516,10 @@ export default function NewNCAPage(): React.ReactElement {
         {/* Section 2: NC Classification */}
         <Card data-testid="nca-section-2" className="mb-6">
           <CardHeader>
-            <CardTitle>Section 2: NC Classification</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Section 2: NC Classification
+              <NCAFieldTooltip fieldName="nc_type" />
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -567,6 +598,7 @@ export default function NewNCAPage(): React.ReactElement {
                 data-testid="nc-product-description"
                 error={errors.nc_product_description?.message}
                 placeholder="Enter product description or packaging material code"
+                tooltip={<NCAFieldTooltip fieldName="nc_product_description" />}
               />
               {ncProductDescription.length > 0 && (
                 <CharacterCounter
@@ -706,19 +738,35 @@ export default function NewNCAPage(): React.ReactElement {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Team Leader</Label>
-              <Input
+              <SmartInput
+                label="Team Leader"
+                value={watch('concession_team_leader') || ''}
+                onChange={(value) => setValue('concession_team_leader', value)}
                 data-testid="concession-team-leader"
-                type="text"
-                {...register('concession_team_leader')}
+                enableVoiceInput={true}
+                enableTextToSpeech={true}
+                enableRewrite={false}
               />
             </div>
             <div className="space-y-2">
-              <Label>Digital Signature</Label>
-              <Input
+              <SignatureCapture
+                label="Digital Signature"
+                value={concessionSignature}
+                onChange={(sig) => {
+                  setConcessionSignature(sig);
+                  if (sig) {
+                    setValue('concession_signature', {
+                      type: 'manual' as const,
+                      data: sig,
+                      name: 'Team Leader', // TODO: Get from auth
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    setValue('concession_signature', null);
+                  }
+                }}
+                required={false}
                 data-testid="concession-signature"
-                type="text"
-                placeholder="Sign here"
               />
             </div>
           </CardContent>
@@ -731,7 +779,10 @@ export default function NewNCAPage(): React.ReactElement {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Cross Contamination?</Label>
+              <div className="flex items-center gap-2">
+                <Label>Cross Contamination?</Label>
+                <NCAFieldTooltip fieldName="cross_contamination" />
+              </div>
               <RadioGroup
                 onValueChange={(value) =>
                   setValue('cross_contamination', value === 'yes', {
@@ -760,13 +811,17 @@ export default function NewNCAPage(): React.ReactElement {
 
             {crossContamination && (
               <div className="border-l-4 border-yellow-500 pl-4 space-y-2">
-                <Label>Back Tracking Person *</Label>
-                <Input type="text" {...register('back_tracking_person')} />
-                {errors.back_tracking_person && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {errors.back_tracking_person.message}
-                  </p>
-                )}
+                <SmartInput
+                  label="Back Tracking Person *"
+                  value={watch('back_tracking_person') || ''}
+                  onChange={(value) => setValue('back_tracking_person', value)}
+                  data-testid="back-tracking-person"
+                  enableVoiceInput={true}
+                  enableTextToSpeech={true}
+                  enableRewrite={false}
+                  error={errors.back_tracking_person?.message}
+                  required
+                />
               </div>
             )}
 
@@ -787,6 +842,39 @@ export default function NewNCAPage(): React.ReactElement {
                 onCheckedChange={(checked) => setValue('nca_logged', Boolean(checked))}
               />
               <Label htmlFor="nca-logged">NCA Logged</Label>
+            </div>
+
+            {/* Segregation Area */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Segregation Area (Procedure 5.7)</Label>
+                <NCAFieldTooltip fieldName="segregation_area" />
+              </div>
+              <select
+                {...register('segregation_area')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                data-testid="segregation-area"
+              >
+                <option value="">Select segregation area...</option>
+                <option value="raw-materials">NC Product Area (Raw Materials)</option>
+                <option value="wip">NC Product Area (WIP)</option>
+                <option value="finished-goods">NC Product Area (Finished Goods)</option>
+                <option value="other">Other - Description required</option>
+              </select>
+              {watch('segregation_area') === 'other' && (
+                <div className="mt-2">
+                  <SmartInput
+                    label="Specify Other Segregation Area"
+                    value={watch('segregation_area_other') || ''}
+                    onChange={(value) => setValue('segregation_area_other', value)}
+                    placeholder="Enter segregation area description"
+                    data-testid="segregation-area-other"
+                    enableVoiceInput={true}
+                    enableTextToSpeech={true}
+                    enableRewrite={false}
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -861,33 +949,41 @@ export default function NewNCAPage(): React.ReactElement {
 
             {dispositionAction === 'rework' && (
               <div className="border-l-4 border-blue-500 pl-4 space-y-2">
-                <Label>Rework Instruction *</Label>
-                <Textarea
-                  data-testid="rework-instruction"
+                <EnhancedTextarea
+                  label="Rework Instruction *"
+                  value={watch('rework_instruction') || ''}
+                  onChange={(value) => setValue('rework_instruction', value)}
                   rows={3}
-                  {...register('rework_instruction')}
+                  data-testid="rework-instruction"
+                  fieldName="rework_instruction"
+                  enableVoiceInput={true}
+                  enableTextToSpeech={true}
+                  enableRewrite={false}
+                  error={errors.rework_instruction?.message}
+                  required
                 />
-                {errors.rework_instruction && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {errors.rework_instruction.message}
-                  </p>
-                )}
               </div>
             )}
 
-            {!dispositionAction || dispositionAction !== 'rework' ? (
-              <div className="space-y-2">
-                <Label>Rework Instruction</Label>
-                <Textarea data-testid="rework-instruction" rows={3} />
-              </div>
-            ) : null}
-
             <div className="space-y-2">
-              <Label>Authorized Signature</Label>
-              <Input
+              <SignatureCapture
+                label="Authorized Signature"
+                value={dispositionSignature}
+                onChange={(sig) => {
+                  setDispositionSignature(sig);
+                  if (sig) {
+                    setValue('disposition_signature', {
+                      type: 'manual' as const,
+                      data: sig,
+                      name: 'Production Manager', // TODO: Get from auth
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    setValue('disposition_signature', null);
+                  }
+                }}
+                required={false}
                 data-testid="disposition-signature"
-                type="text"
-                placeholder="Sign here"
               />
             </div>
           </CardContent>
@@ -992,11 +1088,14 @@ export default function NewNCAPage(): React.ReactElement {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Closed Out By</Label>
-              <Input
+              <SmartInput
+                label="Closed Out By"
+                value={watch('close_out_by') || ''}
+                onChange={(value) => setValue('close_out_by', value)}
                 data-testid="close-out-by"
-                type="text"
-                {...register('close_out_by')}
+                enableVoiceInput={true}
+                enableTextToSpeech={true}
+                enableRewrite={false}
               />
             </div>
             <div className="space-y-2">
@@ -1008,11 +1107,24 @@ export default function NewNCAPage(): React.ReactElement {
               />
             </div>
             <div className="col-span-2 space-y-2">
-              <Label>Management Signature</Label>
-              <Input
+              <SignatureCapture
+                label="Management Signature"
+                value={closeOutSignature}
+                onChange={(sig) => {
+                  setCloseOutSignature(sig);
+                  if (sig) {
+                    setValue('close_out_signature', {
+                      type: 'manual' as const,
+                      data: sig,
+                      name: 'Management', // TODO: Get from auth
+                      timestamp: new Date().toISOString(),
+                    });
+                  } else {
+                    setValue('close_out_signature', null);
+                  }
+                }}
+                required={false}
                 data-testid="close-out-signature"
-                type="text"
-                placeholder="Sign here"
               />
             </div>
           </CardContent>
@@ -1114,6 +1226,12 @@ export default function NewNCAPage(): React.ReactElement {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Training Module Modal */}
+      <NCATrainingModule
+        open={showTrainingModule}
+        onOpenChange={setShowTrainingModule}
+      />
 
       {/* Fishbone Diagram Modal */}
       <Dialog open={showFishbone} onOpenChange={setShowFishbone}>

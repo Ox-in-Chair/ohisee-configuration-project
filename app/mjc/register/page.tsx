@@ -44,7 +44,7 @@ async function fetchMJCs(
   urgency?: string,
   search?: string,
   sort?: string,
-  sortDir?: 'asc' | 'desc' = 'desc'
+  sortDir: 'asc' | 'desc' = 'desc'
 ): Promise<{ data: MJCTableData[]; total: number; page: number; totalPages: number }> {
   const supabase = createServerClient();
   const itemsPerPage = 25;

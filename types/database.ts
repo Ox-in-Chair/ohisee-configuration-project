@@ -39,6 +39,8 @@ export type NCType =
 
 export type QuantityUnit = 'kg' | 'units' | 'meters' | 'boxes' | 'pallets';
 
+export type SegregationArea = 'raw-materials' | 'wip' | 'finished-goods' | 'other';
+
 export type MJCStatus =
   | 'draft'
   | 'open'
@@ -252,6 +254,9 @@ export interface NCA {
   back_tracking_completed: boolean;
   hold_label_completed: boolean;
   nca_logged: boolean;
+  segregation_area: string | null;
+  segregation_area_other: string | null;
+  relocation_notes: string | null; // Notes documenting relocation after disposition
 
   // Section 8: Disposition
   disposition_reject: boolean;
@@ -283,6 +288,8 @@ export interface NCA {
   updated_at: string;
   submitted_at: string | null;
   closed_at: string | null;
+  close_out_due_date: string | null;
+  is_overdue: boolean;
 }
 
 export interface NCAInsert {
@@ -316,6 +323,9 @@ export interface NCAInsert {
   back_tracking_completed?: boolean;
   hold_label_completed?: boolean;
   nca_logged?: boolean;
+  segregation_area?: string | null;
+  segregation_area_other?: string | null;
+  relocation_notes?: string | null; // Notes documenting relocation after disposition
   disposition_reject?: boolean;
   disposition_credit?: boolean;
   disposition_uplift?: boolean;

@@ -60,6 +60,8 @@ export interface NCAFormData {
   back_tracking_completed: boolean;
   hold_label_completed: boolean;
   nca_logged: boolean;
+  segregation_area?: 'area-a' | 'area-b' | 'labeled' | 'other' | null;
+  segregation_area_other?: string;
 
   // Section 8: Disposition
   disposition_action?: 'reject' | 'credit' | 'uplift' | 'rework' | 'concession' | 'discard';

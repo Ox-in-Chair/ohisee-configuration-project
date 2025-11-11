@@ -57,8 +57,8 @@ async function executeSql(sql: string, fileName: string): Promise<{ success: boo
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': SUPABASE_SERVICE_ROLE_KEY,
-              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              'apikey': SUPABASE_SERVICE_ROLE_KEY || '',
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY || ''}`,
             },
             body: JSON.stringify({ sql_query: statement }),
           });

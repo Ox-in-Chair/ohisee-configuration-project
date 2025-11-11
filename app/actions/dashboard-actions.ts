@@ -42,8 +42,8 @@ export async function getNCTrendData(): Promise<Array<{ week: string; count: num
   }
 
   // Count NCAs per week
-  data.forEach((nca) => {
-    const ncaDate = new Date(nca.created_at || nca.date);
+  data.forEach((nca: { created_at?: string; date?: string }) => {
+    const ncaDate = new Date(nca.created_at || nca.date || new Date());
     const weekKey = getWeekKey(ncaDate);
     if (weekCounts[weekKey] !== undefined) {
       weekCounts[weekKey]++;
@@ -88,7 +88,7 @@ export async function getMaintenanceResponseData(): Promise<
     low: [],
   };
 
-  data.forEach((mjc) => {
+  data.forEach((mjc: { urgency?: string; created_at?: string; closed_at?: string }) => {
     if (!mjc.urgency || !mjc.created_at || !mjc.closed_at) return;
 
     const created = new Date(mjc.created_at);

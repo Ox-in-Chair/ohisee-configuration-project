@@ -12,8 +12,9 @@ export interface VoiceInputProps {
   language?: string;
   continuous?: boolean;
   className?: string;
-  buttonSize?: 'sm' | 'md' | 'lg';
+  buttonSize?: 'default' | 'sm' | 'lg' | 'icon' | 'icon-sm' | 'icon-lg';
   buttonVariant?: 'default' | 'outline' | 'ghost';
+  timeout?: number; // Timeout in milliseconds (default: 60000 = 60 seconds, max: 300000 = 5 minutes)
 }
 
 /**
@@ -39,15 +40,18 @@ export function VoiceInput({
   onError,
   disabled = false,
   language = 'en-GB',
-  continuous = false,
+  continuous = true, // Default to true to prevent mid-sentence cutoffs
   className,
-  buttonSize = 'sm',
+  buttonSize = 'sm' as const,
   buttonVariant = 'outline',
+  timeout = 60000, // Default 60 seconds, configurable up to 5 minutes
 }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSpeechTimeRef = useRef<number>(Date.now());
 
   // Check if Speech Recognition is supported
   useEffect(() => {
@@ -59,17 +63,30 @@ export function VoiceInput({
         setIsSupported(true);
         recognitionRef.current = new SpeechRecognition();
         const recognition = recognitionRef.current;
+        if (!recognition) return;
 
         recognition.continuous = continuous;
-        recognition.interimResults = false;
+        recognition.interimResults = true; // Enable interim results to show real-time transcription
         recognition.lang = language;
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
+          // Update last speech time to detect if user is still speaking
+          lastSpeechTimeRef.current = Date.now();
+
+          // Get all results (interim and final)
           const transcript = Array.from(event.results)
             .map((result) => result[0].transcript)
             .join(' ');
 
-          onTranscript(transcript);
+          // Only call onTranscript with final results to avoid too many updates
+          const finalTranscript = Array.from(event.results)
+            .filter((result) => result.isFinal)
+            .map((result) => result[0].transcript)
+            .join(' ');
+
+          if (finalTranscript) {
+            onTranscript(finalTranscript);
+          }
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -98,7 +115,27 @@ export function VoiceInput({
         };
 
         recognition.onend = () => {
-          setIsListening(false);
+          // Check if user was speaking recently (within last 2 seconds)
+          const timeSinceLastSpeech = Date.now() - lastSpeechTimeRef.current;
+          const stillSpeaking = timeSinceLastSpeech < 2000;
+
+          if (stillSpeaking && isListening) {
+            // User is still speaking, restart recognition
+            try {
+              recognition.start();
+            } catch (err) {
+              // Recognition already started or error, just update state
+              setIsListening(false);
+            }
+          } else {
+            setIsListening(false);
+          }
+
+          // Clear timeout
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+          }
         };
       } else {
         setIsSupported(false);
@@ -107,6 +144,15 @@ export function VoiceInput({
     }
   }, [language, continuous, onTranscript, onError]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   // Start listening
   const startListening = useCallback(() => {
     if (!recognitionRef.current || disabled || !isSupported) return;
@@ -114,14 +160,33 @@ export function VoiceInput({
     try {
       setError(null);
       setIsListening(true);
+      lastSpeechTimeRef.current = Date.now();
       recognitionRef.current.start();
+
+      // Set timeout to stop listening after specified duration
+      // Clamp timeout between 10 seconds and 5 minutes
+      const clampedTimeout = Math.max(10000, Math.min(300000, timeout));
+      timeoutRef.current = setTimeout(() => {
+        if (recognitionRef.current && isListening) {
+          recognitionRef.current.stop();
+          setIsListening(false);
+        }
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      }, clampedTimeout);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start listening';
       setError(errorMessage);
       onError?.(errorMessage);
       setIsListening(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
-  }, [disabled, isSupported, onError]);
+  }, [disabled, isSupported, onError, timeout, isListening]);
 
   // Stop listening
   const stopListening = useCallback(() => {
@@ -132,6 +197,11 @@ export function VoiceInput({
       } catch (err) {
         console.error('Error stopping recognition:', err);
       }
+    }
+    // Clear timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, [isListening]);
 
@@ -230,8 +300,8 @@ interface SpeechRecognitionErrorEvent extends Event {
 
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
   }
 }
 
