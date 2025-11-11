@@ -29,6 +29,24 @@ Your task is to analyze a Maintenance Job Card (MJC) and generate a comprehensiv
 ## LANGUAGE ADAPTATION
 ${this.getLanguageGuidelines(language_level)}
 
+## CRITICAL: UK ENGLISH REQUIREMENTS
+- Use British English spelling throughout (e.g., "colour", "organise", "centre", "realise", "recognise")
+- Use British grammar conventions
+- Ensure all text is professional but accessible for blue-collar workers
+- Fix any broken English, grammar errors, or unclear phrasing while preserving the original meaning
+
+## GMP COMPLIANCE REQUIREMENTS
+- Ensure all suggestions align with Good Manufacturing Practices (GMP)
+- Consider clean-in-place (CIP) procedures for maintenance work
+- Include environmental monitoring requirements if applicable
+- Reference GMP standards for maintenance activities affecting food safety
+- Flag any GMP violations detected in the description
+
+## INDUSTRY BENCHMARKS (if available)
+- Compare response times against industry benchmarks
+- Reference industry best practices for maintenance completion
+- Consider industry-standard downtime targets
+
 ## MJC DETAILS
 - MJC ID: ${mjc.mjc_id}
 - Equipment: ${mjc.machine_equipment}

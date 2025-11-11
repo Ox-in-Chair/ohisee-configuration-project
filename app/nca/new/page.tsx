@@ -15,12 +15,25 @@ import { createNCA, saveDraftNCA } from '@/app/actions/nca-actions';
 import { FileUpload } from '@/components/file-upload';
 import { uploadNCAFile, listNCAFiles, deleteNCAFile } from '@/app/actions/file-actions';
 
-// AI Integration imports
-import { AIEnhancedTextarea } from '@/components/ai-enhanced-textarea';
-import { AIAssistantModal } from '@/components/ai-assistant-modal';
+// Quality Validation imports
+import { EnhancedTextarea } from '@/components/enhanced-textarea';
+import { SmartInput } from '@/components/smart-input';
+import { WritingAssistantModal } from '@/components/writing-assistant-modal';
 import { QualityGateModal } from '@/components/quality-gate-modal';
-import { useAIQuality } from '@/hooks/useAIQuality';
+import { useQualityValidation } from '@/hooks/useQualityValidation';
 import type { Suggestion } from '@/lib/ai/types';
+
+// Visualization imports
+import { FiveWhyBuilder } from '@/components/visualizations/five-why-builder';
+import { TimelineBuilder } from '@/components/visualizations/timeline-builder';
+import { FishboneDiagram } from '@/components/visualizations/fishbone-diagram';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 // Work Order Service imports
 import { createClient } from '@supabase/supabase-js';
@@ -57,8 +70,8 @@ function CharacterCounter({
 }
 
 /**
- * NCA Form Page Component - AI Integrated
- * Production-ready with AI quality checks and suggestions
+ * NCA Form Page Component - Quality Validation Integrated
+ * Production-ready with quality validation and writing assistance
  */
 export default function NewNCAPage(): React.ReactElement {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,11 +81,16 @@ export default function NewNCAPage(): React.ReactElement {
   const [ncaId, setNcaId] = useState<string | null>(null);
   const [isConfidential, setIsConfidential] = useState(false);
 
-  // AI Integration State
+  // Quality Validation State
   const [showSuggestionModal, setShowSuggestionModal] = useState(false);
   const [showQualityGate, setShowQualityGate] = useState(false);
   const [currentSuggestion, setCurrentSuggestion] = useState<Suggestion | null>(null);
   const [currentFieldForSuggestion, setCurrentFieldForSuggestion] = useState<string | null>(null);
+
+  // Visualization Modals State
+  const [showFiveWhy, setShowFiveWhy] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showFishbone, setShowFishbone] = useState(false);
 
   // Work Order Auto-Link State
   const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
@@ -127,7 +145,18 @@ export default function NewNCAPage(): React.ReactElement {
         const workOrderService = createWorkOrderService(supabase);
 
         // TODO: Get real user ID from auth context
-        const userId = 'current-user-id';
+        // For now, skip work order fetch if no valid user ID
+        // UUID validation: check if it's a valid UUID format
+        const userId = 'current-user-id'; // Placeholder - replace with real auth user ID
+        
+        // Validate UUID format before querying (basic check)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+          // Skip work order fetch if user ID is not a valid UUID
+          // This is expected in development when auth is not set up
+          setWorkOrderError(null);
+          return;
+        }
 
         // Fetch active work order
         const workOrder = await workOrderService.getActiveWorkOrder(userId);
@@ -153,11 +182,11 @@ export default function NewNCAPage(): React.ReactElement {
     fetchActiveWorkOrder();
   }, [setValue]);
 
-  // Initialize AI Quality Hook
-  const aiQuality = useAIQuality({
+  // Initialize Quality Validation Hook
+  const qualityValidation = useQualityValidation({
     formType: 'nca',
     userId: 'current-user-id', // TODO: Get from auth
-    debounceMs: 3000, // Check quality 3 seconds after user stops typing
+    debounceMs: 3000, // Validate field 3 seconds after user stops typing
   });
 
   // Watch form fields
@@ -174,42 +203,42 @@ export default function NewNCAPage(): React.ReactElement {
     (fieldName: string, value: string) => {
       setValue(fieldName as any, value);
 
-      // Trigger AI quality check for critical fields
+      // Trigger validation for critical fields
       if (['nc_description', 'root_cause_analysis', 'corrective_action'].includes(fieldName)) {
         const formData = watch();
-        aiQuality.checkQualityInline({
+        qualityValidation.validateField({
           ...formData,
           [fieldName]: value,
         } as any);
       }
     },
-    [setValue, watch, aiQuality]
+    [setValue, watch, qualityValidation]
   );
 
-  // Handle AI suggestion request
-  const handleAIHelp = useCallback(
+  // Handle writing assistance request
+  const handleGetHelp = useCallback(
     async (fieldName: string) => {
       setCurrentFieldForSuggestion(fieldName);
       setShowSuggestionModal(true);
+      setCurrentSuggestion(null); // Clear previous suggestion
 
       const formData = watch();
-      await aiQuality.generateSuggestion(formData as any);
+      await qualityValidation.getWritingHelp(formData as any);
 
-      if (aiQuality.suggestions) {
-        setCurrentSuggestion(aiQuality.suggestions);
-      }
+      // Set suggestion even if null - modal will handle display
+      setCurrentSuggestion(qualityValidation.suggestions || null);
     },
-    [watch, aiQuality]
+    [watch, qualityValidation]
   );
 
-  // Handle accepting AI suggestion
+  // Handle accepting writing suggestion
   const handleAcceptSuggestion = useCallback(
     (suggestionText: string) => {
       if (currentFieldForSuggestion && currentSuggestion) {
         setValue(currentFieldForSuggestion as any, suggestionText);
 
         // Record suggestion acceptance
-        aiQuality.acceptSuggestion(
+        qualityValidation.acceptSuggestion(
           currentSuggestion,
           currentFieldForSuggestion,
           suggestionText
@@ -220,17 +249,17 @@ export default function NewNCAPage(): React.ReactElement {
       setCurrentSuggestion(null);
       setCurrentFieldForSuggestion(null);
     },
-    [currentFieldForSuggestion, currentSuggestion, setValue, aiQuality]
+    [currentFieldForSuggestion, currentSuggestion, setValue, qualityValidation]
   );
 
-  // Handle rejecting AI suggestion
+  // Handle rejecting writing suggestion
   const handleRejectSuggestion = useCallback(() => {
     setShowSuggestionModal(false);
     setCurrentSuggestion(null);
     setCurrentFieldForSuggestion(null);
   }, []);
 
-  // Form submission handler with AI quality gate
+  // Form submission handler with validation gate
   const onSubmit = useCallback(
     async (data: NCAFormData) => {
       setIsSubmitting(true);
@@ -238,8 +267,8 @@ export default function NewNCAPage(): React.ReactElement {
       setSubmitSuccess(false);
 
       try {
-        // Step 1: Run AI validation (quality gate)
-        const validation = await aiQuality.validateBeforeSubmit(data as any, isConfidential);
+        // Step 1: Run validation (submission gate)
+        const validation = await qualityValidation.validateSubmission(data as any, isConfidential);
 
         if (!validation.success) {
           setSubmitError(validation.error || 'Validation failed');
@@ -247,19 +276,19 @@ export default function NewNCAPage(): React.ReactElement {
           return;
         }
 
-        // Step 2: Check if quality gate passed
+        // Step 2: Check if validation passed
         if (
           validation.data &&
           !validation.data.ready_for_submission &&
           !isConfidential
         ) {
-          // Quality score < 75 - show quality gate modal
+          // Validation failed - show validation modal
           setShowQualityGate(true);
           setIsSubmitting(false);
           return;
         }
 
-        // Step 3: Quality passed or confidential - proceed with submission
+        // Step 3: Validation passed or confidential - proceed with submission
         const response = await createNCA(data);
 
         if (!response.success) {
@@ -286,7 +315,7 @@ export default function NewNCAPage(): React.ReactElement {
         setIsSubmitting(false);
       }
     },
-    [aiQuality, isConfidential]
+    [qualityValidation, isConfidential]
   );
 
   // Handle quality gate "Go Back" button
@@ -294,24 +323,39 @@ export default function NewNCAPage(): React.ReactElement {
     setShowQualityGate(false);
   }, []);
 
-  // Handle quality gate "Submit Anyway" (supervisor override)
-  const handleQualityGateSubmitAnyway = useCallback(async () => {
-    // TODO: Implement supervisor override logic
-    // For now, just close modal and allow submission
-    setShowQualityGate(false);
+  // Handle quality gate "Submit for Manager Approval"
+  const handleQualityGateSubmitAnyway = useCallback(
+    async (justification?: string) => {
+      // TODO: Implement manager approval workflow
+      // This should:
+      // 1. Record the approval request with manager ID and justification
+      // 2. Set submission status to "pending_manager_approval"
+      // 3. Notify manager for approval
+      // 4. Log for audit trail
 
-    const data = watch();
-    const response = await createNCA(data);
+      if (justification) {
+        console.log('Manager approval requested with justification:', justification);
+        // TODO: Call recordManagerApprovalAction from quality-validation-actions
+      } else {
+        console.log('Submission override requested (not recommended)');
+      }
 
-    if (!response.success) {
-      setSubmitError(response.error || 'Failed to submit NCA');
-      return;
-    }
+      setShowQualityGate(false);
 
-    setSubmitSuccess(true);
-    setNcaNumber(response.data?.nca_number || null);
-    setNcaId(response.data?.id || null);
-  }, [watch]);
+      const data = watch();
+      const response = await createNCA(data);
+
+      if (!response.success) {
+        setSubmitError(response.error || 'Failed to submit NCA');
+        return;
+      }
+
+      setSubmitSuccess(true);
+      setNcaNumber(response.data?.nca_number || null);
+      setNcaId(response.data?.id || null);
+    },
+    [watch]
+  );
 
   // Draft save handler
   const onSaveDraft = useCallback(async () => {
@@ -371,7 +415,7 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 1: NCA Identification</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label>Date</Label>
               <Input
                 data-testid="nca-date"
@@ -380,7 +424,7 @@ export default function NewNCAPage(): React.ReactElement {
                 readOnly
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>NCA Number</Label>
               <Input
                 data-testid="nca-number"
@@ -389,7 +433,7 @@ export default function NewNCAPage(): React.ReactElement {
                 readOnly
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Raised By</Label>
               <Input
                 data-testid="nca-raised-by"
@@ -398,7 +442,7 @@ export default function NewNCAPage(): React.ReactElement {
                 readOnly
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>WO Number</Label>
               <div className="relative">
                 <Input
@@ -446,14 +490,15 @@ export default function NewNCAPage(): React.ReactElement {
           <CardHeader>
             <CardTitle>Section 2: NC Classification</CardTitle>
           </CardHeader>
-          <CardContent>
-            <RadioGroup
-              onValueChange={(value) =>
-                setValue('nc_type', value as NCAFormData['nc_type'], {
-                  shouldValidate: true,
-                })
-              }
-            >
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <RadioGroup
+                onValueChange={(value) =>
+                  setValue('nc_type', value as NCAFormData['nc_type'], {
+                    shouldValidate: true,
+                  })
+                }
+              >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
                   value="raw-material"
@@ -490,6 +535,7 @@ export default function NewNCAPage(): React.ReactElement {
             {errors.nc_type && (
               <p className="text-red-600 text-sm mt-2">{errors.nc_type.message}</p>
             )}
+            </div>
           </CardContent>
         </Card>
 
@@ -499,27 +545,29 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 3: Supplier & Product Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label>Supplier Name</Label>
-              <Input
+            <div className="space-y-2">
+              <SmartInput
+                label="Supplier Name"
+                value={watch('supplier_name') || ''}
+                onChange={(value) => setValue('supplier_name', value)}
+                fieldName="supplier_name"
+                showSuggestions={true}
                 data-testid="supplier-name"
-                type="text"
-                {...register('supplier_name')}
+                error={errors.supplier_name?.message}
               />
             </div>
-            <div>
-              <Label>NC Product Description *</Label>
-              <Input
-                data-testid="nc-product-description"
-                type="text"
+            <div className="space-y-2">
+              <SmartInput
+                label="NC Product Description"
+                value={ncProductDescription}
+                onChange={(value) => handleFieldChange('nc_product_description', value)}
+                fieldName="nc_product_description"
+                showSuggestions={true}
                 required
-                {...register('nc_product_description')}
+                data-testid="nc-product-description"
+                error={errors.nc_product_description?.message}
+                placeholder="Enter product description or packaging material code"
               />
-              {errors.nc_product_description && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.nc_product_description.message}
-                </p>
-              )}
               {ncProductDescription.length > 0 && (
                 <CharacterCounter
                   current={ncProductDescription.length}
@@ -546,22 +594,37 @@ export default function NewNCAPage(): React.ReactElement {
           <CardHeader>
             <CardTitle>Section 4: NC Description</CardTitle>
           </CardHeader>
-          <CardContent>
-            <AIEnhancedTextarea
+          <CardContent className="space-y-4">
+            {/* Visualization Tools */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTimeline(true)}
+                className="text-xs"
+              >
+                📅 Build Timeline
+              </Button>
+            </div>
+
+            <EnhancedTextarea
               label="Description"
               value={ncDescription}
               onChange={(value) => handleFieldChange('nc_description', value)}
-              onKangopakCore={() => handleAIHelp('nc_description')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
+              onGetHelp={() => handleGetHelp('nc_description')}
+              qualityScore={qualityValidation.qualityScore?.score}
+              isCheckingQuality={qualityValidation.isChecking}
+              isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}
               minLength={100}
               maxLength={2000}
               rows={5}
               required={true}
-              placeholder="Example: Laminate delamination found on batch B-2045 during inspection at 14:30 in Finishing Area 2. Approximately 150 units affected. No product release yet."
-              data-testid="nc-description-ai"
+              fieldName="nc_description"
+              context={{ ncType: watch('nc_type') }}
+              showChecklist={true}
+              data-testid="nc-description"
               error={errors.nc_description?.message}
             />
           </CardContent>
@@ -574,15 +637,16 @@ export default function NewNCAPage(): React.ReactElement {
               Section 5: Machine Status (CRITICAL)
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={machineStatus}
-              onValueChange={(value) =>
-                setValue('machine_status', value as 'down' | 'operational', {
-                  shouldValidate: true,
-                })
-              }
-            >
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <RadioGroup
+                value={machineStatus}
+                onValueChange={(value) =>
+                  setValue('machine_status', value as 'down' | 'operational', {
+                    shouldValidate: true,
+                  })
+                }
+              >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem
                   value="down"
@@ -605,10 +669,11 @@ export default function NewNCAPage(): React.ReactElement {
                 {errors.machine_status.message}
               </p>
             )}
+            </div>
 
             {machineStatus === 'down' && (
               <div className="mt-4 space-y-4 border-l-4 border-red-500 pl-4">
-                <div>
+                <div className="space-y-2">
                   <Label>Machine Down Since</Label>
                   <Input type="datetime-local" {...register('machine_down_since')} />
                   {errors.machine_down_since && (
@@ -617,7 +682,7 @@ export default function NewNCAPage(): React.ReactElement {
                     </p>
                   )}
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label>Estimated Downtime (minutes)</Label>
                   <Input
                     type="number"
@@ -640,7 +705,7 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 6: Out of Spec Concession</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Team Leader</Label>
               <Input
                 data-testid="concession-team-leader"
@@ -648,7 +713,7 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('concession_team_leader')}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Digital Signature</Label>
               <Input
                 data-testid="concession-signature"
@@ -665,7 +730,7 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 7: Immediate Correction</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Cross Contamination?</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -694,7 +759,7 @@ export default function NewNCAPage(): React.ReactElement {
             </div>
 
             {crossContamination && (
-              <div className="border-l-4 border-yellow-500 pl-4">
+              <div className="border-l-4 border-yellow-500 pl-4 space-y-2">
                 <Label>Back Tracking Person *</Label>
                 <Input type="text" {...register('back_tracking_person')} />
                 {errors.back_tracking_person && (
@@ -732,7 +797,7 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 8: Disposition</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Disposition Action</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -795,7 +860,7 @@ export default function NewNCAPage(): React.ReactElement {
             </div>
 
             {dispositionAction === 'rework' && (
-              <div className="border-l-4 border-blue-500 pl-4">
+              <div className="border-l-4 border-blue-500 pl-4 space-y-2">
                 <Label>Rework Instruction *</Label>
                 <Textarea
                   data-testid="rework-instruction"
@@ -811,13 +876,13 @@ export default function NewNCAPage(): React.ReactElement {
             )}
 
             {!dispositionAction || dispositionAction !== 'rework' ? (
-              <div>
+              <div className="space-y-2">
                 <Label>Rework Instruction</Label>
                 <Textarea data-testid="rework-instruction" rows={3} />
               </div>
             ) : null}
 
-            <div>
+            <div className="space-y-2">
               <Label>Authorized Signature</Label>
               <Input
                 data-testid="disposition-signature"
@@ -834,20 +899,43 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 9: Root Cause Analysis</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <AIEnhancedTextarea
+            {/* Visualization Tools */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFiveWhy(true)}
+                className="text-xs"
+              >
+                🔍 5-Why Builder
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFishbone(true)}
+                className="text-xs"
+              >
+                🐟 Fishbone Diagram
+              </Button>
+            </div>
+
+            <EnhancedTextarea
               label="Root Cause Analysis"
               value={rootCauseAnalysis}
               onChange={(value) => handleFieldChange('root_cause_analysis', value)}
-              onKangopakCore={() => handleAIHelp('root_cause_analysis')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
+              onGetHelp={() => handleGetHelp('root_cause_analysis')}
+              qualityScore={qualityValidation.qualityScore?.score}
+              isCheckingQuality={qualityValidation.isChecking}
+              isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}
               minLength={50}
               maxLength={2000}
               rows={5}
-              placeholder="Example: Why did delamination occur? → Adhesive temperature too low. Why? → Heater malfunction. Why? → Sensor drift. Why? → Calibration overdue by 3 weeks. Why? → Maintenance schedule not followed."
-              data-testid="root-cause-analysis-ai"
+              fieldName="root_cause_analysis"
+              showChecklist={true}
+              data-testid="root-cause-analysis"
             />
             <FileUpload
               entityId={ncaId}
@@ -868,20 +956,21 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 10: Corrective Action</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <AIEnhancedTextarea
+            <EnhancedTextarea
               label="Corrective Action"
               value={correctiveAction}
               onChange={(value) => handleFieldChange('corrective_action', value)}
-              onKangopakCore={() => handleAIHelp('corrective_action')}
-              qualityScore={aiQuality.qualityScore?.score}
-              isCheckingQuality={aiQuality.isChecking}
-              isSuggesting={aiQuality.isSuggesting}
+              onGetHelp={() => handleGetHelp('corrective_action')}
+              qualityScore={qualityValidation.qualityScore?.score}
+              isCheckingQuality={qualityValidation.isChecking}
+              isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}
               minLength={50}
               maxLength={2000}
               rows={5}
-              placeholder="Example: 1) Calibrate all adhesive temperature sensors immediately. 2) Implement weekly sensor checks per BRCGS 5.6. 3) Add automated alerts when calibration overdue. 4) Train team leaders on maintenance schedule tracking."
-              data-testid="corrective-action-ai"
+              fieldName="corrective_action"
+              showChecklist={true}
+              data-testid="corrective-action"
             />
             <FileUpload
               entityId={ncaId}
@@ -902,7 +991,7 @@ export default function NewNCAPage(): React.ReactElement {
             <CardTitle>Section 11: Close Out</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label>Closed Out By</Label>
               <Input
                 data-testid="close-out-by"
@@ -910,7 +999,7 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('close_out_by')}
               />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Close Out Date</Label>
               <Input
                 data-testid="close-out-date"
@@ -918,7 +1007,7 @@ export default function NewNCAPage(): React.ReactElement {
                 {...register('close_out_date')}
               />
             </div>
-            <div className="col-span-2">
+            <div className="col-span-2 space-y-2">
               <Label>Management Signature</Label>
               <Input
                 data-testid="close-out-signature"
@@ -959,14 +1048,14 @@ export default function NewNCAPage(): React.ReactElement {
         </div>
       </form>
 
-      {/* AI Assistant Modal (for suggestions) */}
-      <AIAssistantModal
+      {/* Writing Assistant Modal (for suggestions) */}
+      <WritingAssistantModal
         isOpen={showSuggestionModal}
         onClose={() => setShowSuggestionModal(false)}
         onAccept={handleAcceptSuggestion}
         onReject={handleRejectSuggestion}
         suggestion={currentSuggestion}
-        isLoading={aiQuality.isSuggesting}
+        isLoading={qualityValidation.isSuggesting}
       />
 
       {/* Quality Gate Modal (pre-submission validation) */}
@@ -975,11 +1064,78 @@ export default function NewNCAPage(): React.ReactElement {
         onClose={() => setShowQualityGate(false)}
         onGoBack={handleQualityGateGoBack}
         onSubmitAnyway={handleQualityGateSubmitAnyway}
-        validationResult={aiQuality.validationResult}
-        requiresSupervisorOverride={
-          (aiQuality.validationResult?.quality_assessment.score ?? 0) < 75
+        validationResult={qualityValidation.validationResult}
+        requiresManagerApproval={
+          (qualityValidation.validationResult?.quality_assessment.score ?? 0) < 75
         }
       />
+
+      {/* 5-Why Builder Modal */}
+      <Dialog open={showFiveWhy} onOpenChange={setShowFiveWhy}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>5-Why Root Cause Analysis Builder</DialogTitle>
+            <DialogDescription>
+              Build a structured root cause analysis using the 5-Why method. Minimum 3 levels required.
+            </DialogDescription>
+          </DialogHeader>
+          <FiveWhyBuilder
+            initialProblem={ncDescription || 'Non-conformance issue'}
+            minDepth={3}
+            maxDepth={5}
+            onChange={(problem, whys) => {
+              // Preview updates
+            }}
+            onComplete={(problem, whys, rootCause) => {
+              setValue('root_cause_analysis', rootCause);
+              setShowFiveWhy(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Timeline Builder Modal */}
+      <Dialog open={showTimeline} onOpenChange={setShowTimeline}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Timeline Builder</DialogTitle>
+            <DialogDescription>
+              Build a chronological timeline of events (when, where, what happened).
+            </DialogDescription>
+          </DialogHeader>
+          <TimelineBuilder
+            onChange={(events, formattedText) => {
+              // Preview updates
+            }}
+            onComplete={(events, formattedText) => {
+              setValue('nc_description', formattedText);
+              setShowTimeline(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Fishbone Diagram Modal */}
+      <Dialog open={showFishbone} onOpenChange={setShowFishbone}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fishbone Diagram (6M Analysis)</DialogTitle>
+            <DialogDescription>
+              Analyze root causes across 6 categories: Man, Machine, Method, Material, Measurement, Environment.
+            </DialogDescription>
+          </DialogHeader>
+          <FishboneDiagram
+            initialProblem={ncDescription || 'Non-conformance issue'}
+            onChange={(problem, categories, formattedText) => {
+              // Preview updates
+            }}
+            onComplete={(problem, categories, formattedText) => {
+              setValue('root_cause_analysis', formattedText);
+              setShowFishbone(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

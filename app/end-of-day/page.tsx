@@ -106,8 +106,8 @@ export default function EndOfDayPage() {
           .order('created_at', { ascending: false });
 
         // Count incomplete drafts
-        const incompleteNCAs = (ncas || []).filter(n => n.status === 'draft').length;
-        const incompleteMJCs = (mjcs || []).filter(m => m.status === 'draft').length;
+        const incompleteNCAs = (ncas || []).filter((n: any) => n.status === 'draft').length;
+        const incompleteMJCs = (mjcs || []).filter((m: any) => m.status === 'draft').length;
 
         setSummary({
           workOrders: workOrders || [],

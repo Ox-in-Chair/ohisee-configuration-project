@@ -193,23 +193,39 @@ export interface HazardClassification {
 
 export interface ValidationResult {
   readonly valid: boolean;
-  readonly errors: ReadonlyArray<ValidationError>;
-  readonly warnings: ReadonlyArray<ValidationWarning>;
-  readonly quality_assessment: QualityScore;
   readonly ready_for_submission: boolean;
+  readonly requirements?: ReadonlyArray<Requirement>; // What must be addressed (missing info)
+  readonly errors: ReadonlyArray<ValidationError>; // Critical errors that block submission
+  readonly warnings?: ReadonlyArray<ValidationWarning>; // Suggestions for improvement
+  readonly quality_assessment: QualityScore;
+  readonly compliance?: ComplianceResult; // Summary of compliance check
+}
+
+export interface Requirement {
+  readonly field: string; // e.g., "Corrective Action"
+  readonly message: string; // e.g., "Include at least one verification method with timeline."
+  readonly reference?: string; // e.g., "BRCGS 5.7.2" or internal policy reference
+  readonly exampleFix?: string; // e.g., "Example: 'QA will verify on next batch (due 10-Oct)'."
 }
 
 export interface ValidationError {
   readonly field: string;
   readonly message: string;
-  readonly severity: 'critical' | 'error';
+  readonly severity?: 'critical' | 'error';
   readonly brcgs_requirement?: string;
 }
 
 export interface ValidationWarning {
   readonly field: string;
   readonly message: string;
-  readonly suggestion: string;
+  readonly suggestion?: string;
+  readonly brcgs_requirement?: string;
+}
+
+export interface ComplianceResult {
+  readonly passed: boolean;
+  readonly checked_sections?: ReadonlyArray<string>; // e.g., ["BRCGS 5.7.2", "BRCGS 5.3"]
+  readonly notes?: string;
 }
 
 // ============================================================================

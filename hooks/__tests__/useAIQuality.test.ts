@@ -1,18 +1,18 @@
 /**
- * useAIQuality Hook Unit Tests
+ * useQualityValidation Hook Unit Tests
  * Tests debouncing, error handling, state management, and API interactions
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { useAIQuality } from '../useAIQuality';
-import * as aiQualityActions from '@/app/actions/ai-quality-actions';
+import { useQualityValidation } from '../useQualityValidation';
+import * as qualityValidationActions from '@/app/actions/quality-validation-actions';
 import type { QualityScore, Suggestion, ValidationResult } from '@/lib/ai/types';
 
 // Mock the server actions
-jest.mock('@/app/actions/ai-quality-actions');
+jest.mock('@/app/actions/quality-validation-actions');
 
-describe('useAIQuality', () => {
+describe('useQualityValidation', () => {
   const mockUserId = 'user-123';
   const mockFormType = 'nca';
 
@@ -63,22 +63,22 @@ describe('useAIQuality', () => {
     jest.useFakeTimers();
 
     // Default mock implementations
-    (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockResolvedValue({
+    (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockResolvedValue({
       success: true,
       data: mockQualityScore,
     });
 
-    (aiQualityActions.generateSuggestionsAction as jest.Mock).mockResolvedValue({
+    (qualityValidationActions.getWritingAssistanceAction as jest.Mock).mockResolvedValue({
       success: true,
       data: mockSuggestion,
     });
 
-    (aiQualityActions.validateBeforeSubmitAction as jest.Mock).mockResolvedValue({
+    (qualityValidationActions.validateSubmissionAction as jest.Mock).mockResolvedValue({
       success: true,
       data: mockValidationResult,
     });
 
-    (aiQualityActions.recordSuggestionOutcomeAction as jest.Mock).mockResolvedValue({
+    (qualityValidationActions.recordSuggestionOutcomeAction as jest.Mock).mockResolvedValue({
       success: true,
     });
   });
@@ -90,7 +90,7 @@ describe('useAIQuality', () => {
   describe('Initialization', () => {
     it('should initialize with default state', () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -107,7 +107,7 @@ describe('useAIQuality', () => {
 
     it('should accept custom debounce delay', () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 5000,
@@ -118,10 +118,10 @@ describe('useAIQuality', () => {
     });
   });
 
-  describe('checkQualityInline - Debouncing', () => {
+  describe('validateField - Debouncing', () => {
     it('should debounce quality check calls', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 3000,
@@ -132,19 +132,19 @@ describe('useAIQuality', () => {
 
       // Make multiple rapid calls
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       // API should not have been called yet
-      expect(aiQualityActions.analyzeFieldQualityAction).not.toHaveBeenCalled();
+      expect(qualityValidationActions.validateFieldQualityAction).not.toHaveBeenCalled();
 
       // Fast-forward time to trigger debounce
       act(() => {
@@ -153,13 +153,13 @@ describe('useAIQuality', () => {
 
       // Wait for async operations
       await waitFor(() => {
-        expect(aiQualityActions.analyzeFieldQualityAction).toHaveBeenCalledTimes(1);
+        expect(qualityValidationActions.validateFieldQualityAction).toHaveBeenCalledTimes(1);
       });
     });
 
     it('should cancel previous request when new input arrives', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 2000,
@@ -171,7 +171,7 @@ describe('useAIQuality', () => {
 
       // First call
       act(() => {
-        result.current.checkQualityInline(fieldData1);
+        result.current.validateField(fieldData1);
       });
 
       // Advance timer partially
@@ -181,7 +181,7 @@ describe('useAIQuality', () => {
 
       // Second call before first completes
       act(() => {
-        result.current.checkQualityInline(fieldData2);
+        result.current.validateField(fieldData2);
       });
 
       // Advance timer to complete second call
@@ -191,11 +191,11 @@ describe('useAIQuality', () => {
 
       // Wait for completion
       await waitFor(() => {
-        expect(aiQualityActions.analyzeFieldQualityAction).toHaveBeenCalledTimes(1);
+        expect(qualityValidationActions.validateFieldQualityAction).toHaveBeenCalledTimes(1);
       });
 
       // Should have called with second data
-      expect(aiQualityActions.analyzeFieldQualityAction).toHaveBeenCalledWith(
+      expect(qualityValidationActions.validateFieldQualityAction).toHaveBeenCalledWith(
         mockFormType,
         fieldData2,
         mockUserId
@@ -204,7 +204,7 @@ describe('useAIQuality', () => {
 
     it('should update quality score after debounce completes', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -214,7 +214,7 @@ describe('useAIQuality', () => {
       const fieldData = { nc_description: 'Test description' };
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -229,7 +229,7 @@ describe('useAIQuality', () => {
 
     it('should set isChecking to true during API call', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -239,7 +239,7 @@ describe('useAIQuality', () => {
       const fieldData = { nc_description: 'Test' };
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -253,16 +253,16 @@ describe('useAIQuality', () => {
     });
   });
 
-  describe('checkQualityInline - Error Handling', () => {
+  describe('validateField - Error Handling', () => {
     it('should handle API errors gracefully', async () => {
       const errorMessage = 'API call failed';
-      (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockResolvedValue({
+      (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockResolvedValue({
         success: false,
         error: errorMessage,
       });
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -272,7 +272,7 @@ describe('useAIQuality', () => {
       const fieldData = { nc_description: 'Test' };
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -287,12 +287,12 @@ describe('useAIQuality', () => {
     });
 
     it('should handle thrown exceptions', async () => {
-      (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockRejectedValue(
+      (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockRejectedValue(
         new Error('Network error')
       );
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -302,7 +302,7 @@ describe('useAIQuality', () => {
       const fieldData = { nc_description: 'Test' };
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -317,13 +317,13 @@ describe('useAIQuality', () => {
 
     it('should clear error on successful subsequent call', async () => {
       // First call fails
-      (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockResolvedValueOnce({
+      (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockResolvedValueOnce({
         success: false,
         error: 'First error',
       });
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -334,7 +334,7 @@ describe('useAIQuality', () => {
 
       // First call
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -346,13 +346,13 @@ describe('useAIQuality', () => {
       });
 
       // Second call succeeds
-      (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockResolvedValue({
+      (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockResolvedValue({
         success: true,
         data: mockQualityScore,
       });
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -366,10 +366,10 @@ describe('useAIQuality', () => {
     });
   });
 
-  describe('generateSuggestion', () => {
+  describe('getWritingHelp', () => {
     it('should generate AI suggestions immediately (no debounce)', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -381,11 +381,11 @@ describe('useAIQuality', () => {
       };
 
       await act(async () => {
-        await result.current.generateSuggestion(formData);
+        await result.current.getWritingHelp(formData);
       });
 
-      expect(aiQualityActions.generateSuggestionsAction).toHaveBeenCalledTimes(1);
-      expect(aiQualityActions.generateSuggestionsAction).toHaveBeenCalledWith(
+      expect(qualityValidationActions.getWritingAssistanceAction).toHaveBeenCalledTimes(1);
+      expect(qualityValidationActions.getWritingAssistanceAction).toHaveBeenCalledWith(
         mockFormType,
         formData,
         mockUserId
@@ -396,7 +396,7 @@ describe('useAIQuality', () => {
 
     it('should set isSuggesting to true during API call', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -406,13 +406,13 @@ describe('useAIQuality', () => {
 
       let suggestingDuringCall = false;
 
-      (aiQualityActions.generateSuggestionsAction as jest.Mock).mockImplementation(async () => {
+      (qualityValidationActions.getWritingAssistanceAction as jest.Mock).mockImplementation(async () => {
         suggestingDuringCall = result.current.isSuggesting;
         return { success: true, data: mockSuggestion };
       });
 
       await act(async () => {
-        await result.current.generateSuggestion(formData);
+        await result.current.getWritingHelp(formData);
       });
 
       expect(suggestingDuringCall).toBe(true);
@@ -420,20 +420,20 @@ describe('useAIQuality', () => {
     });
 
     it('should handle suggestion generation errors', async () => {
-      (aiQualityActions.generateSuggestionsAction as jest.Mock).mockResolvedValue({
+      (qualityValidationActions.getWritingAssistanceAction as jest.Mock).mockResolvedValue({
         success: false,
         error: 'Failed to generate suggestion',
       });
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
       );
 
       await act(async () => {
-        await result.current.generateSuggestion({ nc_description: 'Test' });
+        await result.current.getWritingHelp({ nc_description: 'Test' });
       });
 
       expect(result.current.error).toBe('Failed to generate suggestion');
@@ -441,10 +441,10 @@ describe('useAIQuality', () => {
     });
   });
 
-  describe('validateBeforeSubmit', () => {
+  describe('validateSubmission', () => {
     it('should validate form data and return result', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -463,7 +463,7 @@ describe('useAIQuality', () => {
 
       let validationResult;
       await act(async () => {
-        validationResult = await result.current.validateBeforeSubmit(formData, false);
+        validationResult = await result.current.validateSubmission(formData, false);
       });
 
       expect(validationResult).toEqual({ success: true, data: mockValidationResult });
@@ -472,7 +472,7 @@ describe('useAIQuality', () => {
 
     it('should bypass quality gate for confidential reports', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -489,11 +489,11 @@ describe('useAIQuality', () => {
       };
 
       await act(async () => {
-        await result.current.validateBeforeSubmit(formData, true);
+        await result.current.validateSubmission(formData, true);
       });
 
       // Should still call validation (server action handles bypass)
-      expect(aiQualityActions.validateBeforeSubmitAction).toHaveBeenCalledWith(
+      expect(qualityValidationActions.validateSubmissionAction).toHaveBeenCalledWith(
         mockFormType,
         formData,
         mockUserId,
@@ -502,13 +502,13 @@ describe('useAIQuality', () => {
     });
 
     it('should handle validation errors', async () => {
-      (aiQualityActions.validateBeforeSubmitAction as jest.Mock).mockResolvedValue({
+      (qualityValidationActions.validateSubmissionAction as jest.Mock).mockResolvedValue({
         success: false,
         error: 'Validation failed',
       });
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -526,7 +526,7 @@ describe('useAIQuality', () => {
 
       let validationResult;
       await act(async () => {
-        validationResult = await result.current.validateBeforeSubmit(formData);
+        validationResult = await result.current.validateSubmission(formData);
       });
 
       expect(validationResult).toEqual({ success: false, error: 'Validation failed' });
@@ -537,7 +537,7 @@ describe('useAIQuality', () => {
   describe('acceptSuggestion', () => {
     it('should record suggestion acceptance and clear suggestions', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -545,7 +545,7 @@ describe('useAIQuality', () => {
 
       // First generate a suggestion
       await act(async () => {
-        await result.current.generateSuggestion({ nc_description: 'Test' });
+        await result.current.getWritingHelp({ nc_description: 'Test' });
       });
 
       expect(result.current.suggestions).not.toBeNull();
@@ -566,17 +566,17 @@ describe('useAIQuality', () => {
 
       // Should record outcome (async, may not complete immediately)
       await waitFor(() => {
-        expect(aiQualityActions.recordSuggestionOutcomeAction).toHaveBeenCalled();
+        expect(qualityValidationActions.recordSuggestionOutcomeAction).toHaveBeenCalled();
       });
     });
 
     it('should handle recording errors gracefully', async () => {
-      (aiQualityActions.recordSuggestionOutcomeAction as jest.Mock).mockRejectedValue(
+      (qualityValidationActions.recordSuggestionOutcomeAction as jest.Mock).mockRejectedValue(
         new Error('Recording failed')
       );
 
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -598,14 +598,14 @@ describe('useAIQuality', () => {
   describe('Utility Functions', () => {
     it('should clear error when clearError is called', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
       );
 
       // Set an error
-      (aiQualityActions.analyzeFieldQualityAction as jest.Mock).mockResolvedValue({
+      (qualityValidationActions.validateFieldQualityAction as jest.Mock).mockResolvedValue({
         success: false,
         error: 'Test error',
       });
@@ -613,7 +613,7 @@ describe('useAIQuality', () => {
       const fieldData = { nc_description: 'Test' };
 
       act(() => {
-        result.current.checkQualityInline(fieldData);
+        result.current.validateField(fieldData);
       });
 
       act(() => {
@@ -634,7 +634,7 @@ describe('useAIQuality', () => {
 
     it('should reset all state when reset is called', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -642,7 +642,7 @@ describe('useAIQuality', () => {
 
       // Set some state
       await act(async () => {
-        await result.current.generateSuggestion({ nc_description: 'Test' });
+        await result.current.getWritingHelp({ nc_description: 'Test' });
       });
 
       expect(result.current.suggestions).not.toBeNull();
@@ -663,7 +663,7 @@ describe('useAIQuality', () => {
 
     it('should cancel pending requests on reset', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 5000,
@@ -672,7 +672,7 @@ describe('useAIQuality', () => {
 
       // Start a debounced call
       act(() => {
-        result.current.checkQualityInline({ nc_description: 'Test' });
+        result.current.validateField({ nc_description: 'Test' });
       });
 
       // Advance timer partially
@@ -692,7 +692,7 @@ describe('useAIQuality', () => {
 
       // API should not have been called
       await waitFor(() => {
-        expect(aiQualityActions.analyzeFieldQualityAction).not.toHaveBeenCalled();
+        expect(qualityValidationActions.validateFieldQualityAction).not.toHaveBeenCalled();
       });
     });
   });
@@ -700,7 +700,7 @@ describe('useAIQuality', () => {
   describe('MJC Form Type', () => {
     it('should work with MJC form type', async () => {
       const { result } = renderHook(() =>
-        useAIQuality({
+        useQualityValidation({
           formType: 'mjc',
           userId: mockUserId,
         })
@@ -712,10 +712,10 @@ describe('useAIQuality', () => {
       };
 
       await act(async () => {
-        await result.current.generateSuggestion(mjcData);
+        await result.current.getWritingHelp(mjcData);
       });
 
-      expect(aiQualityActions.generateSuggestionsAction).toHaveBeenCalledWith(
+      expect(qualityValidationActions.getWritingAssistanceAction).toHaveBeenCalledWith(
         'mjc',
         mjcData,
         mockUserId

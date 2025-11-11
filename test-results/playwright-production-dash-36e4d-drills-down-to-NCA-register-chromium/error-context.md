@@ -1,0 +1,261 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]: NCA Register | OHiSee
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - heading "NCA Register" [level=1] [ref=e14]
+      - paragraph [ref=e15]: Non-Conformance Advice register with full BRCGS traceability
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: "Status:"
+          - combobox "Status:" [ref=e20]:
+            - generic: All Statuses
+            - img
+        - generic [ref=e22]:
+          - img [ref=e23]
+          - textbox "Search NCA number or description..." [ref=e26]
+      - generic [ref=e27]:
+        - generic [ref=e28]: Showing 1 to 25 of 187 NCAs
+        - generic [ref=e29]: Page 1 of 8
+      - table [ref=e32]:
+        - rowgroup [ref=e33]:
+          - row "NCA Number Status Type Description Created" [ref=e34]:
+            - cell "NCA Number" [ref=e35]:
+              - button "NCA Number" [ref=e36]:
+                - text: NCA Number
+                - img
+            - cell "Status" [ref=e37]:
+              - button "Status" [ref=e38]:
+                - text: Status
+                - img
+            - cell "Type" [ref=e39]:
+              - button "Type" [ref=e40]:
+                - text: Type
+                - img
+            - cell "Description" [ref=e41]
+            - cell "Created" [ref=e42]:
+              - button "Created" [ref=e43]:
+                - text: Created
+                - img
+        - rowgroup [ref=e44]:
+          - row "NCA-2025-00000227 closed Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process. 10 Nov 2025" [ref=e45] [cursor=pointer]:
+            - cell "NCA-2025-00000227" [ref=e46]
+            - cell "closed" [ref=e47]:
+              - generic [ref=e48]: closed
+            - cell [ref=e49]
+            - cell "Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process." [ref=e50]:
+              - generic [ref=e51]: Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process.
+            - cell "10 Nov 2025" [ref=e52]
+          - row "NCA-2025-00000226 draft Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes. 10 Nov 2025" [ref=e53] [cursor=pointer]:
+            - cell "NCA-2025-00000226" [ref=e54]
+            - cell "draft" [ref=e55]:
+              - generic [ref=e56]: draft
+            - cell [ref=e57]
+            - cell "Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes." [ref=e58]:
+              - generic [ref=e59]: Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes.
+            - cell "10 Nov 2025" [ref=e60]
+          - row "NCA-2025-00000225 draft Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards. 10 Nov 2025" [ref=e61] [cursor=pointer]:
+            - cell "NCA-2025-00000225" [ref=e62]
+            - cell "draft" [ref=e63]:
+              - generic [ref=e64]: draft
+            - cell [ref=e65]
+            - cell "Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards." [ref=e66]:
+              - generic [ref=e67]: Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards.
+            - cell "10 Nov 2025" [ref=e68]
+          - row "NCA-2025-00000224 closed Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e69] [cursor=pointer]:
+            - cell "NCA-2025-00000224" [ref=e70]
+            - cell "closed" [ref=e71]:
+              - generic [ref=e72]: closed
+            - cell [ref=e73]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e74]:
+              - generic [ref=e75]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e76]
+          - row "NCA-2025-00000223 closed Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e77] [cursor=pointer]:
+            - cell "NCA-2025-00000223" [ref=e78]
+            - cell "closed" [ref=e79]:
+              - generic [ref=e80]: closed
+            - cell [ref=e81]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e82]:
+              - generic [ref=e83]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e84]
+          - row "NCA-2025-00000222 under-review Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e85] [cursor=pointer]:
+            - cell "NCA-2025-00000222" [ref=e86]
+            - cell "under-review" [ref=e87]:
+              - generic [ref=e88]: under-review
+            - cell [ref=e89]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e90]:
+              - generic [ref=e91]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e92]
+          - row "NCA-2025-00000221 under-review Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e93] [cursor=pointer]:
+            - cell "NCA-2025-00000221" [ref=e94]
+            - cell "under-review" [ref=e95]:
+              - generic [ref=e96]: under-review
+            - cell [ref=e97]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e98]:
+              - generic [ref=e99]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e100]
+          - row "NCA-2025-00000220 under-review Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e101] [cursor=pointer]:
+            - cell "NCA-2025-00000220" [ref=e102]
+            - cell "under-review" [ref=e103]:
+              - generic [ref=e104]: under-review
+            - cell [ref=e105]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e106]:
+              - generic [ref=e107]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e108]
+          - row "NCA-2025-00000219 under-review Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria. 10 Nov 2025" [ref=e109] [cursor=pointer]:
+            - cell "NCA-2025-00000219" [ref=e110]
+            - cell "under-review" [ref=e111]:
+              - generic [ref=e112]: under-review
+            - cell [ref=e113]
+            - cell "Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria." [ref=e114]:
+              - generic [ref=e115]: Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria.
+            - cell "10 Nov 2025" [ref=e116]
+          - row "NCA-2025-00000218 under-review Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria. 10 Nov 2025" [ref=e117] [cursor=pointer]:
+            - cell "NCA-2025-00000218" [ref=e118]
+            - cell "under-review" [ref=e119]:
+              - generic [ref=e120]: under-review
+            - cell [ref=e121]
+            - cell "Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria." [ref=e122]:
+              - generic [ref=e123]: Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria.
+            - cell "10 Nov 2025" [ref=e124]
+          - row "NCA-2025-00000217 under-review Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria. 10 Nov 2025" [ref=e125] [cursor=pointer]:
+            - cell "NCA-2025-00000217" [ref=e126]
+            - cell "under-review" [ref=e127]:
+              - generic [ref=e128]: under-review
+            - cell [ref=e129]
+            - cell "Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria." [ref=e130]:
+              - generic [ref=e131]: Product defect identified requiring disposition decision from team leader to determine appropriate corrective action whether rework rejection or concession based on severity of non-conformance and customer acceptance criteria.
+            - cell "10 Nov 2025" [ref=e132]
+          - row "NCA-2025-00000216 draft Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches. 10 Nov 2025" [ref=e133] [cursor=pointer]:
+            - cell "NCA-2025-00000216" [ref=e134]
+            - cell "draft" [ref=e135]:
+              - generic [ref=e136]: draft
+            - cell [ref=e137]
+            - cell "Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches." [ref=e138]:
+              - generic [ref=e139]: Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches.
+            - cell "10 Nov 2025" [ref=e140]
+          - row "NCA-2025-00000215 draft Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches. 10 Nov 2025" [ref=e141] [cursor=pointer]:
+            - cell "NCA-2025-00000215" [ref=e142]
+            - cell "draft" [ref=e143]:
+              - generic [ref=e144]: draft
+            - cell [ref=e145]
+            - cell "Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches." [ref=e146]:
+              - generic [ref=e147]: Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches.
+            - cell "10 Nov 2025" [ref=e148]
+          - row "NCA-2025-00000214 draft Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches. 10 Nov 2025" [ref=e149] [cursor=pointer]:
+            - cell "NCA-2025-00000214" [ref=e150]
+            - cell "draft" [ref=e151]:
+              - generic [ref=e152]: draft
+            - cell [ref=e153]
+            - cell "Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches." [ref=e154]:
+              - generic [ref=e155]: Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches.
+            - cell "10 Nov 2025" [ref=e156]
+          - row "NCA-2025-00000213 draft Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches. 10 Nov 2025" [ref=e157] [cursor=pointer]:
+            - cell "NCA-2025-00000213" [ref=e158]
+            - cell "draft" [ref=e159]:
+              - generic [ref=e160]: draft
+            - cell [ref=e161]
+            - cell "Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches." [ref=e162]:
+              - generic [ref=e163]: Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches.
+            - cell "10 Nov 2025" [ref=e164]
+          - row "NCA-2025-00000212 draft Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches. 10 Nov 2025" [ref=e165] [cursor=pointer]:
+            - cell "NCA-2025-00000212" [ref=e166]
+            - cell "draft" [ref=e167]:
+              - generic [ref=e168]: draft
+            - cell [ref=e169]
+            - cell "Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches." [ref=e170]:
+              - generic [ref=e171]: Potential cross-contamination detected during production requiring immediate back tracking investigation to identify source and extent of contamination ensuring food safety compliance and preventing further distribution of affected product batches.
+            - cell "10 Nov 2025" [ref=e172]
+          - row "NCA-2025-00000211 under-review This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation. 10 Nov 2025" [ref=e173] [cursor=pointer]:
+            - cell "NCA-2025-00000211" [ref=e174]
+            - cell "under-review" [ref=e175]:
+              - generic [ref=e176]: under-review
+            - cell [ref=e177]
+            - cell "This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation." [ref=e178]:
+              - generic [ref=e179]: This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation.
+            - cell "10 Nov 2025" [ref=e180]
+          - row "NCA-2025-00000210 submitted This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation. 10 Nov 2025" [ref=e181] [cursor=pointer]:
+            - cell "NCA-2025-00000210" [ref=e182]
+            - cell "submitted" [ref=e183]:
+              - generic [ref=e184]: submitted
+            - cell [ref=e185]
+            - cell "This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation." [ref=e186]:
+              - generic [ref=e187]: This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation.
+            - cell "10 Nov 2025" [ref=e188]
+          - row "NCA-2025-00000209 submitted This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation. 10 Nov 2025" [ref=e189] [cursor=pointer]:
+            - cell "NCA-2025-00000209" [ref=e190]
+            - cell "submitted" [ref=e191]:
+              - generic [ref=e192]: submitted
+            - cell [ref=e193]
+            - cell "This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation." [ref=e194]:
+              - generic [ref=e195]: This is a test NCA created specifically for testing the submission workflow and ensuring all status transitions work correctly with proper timestamp tracking and audit trail generation.
+            - cell "10 Nov 2025" [ref=e196]
+          - row "NCA-2025-00000208 draft AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 10 Nov 2025" [ref=e197] [cursor=pointer]:
+            - cell "NCA-2025-00000208" [ref=e198]
+            - cell "draft" [ref=e199]:
+              - generic [ref=e200]: draft
+            - cell [ref=e201]
+            - cell "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" [ref=e202]:
+              - generic [ref=e203]: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+            - cell "10 Nov 2025" [ref=e204]
+          - row "NCA-2025-00000205 draft During routine quality inspection at 10:15 AM, print registration on pouches was found to be misaligned by approximately 3mm affecting product appearance and potentially impacting customer perception which requires immediate attention. 10 Nov 2025" [ref=e205] [cursor=pointer]:
+            - cell "NCA-2025-00000205" [ref=e206]
+            - cell "draft" [ref=e207]:
+              - generic [ref=e208]: draft
+            - cell [ref=e209]
+            - cell "During routine quality inspection at 10:15 AM, print registration on pouches was found to be misaligned by approximately 3mm affecting product appearance and potentially impacting customer perception which requires immediate attention." [ref=e210]:
+              - generic [ref=e211]: During routine quality inspection at 10:15 AM, print registration on pouches was found to be misaligned by approximately 3mm affecting product appearance and potentially impacting customer perception which requires immediate attention.
+            - cell "10 Nov 2025" [ref=e212]
+          - row "NCA-2025-00000204 closed Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process. 10 Nov 2025" [ref=e213] [cursor=pointer]:
+            - cell "NCA-2025-00000204" [ref=e214]
+            - cell "closed" [ref=e215]:
+              - generic [ref=e216]: closed
+            - cell [ref=e217]
+            - cell "Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process." [ref=e218]:
+              - generic [ref=e219]: Complete workflow test covering all lifecycle stages from initial detection through investigation disposition and final close-out demonstrating full compliance with BRCGS requirements for non-conformance management and traceability throughout the entire process.
+            - cell "10 Nov 2025" [ref=e220]
+          - row "NCA-2025-00000203 draft Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes. 10 Nov 2025" [ref=e221] [cursor=pointer]:
+            - cell "NCA-2025-00000203" [ref=e222]
+            - cell "draft" [ref=e223]:
+              - generic [ref=e224]: draft
+            - cell [ref=e225]
+            - cell "Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes." [ref=e226]:
+              - generic [ref=e227]: Testing changed fields tracking in audit trail to verify that all modifications to NCA records are accurately logged with specific field-level change detection providing detailed history for compliance auditing and investigation purposes.
+            - cell "10 Nov 2025" [ref=e228]
+          - row "NCA-2025-00000202 draft Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards. 10 Nov 2025" [ref=e229] [cursor=pointer]:
+            - cell "NCA-2025-00000202" [ref=e230]
+            - cell "draft" [ref=e231]:
+              - generic [ref=e232]: draft
+            - cell [ref=e233]
+            - cell "Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards." [ref=e234]:
+              - generic [ref=e235]: Testing audit trail creation to ensure all NCA lifecycle events are properly logged with complete user attribution timestamp tracking and change history for regulatory compliance and traceability requirements under BRCGS standards.
+            - cell "10 Nov 2025" [ref=e236]
+          - row "NCA-2025-00000201 closed Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle. 10 Nov 2025" [ref=e237] [cursor=pointer]:
+            - cell "NCA-2025-00000201" [ref=e238]
+            - cell "closed" [ref=e239]:
+              - generic [ref=e240]: closed
+            - cell [ref=e241]
+            - cell "Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle." [ref=e242]:
+              - generic [ref=e243]: Non-conformance has been addressed with corrective actions implemented and verified. Root cause identified as calibration drift. Ready for final QA review and close-out by authorized personnel to complete the non-conformance investigation cycle.
+            - cell "10 Nov 2025" [ref=e244]
+      - generic [ref=e245]:
+        - generic [ref=e246]: Showing 1 to 25 of 187
+        - generic [ref=e247]:
+          - button "Previous" [disabled]:
+            - img
+            - text: Previous
+          - generic [ref=e248]:
+            - button "1" [ref=e249]
+            - button "2" [ref=e250]
+            - button "3" [ref=e251]
+            - button "4" [ref=e252]
+            - button "5" [ref=e253]
+          - button "Next" [ref=e254]:
+            - text: Next
+            - img
+```

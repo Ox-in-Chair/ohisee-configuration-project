@@ -15,6 +15,20 @@ import { mjcFormSchema, type MJCFormData } from '@/lib/validations/mjc-schema';
 import { createMJC, saveDraftMJC } from '@/app/actions/mjc-actions';
 import { FileUpload } from '@/components/file-upload';
 import { uploadMJCFile, listMJCFiles, deleteMJCFile } from '@/app/actions/file-actions';
+import { SmartInput } from '@/components/smart-input';
+import { EnhancedTextarea } from '@/components/enhanced-textarea';
+
+// Visualization imports
+import { FiveWhyBuilder } from '@/components/visualizations/five-why-builder';
+import { TimelineBuilder } from '@/components/visualizations/timeline-builder';
+import { FishboneDiagram } from '@/components/visualizations/fishbone-diagram';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 
 // Work Order Service imports
 import { createBrowserClient } from '@/lib/database/client';
@@ -31,6 +45,11 @@ export default function NewMJCPage(): React.ReactElement {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [mjcNumber, setMjcNumber] = useState<string | null>(null);
   const [mjcId, setMjcId] = useState<string | null>(null);
+
+  // Visualization Modals State
+  const [showFiveWhy, setShowFiveWhy] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showFishbone, setShowFishbone] = useState(false);
 
   // Work Order Auto-Link State
   const [activeWorkOrder, setActiveWorkOrder] = useState<WorkOrder | null>(null);
@@ -286,27 +305,27 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 1: Job Card Identification</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2">
               <Label>Date</Label>
               <Input data-testid="mjc-date" type="text" value={new Date().toLocaleDateString()} readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Time</Label>
               <Input data-testid="mjc-time" type="text" value={new Date().toLocaleTimeString()} readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Job Card No.</Label>
               <Input data-testid="mjc-number" type="text" value="MJC-2025-00000001" readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Raised By</Label>
               <Input data-testid="mjc-raised-by" type="text" placeholder="Current User" readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Department</Label>
               <Input data-testid="mjc-department" type="text" placeholder="Auto-populated" readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Kangopak WO Number</Label>
               <div className="relative">
                 <Input
@@ -334,7 +353,7 @@ export default function NewMJCPage(): React.ReactElement {
                 </div>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Work Order Status</Label>
               <Input data-testid="mjc-wo-status" type="text" placeholder="Active" readOnly />
             </div>
@@ -346,18 +365,19 @@ export default function NewMJCPage(): React.ReactElement {
           <CardHeader>
             <CardTitle>Section 2: Machine/Equipment Identification *</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div>
-              <Label>Machine/Equipment ID *</Label>
-              <Input
-                data-testid="machine-equipment-id"
-                type="text"
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <SmartInput
+                label="Machine/Equipment ID"
+                value={watch('machine_equipment_id') || ''}
+                onChange={(value) => setValue('machine_equipment_id', value)}
+                fieldName="machine_equipment_id"
+                showSuggestions={true}
                 required
-                {...register('machine_equipment_id')}
+                data-testid="machine-equipment-id"
+                error={errors.machine_equipment_id?.message}
+                placeholder="Enter machine code or equipment name"
               />
-              {errors.machine_equipment_id && (
-                <p className="text-red-600 text-sm mt-1">{errors.machine_equipment_id.message}</p>
-              )}
             </div>
           </CardContent>
         </Card>
@@ -368,7 +388,7 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 3: Maintenance Type & Classification *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Maintenance Category</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -390,7 +410,7 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-2">{errors.maintenance_category.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Maintenance Type</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -446,7 +466,7 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle className="text-critical">Section 4: Machine Status & Urgency (CRITICAL) *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Machine Status</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -472,7 +492,7 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-2">{errors.machine_status.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Urgency Level</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -502,7 +522,7 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-2">{errors.urgency_level.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Machine Down Time (auto-calculated)</Label>
               <Input
                 data-testid="machine-down-time"
@@ -521,7 +541,7 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 5: Temporary Repair Status *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Is this a temporary repair?</Label>
               <RadioGroup
                 onValueChange={(value) =>
@@ -543,7 +563,7 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-2">{errors.temporary_repair.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Follow-up Due Date (auto-calculated if temporary)</Label>
               <Input
                 data-testid="temporary-repair-due-date"
@@ -562,23 +582,31 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 6: Description of Maintenance Required *</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label>Description (minimum 100 characters)</Label>
-              <Textarea
-                data-testid="maintenance-description"
-                rows={5}
-                {...register('maintenance_description')}
-              />
-              <CharacterCounter
-                current={maintenanceDescription.length}
-                minimum={100}
-                maximum={2000}
-                testId="maintenance-description-char-count"
-              />
-              {errors.maintenance_description && (
-                <p className="text-red-600 text-sm mt-1">{errors.maintenance_description.message}</p>
-              )}
+            {/* Visualization Tools */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTimeline(true)}
+                className="text-xs"
+              >
+                📅 Build Timeline
+              </Button>
             </div>
+
+            <EnhancedTextarea
+              label="Description (minimum 100 characters)"
+              value={maintenanceDescription}
+              onChange={(value) => setValue('maintenance_description', value)}
+              minLength={100}
+              maxLength={2000}
+              rows={5}
+              required
+              fieldName="maintenance_description"
+              data-testid="maintenance-description"
+              error={errors.maintenance_description?.message}
+            />
             <FileUpload
               entityId={mjcId}
               uploadType="mjc"
@@ -598,11 +626,11 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 7: Maintenance Performed</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Maintenance Work Performed</Label>
               <Textarea data-testid="maintenance-performed" rows={5} {...register('maintenance_performed')} />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Maintenance Technician Signature</Label>
               <Input
                 data-testid="maintenance-technician-signature"
@@ -619,8 +647,8 @@ export default function NewMJCPage(): React.ReactElement {
           <CardHeader>
             <CardTitle>Section 8: Additional Comments</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
               <Label>Additional Observations and Recommendations</Label>
               <Textarea data-testid="additional-comments" rows={4} {...register('additional_comments')} />
             </div>
@@ -774,7 +802,7 @@ export default function NewMJCPage(): React.ReactElement {
               </div>
             )}
 
-            <div>
+            <div className="space-y-2">
               <Label>QA/Supervisor Name</Label>
               <Input
                 data-testid="clearance-qa-supervisor"
@@ -785,7 +813,7 @@ export default function NewMJCPage(): React.ReactElement {
                 <p className="text-red-600 text-sm mt-1">{errors.clearance_qa_supervisor.message}</p>
               )}
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Digital Signature</Label>
               <Input
                 data-testid="clearance-signature"
@@ -825,11 +853,11 @@ export default function NewMJCPage(): React.ReactElement {
             <CardTitle>Section 11: Job Card Status & Closure</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label>Job Card Status</Label>
               <Input data-testid="job-card-status" type="text" value="Open" readOnly />
             </div>
-            <div>
+            <div className="space-y-2">
               <Label>Follow-up Job Card Required (if temporary repair)</Label>
               <Input
                 data-testid="follow-up-job-card"
@@ -860,6 +888,64 @@ export default function NewMJCPage(): React.ReactElement {
           </Button>
         </div>
       </form>
+
+      {/* 5-Why Builder Modal */}
+      <Dialog open={showFiveWhy} onOpenChange={setShowFiveWhy}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>5-Why Root Cause Analysis Builder</DialogTitle>
+            <DialogDescription>
+              Build a structured root cause analysis using the 5-Why method. Minimum 3 levels required.
+            </DialogDescription>
+          </DialogHeader>
+          <FiveWhyBuilder
+            initialProblem={maintenanceDescription || 'Maintenance issue'}
+            minDepth={3}
+            maxDepth={5}
+            onComplete={(problem, whys, rootCause) => {
+              setValue('maintenance_description', rootCause);
+              setShowFiveWhy(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Timeline Builder Modal */}
+      <Dialog open={showTimeline} onOpenChange={setShowTimeline}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Timeline Builder</DialogTitle>
+            <DialogDescription>
+              Build a chronological timeline of events (when, where, what happened).
+            </DialogDescription>
+          </DialogHeader>
+          <TimelineBuilder
+            onComplete={(events, formattedText) => {
+              setValue('maintenance_description', formattedText);
+              setShowTimeline(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Fishbone Diagram Modal */}
+      <Dialog open={showFishbone} onOpenChange={setShowFishbone}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fishbone Diagram (6M Analysis)</DialogTitle>
+            <DialogDescription>
+              Analyze root causes across 6 categories: Man, Machine, Method, Material, Measurement, Environment.
+            </DialogDescription>
+          </DialogHeader>
+          <FishboneDiagram
+            initialProblem={maintenanceDescription || 'Maintenance issue'}
+            onComplete={(problem, categories, formattedText) => {
+              setValue('maintenance_description', formattedText);
+              setShowFishbone(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

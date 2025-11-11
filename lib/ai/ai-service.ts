@@ -23,6 +23,7 @@ import {
   Suggestion,
   HazardClassification,
   ValidationResult,
+  ValidationWarning,
   NCA,
   User,
   AIConfig,
@@ -477,8 +478,8 @@ export class AIService implements IAIService {
     return errors;
   }
 
-  private generateWarnings(nca: NCA, quality: QualityScore): ReadonlyArray<ValidationResult['warnings'][number]> {
-    const warnings: Array<ValidationResult['warnings'][number]> = [];
+  private generateWarnings(nca: NCA, quality: QualityScore): ReadonlyArray<ValidationWarning> {
+    const warnings: ValidationWarning[] = [];
 
     if (quality.score < 75) {
       warnings.push({

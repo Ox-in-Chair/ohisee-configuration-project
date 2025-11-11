@@ -107,7 +107,7 @@ async function getTemporaryRepairsApproachingDeadline(): Promise<TemporaryRepair
 
   // Calculate days remaining
   const now = new Date();
-  return data.map((mjc) => {
+  return data.map((mjc: any) => {
     const dueDate = new Date(mjc.close_out_due_date);
     const daysRemaining = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 

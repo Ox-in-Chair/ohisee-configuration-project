@@ -57,8 +57,8 @@ async function lockNCAEntries(userId: string, ncaIds: string[]): Promise<void> {
   // Update all NCAs to locked status
   // Note: We'll add a 'locked' field or use a different mechanism
   // For now, we'll add a metadata field to track locking
-  const { error } = await supabase
-    .from('ncas')
+  const { error } = await (supabase
+    .from('ncas') as any)
     .update({
       // Add locked_at timestamp in metadata or use a separate field
       // For MVP, we'll just ensure they're not in draft status
@@ -81,8 +81,8 @@ async function lockMJCEntries(userId: string, mjcIds: string[]): Promise<void> {
 
   const supabase = createServerClient();
 
-  const { error } = await supabase
-    .from('mjcs')
+  const { error } = await (supabase
+    .from('mjcs') as any)
     .update({
       status: 'open', // Ensure drafts are opened
     })
@@ -103,8 +103,8 @@ async function completeWorkOrders(userId: string, workOrderIds: string[]): Promi
 
   const supabase = createServerClient();
 
-  const { error } = await supabase
-    .from('work_orders')
+  const { error } = await (supabase
+    .from('work_orders') as any)
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
@@ -136,7 +136,7 @@ async function createAuditTrailEntry(
   const userEmail = 'operator@kangopak.co.za'; // Placeholder
   const userName = 'Operator'; // Placeholder
 
-  const { error } = await supabase.from('audit_trail').insert({
+  const { error } = await (supabase.from('audit_trail') as any).insert({
     entity_type: 'end_of_day_submission',
     entity_id: `eod-${Date.now()}`,
     action: 'end_of_day_submitted',
@@ -178,12 +178,12 @@ export async function submitEndOfDay(
 
     // Validate no incomplete drafts
     if (entryIds.ncaIds.length > 0) {
-      const { data: ncas } = await supabase
-        .from('ncas')
+      const { data: ncas } = await (supabase
+        .from('ncas') as any)
         .select('id, status')
         .in('id', entryIds.ncaIds);
 
-      const drafts = (ncas || []).filter(n => n.status === 'draft');
+      const drafts = (ncas || []).filter((n: any) => n.status === 'draft');
       if (drafts.length > 0) {
         return {
           success: false,
@@ -193,12 +193,12 @@ export async function submitEndOfDay(
     }
 
     if (entryIds.mjcIds.length > 0) {
-      const { data: mjcs } = await supabase
-        .from('mjcs')
+      const { data: mjcs } = await (supabase
+        .from('mjcs') as any)
         .select('id, status')
         .in('id', entryIds.mjcIds);
 
-      const drafts = (mjcs || []).filter(m => m.status === 'draft');
+      const drafts = (mjcs || []).filter((m: any) => m.status === 'draft');
       if (drafts.length > 0) {
         return {
           success: false,

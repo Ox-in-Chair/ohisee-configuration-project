@@ -1,0 +1,298 @@
+'use client';
+
+import { FC, useState, useCallback, ChangeEvent, useMemo, useEffect, useRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { HelpCircle, Loader2, CheckCircle2, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { createPackagingSafetyService } from '@/lib/knowledge/packaging-safety-service';
+import { createIndustryBenchmarksService } from '@/lib/knowledge/industry-benchmarks-service';
+import type { PackagingMaterial } from '@/lib/knowledge/packaging-safety-service';
+
+// Constant empty array to prevent recreation on every render
+const EMPTY_SUGGESTIONS: string[] = [];
+
+/**
+ * SmartInput Props Interface
+ */
+export interface SmartInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  onGetHelp?: () => void;
+  isProcessing?: boolean;
+  required?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+  'data-testid'?: string;
+  error?: string;
+  fieldName?: string; // For field-specific features (e.g., 'nc_product_description', 'supplier_name')
+  type?: 'text' | 'email' | 'tel' | 'url';
+  showSuggestions?: boolean; // Show autocomplete suggestions
+  suggestions?: string[]; // External suggestions (e.g., from AI)
+}
+
+/**
+ * Smart Input Component with AI-powered autocomplete and suggestions
+ *
+ * Features:
+ * - Context-aware autocomplete
+ * - Packaging material lookup (for product description fields)
+ * - Supplier suggestions (for supplier fields)
+ * - Real-time validation
+ * - Smart formatting
+ *
+ * @example
+ * ```tsx
+ * <SmartInput
+ *   label="Product Description"
+ *   value={formData.nc_product_description}
+ *   onChange={(value) => setFormData({ ...formData, nc_product_description: value })}
+ *   fieldName="nc_product_description"
+ *   showSuggestions={true}
+ * />
+ * ```
+ */
+export const SmartInput: FC<SmartInputProps> = ({
+  label,
+  value,
+  onChange,
+  onGetHelp,
+  isProcessing = false,
+  required = false,
+  placeholder,
+  disabled = false,
+  'data-testid': testId,
+  error,
+  fieldName,
+  type = 'text',
+  showSuggestions = false,
+  suggestions: externalSuggestions = EMPTY_SUGGESTIONS,
+}) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [autocompleteSuggestions, setAutocompleteSuggestions] = useState<string[]>([]);
+  const [packagingMaterials, setPackagingMaterials] = useState<PackagingMaterial[]>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+
+  // Memoize external suggestions based on content to prevent unnecessary re-renders
+  const stableExternalSuggestions = useMemo(() => {
+    return externalSuggestions;
+  }, [JSON.stringify(externalSuggestions)]);
+
+  // Use ref to track previous values and prevent infinite loops
+  const prevValueRef = useRef<string>('');
+  const prevFieldNameRef = useRef<string | undefined>(undefined);
+  const prevIsFocusedRef = useRef<boolean>(false);
+
+  // Clear suggestions when conditions aren't met (separate effect to avoid loop)
+  useEffect(() => {
+    if (!showSuggestions || !isFocused || !value || value.length < 2) {
+      setAutocompleteSuggestions(prev => (prev.length > 0 ? [] : prev));
+      setShowAutocomplete(prev => (prev ? false : prev));
+    }
+  }, [showSuggestions, isFocused, value]);
+
+  // Load suggestions based on field type
+  useEffect(() => {
+    // Early return if conditions aren't met
+    if (!showSuggestions || !isFocused || !value || value.length < 2) {
+      return;
+    }
+
+    // Skip if values haven't actually changed
+    if (
+      prevValueRef.current === value &&
+      prevFieldNameRef.current === fieldName &&
+      prevIsFocusedRef.current === isFocused
+    ) {
+      return;
+    }
+
+    // Update refs
+    prevValueRef.current = value;
+    prevFieldNameRef.current = fieldName;
+    prevIsFocusedRef.current = isFocused;
+
+    const loadSuggestions = async () => {
+      try {
+        if (fieldName === 'nc_product_description') {
+          // Search packaging materials
+          const packagingService = createPackagingSafetyService();
+          const materials = await packagingService.searchMaterials(value);
+          setPackagingMaterials(materials);
+          const newSuggestions = materials.map(m => `${m.material_code} - ${m.material_name}`);
+          setAutocompleteSuggestions(newSuggestions);
+          setShowAutocomplete(materials.length > 0);
+        } else if (fieldName === 'supplier_name') {
+          // TODO: Search suppliers from database
+          // For now, use external suggestions
+          setAutocompleteSuggestions(stableExternalSuggestions);
+          setShowAutocomplete(stableExternalSuggestions.length > 0);
+        } else {
+          // Generic autocomplete from external suggestions
+          setAutocompleteSuggestions(stableExternalSuggestions);
+          setShowAutocomplete(stableExternalSuggestions.length > 0);
+        }
+      } catch (error) {
+        console.error('Error loading suggestions:', error);
+        setAutocompleteSuggestions([]);
+        setShowAutocomplete(false);
+      }
+    };
+
+    // Debounce
+    const timeoutId = setTimeout(loadSuggestions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [value, fieldName, showSuggestions, isFocused, stableExternalSuggestions]);
+
+  // Handle input change
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onChange(e.target.value);
+      setSelectedSuggestionIndex(-1);
+    },
+    [onChange]
+  );
+
+  // Handle suggestion selection
+  const handleSelectSuggestion = useCallback(
+    (suggestion: string, index: number) => {
+      if (fieldName === 'nc_product_description' && packagingMaterials[index]) {
+        // Use material code for product description
+        onChange(packagingMaterials[index].material_code);
+      } else {
+        // Use full suggestion text
+        onChange(suggestion);
+      }
+      setShowAutocomplete(false);
+      setSelectedSuggestionIndex(-1);
+    },
+    [fieldName, packagingMaterials, onChange]
+  );
+
+  // Handle keyboard navigation
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!showAutocomplete || autocompleteSuggestions.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev =>
+          prev < autocompleteSuggestions.length - 1 ? prev + 1 : prev
+        );
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => (prev > 0 ? prev - 1 : -1));
+      } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+        e.preventDefault();
+        handleSelectSuggestion(autocompleteSuggestions[selectedSuggestionIndex], selectedSuggestionIndex);
+      } else if (e.key === 'Escape') {
+        setShowAutocomplete(false);
+        setSelectedSuggestionIndex(-1);
+      }
+    },
+    [showAutocomplete, autocompleteSuggestions, selectedSuggestionIndex, handleSelectSuggestion]
+  );
+
+  return (
+    <div className="space-y-2 relative">
+      {/* Label with Get Help button */}
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+
+        {onGetHelp && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onGetHelp}
+            disabled={isProcessing || disabled}
+            className="flex items-center gap-2 text-xs"
+            data-testid={`${testId}-get-help`}
+            title="Get writing assistance based on procedures"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <HelpCircle className="h-3 w-3" />
+                <span>Get Help</span>
+              </>
+            )}
+          </Button>
+        )}
+      </div>
+
+      {/* Input with autocomplete */}
+      <div className="relative">
+        <Input
+          type={type}
+          value={value}
+          onChange={handleChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            // Delay to allow suggestion click
+            setTimeout(() => setIsFocused(false), 200);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          required={required}
+          data-testid={testId}
+          className={cn(
+            'transition-smooth focus-glow',
+            isFocused ? 'ring-2 ring-blue-200 shadow-sm' : '',
+            error ? 'border-red-500' : '',
+            showAutocomplete && autocompleteSuggestions.length > 0 ? 'rounded-b-none' : ''
+          )}
+          aria-label={label}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${testId}-error` : undefined}
+          aria-autocomplete="list"
+          aria-expanded={showAutocomplete}
+        />
+
+        {/* Autocomplete suggestions dropdown */}
+        {showAutocomplete && autocompleteSuggestions.length > 0 && isFocused && (
+          <div
+            className="absolute z-50 w-full mt-0 bg-surface border border-t-0 rounded-b-md shadow-lg max-h-60 overflow-auto animate-slide-in-from-top"
+            role="listbox"
+            aria-label="Suggestions"
+          >
+            {autocompleteSuggestions.map((suggestion, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => handleSelectSuggestion(suggestion, index)}
+                className={cn(
+                  'w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors',
+                  selectedSuggestionIndex === index ? 'bg-accent text-accent-foreground' : ''
+                )}
+                role="option"
+                aria-selected={selectedSuggestionIndex === index}
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
+

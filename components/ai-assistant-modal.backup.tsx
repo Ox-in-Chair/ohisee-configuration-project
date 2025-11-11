@@ -178,7 +178,7 @@ export const AIAssistantModal: FC<AIAssistantModalProps> = ({
             )}
 
             {/* Warnings */}
-            {warnings.length > 0 && (
+            {warnings && warnings.length > 0 && (
               <div className="space-y-2">
                 <h3 className="font-semibold text-sm text-yellow-700 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />

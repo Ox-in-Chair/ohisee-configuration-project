@@ -27,6 +27,7 @@ import type {
   QualityScore,
   Suggestion,
   ValidationResult,
+  ValidationWarning,
   AIServiceError
 } from '@/lib/ai/types';
 
@@ -266,7 +267,7 @@ export async function validateNCABeforeSubmit(
               message: 'Confidential report - quality gate bypassed per BRCGS Section 1.1.3',
               suggestion: 'Quality feedback provided for educational purposes only'
             },
-            ...validationResult.warnings
+            ...(validationResult.warnings || [])
           ]
         }
       };
@@ -942,7 +943,7 @@ function validateMJCCompleteness(mjc: MJC): ValidationResult['errors'] {
  * Generate MJC-specific warnings
  */
 function generateMJCWarnings(mjc: MJC, quality: QualityScore): ValidationResult['warnings'] {
-  const warnings: ValidationResult['warnings'][number][] = [];
+  const warnings: ValidationWarning[] = [];
 
   if (quality.score < 75) {
     warnings.push({

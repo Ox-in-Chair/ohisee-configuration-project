@@ -1,13 +1,13 @@
 /**
- * AIEnhancedTextarea Component Unit Tests
- * Tests rendering, user interactions, AI button, quality badge, and character counting
+ * EnhancedTextarea Component Unit Tests
+ * Tests rendering, user interactions, help button, quality indicator, and character counting
  */
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest } from '@jest/globals';
-import { AIEnhancedTextarea } from '../ai-enhanced-textarea';
+import { EnhancedTextarea } from '../enhanced-textarea';
 
-describe('AIEnhancedTextarea', () => {
+describe('EnhancedTextarea', () => {
   const defaultProps = {
     label: 'Corrective Action',
     value: '',
@@ -20,21 +20,21 @@ describe('AIEnhancedTextarea', () => {
 
   describe('Rendering', () => {
     it('should render label and textarea', () => {
-      render(<AIEnhancedTextarea {...defaultProps} />);
+      render(<EnhancedTextarea {...defaultProps} />);
 
       expect(screen.getByText('Corrective Action')).toBeInTheDocument();
       expect(screen.getByRole('textbox', { name: 'Corrective Action' })).toBeInTheDocument();
     });
 
     it('should show required indicator when required', () => {
-      render(<AIEnhancedTextarea {...defaultProps} required />);
+      render(<EnhancedTextarea {...defaultProps} required />);
 
       expect(screen.getByText('*')).toBeInTheDocument();
     });
 
     it('should render with placeholder', () => {
       render(
-        <AIEnhancedTextarea {...defaultProps} placeholder="Enter corrective action..." />
+        <EnhancedTextarea {...defaultProps} placeholder="Enter corrective action..." />
       );
 
       const textarea = screen.getByPlaceholderText('Enter corrective action...');
@@ -42,21 +42,21 @@ describe('AIEnhancedTextarea', () => {
     });
 
     it('should be disabled when disabled prop is true', () => {
-      render(<AIEnhancedTextarea {...defaultProps} disabled />);
+      render(<EnhancedTextarea {...defaultProps} disabled />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toBeDisabled();
     });
 
     it('should set custom rows', () => {
-      render(<AIEnhancedTextarea {...defaultProps} rows={10} />);
+      render(<EnhancedTextarea {...defaultProps} rows={10} />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toHaveAttribute('rows', '10');
     });
 
     it('should render with data-testid', () => {
-      render(<AIEnhancedTextarea {...defaultProps} data-testid="custom-textarea" />);
+      render(<EnhancedTextarea {...defaultProps} data-testid="custom-textarea" />);
 
       expect(screen.getByTestId('custom-textarea')).toBeInTheDocument();
     });
@@ -64,14 +64,14 @@ describe('AIEnhancedTextarea', () => {
 
   describe('Character Counter', () => {
     it('should display character count', () => {
-      render(<AIEnhancedTextarea {...defaultProps} value="Hello" minLength={50} />);
+      render(<EnhancedTextarea {...defaultProps} value="Hello" minLength={50} />);
 
       expect(screen.getByText(/5 \/ 50 minimum/)).toBeInTheDocument();
     });
 
     it('should show characters needed when below minimum', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="Short"
           minLength={100}
@@ -85,7 +85,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should show green color when minimum is met', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="A".repeat(100)
           minLength={50}
@@ -99,7 +99,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should show yellow color when halfway to minimum', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="A".repeat(30)
           minLength={100}
@@ -113,7 +113,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should show red color when far from minimum', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="Short"
           minLength={100}
@@ -127,7 +127,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should respect maxLength', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="Test"
           minLength={50}
@@ -142,7 +142,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should not show minimum warning when minimum is met', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="A".repeat(100)
           minLength={50}
@@ -157,7 +157,7 @@ describe('AIEnhancedTextarea', () => {
   describe('User Interactions', () => {
     it('should call onChange when text is entered', () => {
       const onChange = jest.fn();
-      render(<AIEnhancedTextarea {...defaultProps} onChange={onChange} />);
+      render(<EnhancedTextarea {...defaultProps} onChange={onChange} />);
 
       const textarea = screen.getByRole('textbox');
       fireEvent.change(textarea, { target: { value: 'New text' } });
@@ -166,7 +166,7 @@ describe('AIEnhancedTextarea', () => {
     });
 
     it('should handle focus and blur events', () => {
-      render(<AIEnhancedTextarea {...defaultProps} />);
+      render(<EnhancedTextarea {...defaultProps} />);
 
       const textarea = screen.getByRole('textbox');
 
@@ -180,18 +180,18 @@ describe('AIEnhancedTextarea', () => {
     });
 
     it('should update value controlled by parent', () => {
-      const { rerender } = render(<AIEnhancedTextarea {...defaultProps} value="Initial" />);
+      const { rerender } = render(<EnhancedTextarea {...defaultProps} value="Initial" />);
 
       expect(screen.getByRole('textbox')).toHaveValue('Initial');
 
-      rerender(<AIEnhancedTextarea {...defaultProps} value="Updated" />);
+      rerender(<EnhancedTextarea {...defaultProps} value="Updated" />);
 
       expect(screen.getByRole('textbox')).toHaveValue('Updated');
     });
 
     it('should not call onChange when disabled', () => {
       const onChange = jest.fn();
-      render(<AIEnhancedTextarea {...defaultProps} onChange={onChange} disabled />);
+      render(<EnhancedTextarea {...defaultProps} onChange={onChange} disabled />);
 
       const textarea = screen.getByRole('textbox');
       fireEvent.change(textarea, { target: { value: 'New text' } });
@@ -201,88 +201,88 @@ describe('AIEnhancedTextarea', () => {
     });
   });
 
-  describe('AI Help Button', () => {
-    it('should render "Get AI Help" button when onAIHelp is provided', () => {
-      const onAIHelp = jest.fn();
-      render(<AIEnhancedTextarea {...defaultProps} onAIHelp={onAIHelp} />);
+  describe('Get Help Button', () => {
+    it('should render "Get Help" button when onGetHelp is provided', () => {
+      const onGetHelp = jest.fn();
+      render(<EnhancedTextarea {...defaultProps} onGetHelp={onGetHelp} />);
 
-      expect(screen.getByText('Get AI Help')).toBeInTheDocument();
+      expect(screen.getByText('Get Help')).toBeInTheDocument();
     });
 
-    it('should not render AI button when onAIHelp is not provided', () => {
-      render(<AIEnhancedTextarea {...defaultProps} />);
+    it('should not render help button when onGetHelp is not provided', () => {
+      render(<EnhancedTextarea {...defaultProps} />);
 
-      expect(screen.queryByText('Get AI Help')).not.toBeInTheDocument();
+      expect(screen.queryByText('Get Help')).not.toBeInTheDocument();
     });
 
-    it('should call onAIHelp when button is clicked', () => {
-      const onAIHelp = jest.fn();
-      render(<AIEnhancedTextarea {...defaultProps} onAIHelp={onAIHelp} />);
+    it('should call onGetHelp when button is clicked', () => {
+      const onGetHelp = jest.fn();
+      render(<EnhancedTextarea {...defaultProps} onGetHelp={onGetHelp} />);
 
-      const button = screen.getByText('Get AI Help');
+      const button = screen.getByText('Get Help');
       fireEvent.click(button);
 
-      expect(onAIHelp).toHaveBeenCalledTimes(1);
+      expect(onGetHelp).toHaveBeenCalledTimes(1);
     });
 
-    it('should disable AI button when isSuggesting is true', () => {
-      const onAIHelp = jest.fn();
+    it('should disable help button when isProcessing is true', () => {
+      const onGetHelp = jest.fn();
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
-          onAIHelp={onAIHelp}
-          isSuggesting={true}
+          onGetHelp={onGetHelp}
+          isProcessing={true}
         />
       );
 
-      const button = screen.getByText('Generating...');
+      const button = screen.getByText('Processing...');
       expect(button).toBeDisabled();
     });
 
-    it('should show loading state when isSuggesting', () => {
+    it('should show loading state when isProcessing', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
-          onAIHelp={jest.fn()}
-          isSuggesting={true}
+          onGetHelp={jest.fn()}
+          isProcessing={true}
         />
       );
 
-      expect(screen.getByText('Generating...')).toBeInTheDocument();
+      expect(screen.getByText('Processing...')).toBeInTheDocument();
     });
 
-    it('should disable AI button when textarea is disabled', () => {
-      const onAIHelp = jest.fn();
+    it('should disable help button when textarea is disabled', () => {
+      const onGetHelp = jest.fn();
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
-          onAIHelp={onAIHelp}
+          onGetHelp={onGetHelp}
           disabled={true}
           data-testid="textarea"
         />
       );
 
-      const button = screen.getByTestId('textarea-ai-help');
+      const button = screen.getByTestId('textarea-get-help');
       expect(button).toBeDisabled();
     });
 
-    it('should have correct testid for AI help button', () => {
+    it('should have correct testid for help button', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
-          onAIHelp={jest.fn()}
+          onGetHelp={jest.fn()}
           data-testid="my-textarea"
         />
       );
 
-      expect(screen.getByTestId('my-textarea-ai-help')).toBeInTheDocument();
+      expect(screen.getByTestId('my-textarea-get-help')).toBeInTheDocument();
     });
   });
 
   describe('Quality Badge', () => {
     it('should show quality badge when showQualityBadge is true', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           showQualityBadge={true}
           qualityScore={85}
@@ -290,64 +290,64 @@ describe('AIEnhancedTextarea', () => {
       );
 
       // Quality badge should be rendered (tested in its own test file)
-      expect(screen.getByTestId('quality-badge')).toBeInTheDocument();
+      expect(screen.getByTestId('quality-indicator')).toBeInTheDocument();
     });
 
     it('should not show quality badge when showQualityBadge is false', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           showQualityBadge={false}
           qualityScore={85}
         />
       );
 
-      expect(screen.queryByTestId('quality-badge')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('quality-indicator')).not.toBeInTheDocument();
     });
 
     it('should show checking state in quality badge', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           showQualityBadge={true}
           isCheckingQuality={true}
         />
       );
 
-      expect(screen.getByTestId('quality-badge-loading')).toBeInTheDocument();
-      expect(screen.getByText('Checking quality...')).toBeInTheDocument();
+      expect(screen.getByTestId('quality-indicator-loading')).toBeInTheDocument();
+      expect(screen.getByText('Validating...')).toBeInTheDocument();
     });
 
     it('should pass quality score to badge', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           showQualityBadge={true}
           qualityScore={92}
         />
       );
 
-      const badge = screen.getByTestId('quality-badge');
+      const badge = screen.getByTestId('quality-indicator');
       expect(badge).toHaveAttribute('data-score', '92');
     });
 
     it('should not show quality badge when score is null', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           showQualityBadge={true}
           qualityScore={null}
         />
       );
 
-      expect(screen.queryByTestId('quality-badge')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('quality-indicator')).not.toBeInTheDocument();
     });
   });
 
   describe('Error Handling', () => {
     it('should display error message when error prop is provided', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           error="This field is required"
           data-testid="textarea"
@@ -359,14 +359,14 @@ describe('AIEnhancedTextarea', () => {
     });
 
     it('should style textarea with error border when error exists', () => {
-      render(<AIEnhancedTextarea {...defaultProps} error="Error message" />);
+      render(<EnhancedTextarea {...defaultProps} error="Error message" />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toHaveClass('border-red-500');
     });
 
     it('should set aria-invalid when error exists', () => {
-      render(<AIEnhancedTextarea {...defaultProps} error="Error message" />);
+      render(<EnhancedTextarea {...defaultProps} error="Error message" />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toHaveAttribute('aria-invalid', 'true');
@@ -374,7 +374,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should link error message with aria-describedby', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           error="Error message"
           data-testid="textarea"
@@ -386,7 +386,7 @@ describe('AIEnhancedTextarea', () => {
     });
 
     it('should not have aria-describedby when no error', () => {
-      render(<AIEnhancedTextarea {...defaultProps} data-testid="textarea" />);
+      render(<EnhancedTextarea {...defaultProps} data-testid="textarea" />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).not.toHaveAttribute('aria-describedby');
@@ -395,21 +395,21 @@ describe('AIEnhancedTextarea', () => {
 
   describe('Accessibility', () => {
     it('should have proper aria-label', () => {
-      render(<AIEnhancedTextarea {...defaultProps} label="Test Label" />);
+      render(<EnhancedTextarea {...defaultProps} label="Test Label" />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toHaveAttribute('aria-label', 'Test Label');
     });
 
     it('should mark textarea as required in DOM when required', () => {
-      render(<AIEnhancedTextarea {...defaultProps} required />);
+      render(<EnhancedTextarea {...defaultProps} required />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toBeRequired();
     });
 
     it('should have accessible label association', () => {
-      render(<AIEnhancedTextarea {...defaultProps} label="Accessible Label" />);
+      render(<EnhancedTextarea {...defaultProps} label="Accessible Label" />);
 
       const label = screen.getByText('Accessible Label');
       const textarea = screen.getByRole('textbox');
@@ -423,17 +423,17 @@ describe('AIEnhancedTextarea', () => {
   describe('Complex Scenarios', () => {
     it('should handle all props together', () => {
       const onChange = jest.fn();
-      const onAIHelp = jest.fn();
+      const onGetHelp = jest.fn();
 
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           label="Complete Test"
           value="Test content"
           onChange={onChange}
-          onAIHelp={onAIHelp}
+          onGetHelp={onGetHelp}
           qualityScore={78}
           isCheckingQuality={false}
-          isSuggesting={false}
+          isProcessing={false}
           showQualityBadge={true}
           minLength={50}
           maxLength={500}
@@ -445,14 +445,14 @@ describe('AIEnhancedTextarea', () => {
       );
 
       expect(screen.getByRole('textbox')).toHaveValue('Test content');
-      expect(screen.getByText('Get AI Help')).toBeInTheDocument();
-      expect(screen.getByTestId('quality-badge')).toBeInTheDocument();
+      expect(screen.getByText('Get Help')).toBeInTheDocument();
+      expect(screen.getByTestId('quality-indicator')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('Enter details...')).toBeInTheDocument();
     });
 
     it('should maintain focus state during quality check', async () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           isCheckingQuality={true}
           data-testid="textarea"
@@ -469,7 +469,7 @@ describe('AIEnhancedTextarea', () => {
     it('should allow typing while quality check is in progress', () => {
       const onChange = jest.fn();
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           onChange={onChange}
           isCheckingQuality={true}
@@ -485,11 +485,11 @@ describe('AIEnhancedTextarea', () => {
     it('should not allow typing when disabled, even if AI is suggesting', () => {
       const onChange = jest.fn();
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           onChange={onChange}
           disabled={true}
-          isSuggesting={true}
+          isProcessing={true}
         />
       );
 
@@ -500,21 +500,21 @@ describe('AIEnhancedTextarea', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty string value', () => {
-      render(<AIEnhancedTextarea {...defaultProps} value="" />);
+      render(<EnhancedTextarea {...defaultProps} value="" />);
 
       expect(screen.getByRole('textbox')).toHaveValue('');
     });
 
     it('should handle very long text', () => {
       const longText = 'A'.repeat(5000);
-      render(<AIEnhancedTextarea {...defaultProps} value={longText} maxLength={10000} />);
+      render(<EnhancedTextarea {...defaultProps} value={longText} maxLength={10000} />);
 
       const textarea = screen.getByRole('textbox');
       expect(textarea).toHaveValue(longText);
     });
 
     it('should handle zero minLength', () => {
-      render(<AIEnhancedTextarea {...defaultProps} value="Any text" minLength={0} />);
+      render(<EnhancedTextarea {...defaultProps} value="Any text" minLength={0} />);
 
       // Should not show minimum warning
       expect(screen.queryByText(/characters needed/)).not.toBeInTheDocument();
@@ -522,7 +522,7 @@ describe('AIEnhancedTextarea', () => {
 
     it('should handle minLength equal to maxLength', () => {
       render(
-        <AIEnhancedTextarea
+        <EnhancedTextarea
           {...defaultProps}
           value="Exact"
           minLength={100}
@@ -536,14 +536,14 @@ describe('AIEnhancedTextarea', () => {
 
     it('should handle special characters in value', () => {
       const specialText = 'Test with <special> & "characters" \'quotes\'';
-      render(<AIEnhancedTextarea {...defaultProps} value={specialText} />);
+      render(<EnhancedTextarea {...defaultProps} value={specialText} />);
 
       expect(screen.getByRole('textbox')).toHaveValue(specialText);
     });
 
     it('should handle newlines in value', () => {
       const multilineText = 'Line 1\nLine 2\nLine 3';
-      render(<AIEnhancedTextarea {...defaultProps} value={multilineText} />);
+      render(<EnhancedTextarea {...defaultProps} value={multilineText} />);
 
       expect(screen.getByRole('textbox')).toHaveValue(multilineText);
     });

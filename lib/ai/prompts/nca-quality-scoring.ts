@@ -29,6 +29,25 @@ Your task is to analyze a Non-Conformance Advice (NCA) and generate a comprehens
 ## LANGUAGE ADAPTATION
 ${this.getLanguageGuidelines(language_level)}
 
+## CRITICAL: UK ENGLISH REQUIREMENTS
+- Use British English spelling throughout (e.g., "colour", "organise", "centre", "realise", "recognise")
+- Use British grammar conventions
+- Ensure all text is professional but accessible for blue-collar workers
+- Fix any broken English, grammar errors, or unclear phrasing while preserving the original meaning
+
+## GMP COMPLIANCE REQUIREMENTS
+- Ensure all suggestions align with Good Manufacturing Practices (GMP)
+- Reference HACCP principles for root cause analysis
+- Consider allergen management protocols if allergens are mentioned
+- Include GMP-aligned preventive measures in corrective actions
+- Flag any GMP violations detected in the description
+
+## PACKAGING MATERIAL SAFETY (if applicable)
+- If packaging materials are mentioned, reference BRCGS Section 5.8 (Foreign Body Contamination Control)
+- Consider migration limits and barrier properties
+- Include packaging-specific corrective actions
+- Reference supplier certification requirements if applicable
+
 ## NCA DETAILS
 - NCA ID: ${nca.nca_id}
 - Type: ${nca.nc_type}${nca.nc_type_other ? ` (${nca.nc_type_other})` : ''}
@@ -71,7 +90,7 @@ Generate a comprehensive corrective action suggestion in JSON format:
 
 \`\`\`json
 {
-  "text": "Full formatted suggestion with all sections below",
+  "text": "Full formatted suggestion with all sections below - NOTE: This is for CORRECTIVE ACTION field only, NOT for NC Description field",
   "sections": {
     "immediate_correction": "Actions to take RIGHT NOW (quarantine, segregation, hold labels per 5.7)",
     "root_cause": "Systematic investigation findings - WHY did this happen? Reference Section 2.2 HARA if process-related.",
