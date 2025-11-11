@@ -17,7 +17,7 @@ import { FileUpload } from '@/components/file-upload';
 import { uploadMJCFile, listMJCFiles, deleteMJCFile } from '@/app/actions/file-actions';
 
 // Work Order Service imports
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@/lib/database/client';
 import { createWorkOrderService } from '@/lib/services/work-order-service';
 import type { WorkOrder } from '@/lib/types/work-order';
 
@@ -80,21 +80,25 @@ export default function NewMJCPage(): React.ReactElement {
         setWorkOrderLoading(true);
         setWorkOrderError(null);
 
-        // Create Supabase client
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error('Supabase configuration missing');
+        // TODO: Get real user ID from auth context
+        // For now, skip work order fetch if no valid user ID
+        // UUID validation: check if it's a valid UUID format
+        const userId = 'current-user-id'; // Placeholder - replace with real auth user ID
+        
+        // Validate UUID format before querying (basic check)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+          // Skip work order fetch if user ID is not a valid UUID
+          // This is expected in development when auth is not set up
+          setWorkOrderError(null);
+          return;
         }
 
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+        // Create Supabase client using browser client utility
+        const supabase = createBrowserClient();
 
         // Create work order service with dependency injection
         const workOrderService = createWorkOrderService(supabase);
-
-        // TODO: Get real user ID from auth context
-        const userId = 'current-user-id';
 
         // Fetch active work order
         const workOrder = await workOrderService.getActiveWorkOrder(userId);

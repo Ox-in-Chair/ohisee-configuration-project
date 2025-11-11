@@ -8,6 +8,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -52,6 +53,10 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
   // Debounced search state
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   // Handle row click navigation
   const handleRowClick = useCallback((mjcId: string) => {
@@ -141,6 +146,30 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
 
     return result;
   }, [filteredData, filterState.sortField, filterState.sortDirection]);
+
+  /**
+   * Calculate pagination
+   */
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = useMemo(() => {
+    return sortedData.slice(startIndex, endIndex);
+  }, [sortedData, startIndex, endIndex]);
+
+  /**
+   * Reset to page 1 when filters change
+   */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    filterState.status,
+    filterState.urgency,
+    filterState.maintenanceType,
+    filterState.machineStatus,
+    filterState.temporaryRepairOnly,
+    filterState.searchQuery,
+  ]);
 
   // Filter handlers
   const handleStatusChange = useCallback((value: string) => {
@@ -372,9 +401,21 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
       {/* Results Summary */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Showing {sortedData.length} of {data.length} MJC
-          {data.length !== 1 ? 's' : ''}
+          {sortedData.length > 0 ? (
+            <>
+              Showing {startIndex + 1} to {Math.min(endIndex, sortedData.length)} of {sortedData.length} MJC
+              {sortedData.length !== 1 ? 's' : ''}
+              {sortedData.length !== data.length && ` (filtered from ${data.length} total)`}
+            </>
+          ) : (
+            <>No MJCs found</>
+          )}
         </p>
+        {totalPages > 1 && (
+          <p className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </p>
+        )}
         <div className="flex items-center gap-2">
           <Label className="text-sm">Sort by:</Label>
           <Select
@@ -411,7 +452,7 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-8 text-center text-gray-500">Loading MJCs...</div>
-          ) : sortedData.length === 0 ? (
+          ) : paginatedData.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-500 font-medium">No MJCs found</p>
               <p className="text-sm text-gray-400 mt-2">
@@ -461,7 +502,7 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedData.map((mjc) => (
+                  {paginatedData.map((mjc) => (
                     <tr
                       key={mjc.id}
                       data-testid={`mjc-row-${mjc.id}`}
@@ -516,6 +557,69 @@ export function MJCTable({ data, isLoading = false }: MJCTableProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            {sortedData.length > 0 && (
+              <>Showing {startIndex + 1} to {Math.min(endIndex, sortedData.length)} of {sortedData.length}</>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              data-testid="mjc-pagination-prev"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="min-w-[40px]"
+                    data-testid={`mjc-pagination-page-${pageNum}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              data-testid="mjc-pagination-next"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

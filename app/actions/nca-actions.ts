@@ -11,6 +11,7 @@ import type { NCAInsert, Signature } from '@/types/database';
 import type { NCAFormData } from '@/lib/validations/nca-schema';
 import { revalidatePath } from 'next/cache';
 import type { INotificationService, NotificationPayload } from '@/lib/types/notification';
+import { createProductionNotificationService } from '@/lib/services/create-notification-service';
 
 /**
  * Server Action Response Type
@@ -223,8 +224,9 @@ export async function createNCA(
     }
 
     // Send machine down alert if applicable (non-blocking)
-    // Errors are logged but won't fail NCA creation
-    await sendMachineDownAlertIfNeeded(ncaData, data.nca_number, notificationService);
+    // Use provided notification service (for testing) or create production service
+    const service = notificationService || createProductionNotificationService();
+    await sendMachineDownAlertIfNeeded(ncaData, data.nca_number, service);
 
     // Revalidate NCA list page
     revalidatePath('/nca');

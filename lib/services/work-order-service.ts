@@ -30,12 +30,18 @@ export class WorkOrderService implements IWorkOrderService {
         .single();
 
       if (error) {
-        // PGRST116 = no rows found (expected case)
+        // PGRST116 = no rows found (expected case - not an error)
         if (error.code === 'PGRST116') {
           return null;
         }
-        // Log other errors but return null gracefully
-        console.error('Work order fetch error:', error);
+        // Log other errors with full details
+        const errorDetails = {
+          code: error.code || 'UNKNOWN',
+          message: error.message || 'Unknown error',
+          details: error.details || null,
+          hint: error.hint || null,
+        };
+        console.error('Work order fetch error:', JSON.stringify(errorDetails, null, 2));
         return null;
       }
 

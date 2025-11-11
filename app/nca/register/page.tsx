@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/lib/database/client';
 import { NCATable } from '@/components/nca-table';
 import type { NCATableRow } from '@/lib/types/nca';
 
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
  * @returns Promise<NCATableRow[]> - Array of NCAs for table display
  */
 async function fetchNCAs(): Promise<NCATableRow[]> {
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerClient();
 
   const { data, error } = await supabase
     .from('ncas')

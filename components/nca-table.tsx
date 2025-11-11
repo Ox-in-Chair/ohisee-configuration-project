@@ -34,7 +34,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, X, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import type {
   NCAData,
@@ -124,6 +124,10 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
   // Filter state management
   const [filterState, setFilterState] = useState<NCAFilterState>(DEFAULT_FILTER_STATE);
   const [searchInput, setSearchInput] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   // Debounce search query (300ms)
   const debouncedSearchQuery = useDebounce(searchInput, 300);
@@ -197,6 +201,23 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
   const filteredAndSortedNCAs = useMemo(() => {
     return NCAFilterUtils.applyFilters(ncas, filterState);
   }, [ncas, filterState]);
+
+  /**
+   * Calculate pagination
+   */
+  const totalPages = Math.ceil(filteredAndSortedNCAs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedNCAs = useMemo(() => {
+    return filteredAndSortedNCAs.slice(startIndex, endIndex);
+  }, [filteredAndSortedNCAs, startIndex, endIndex]);
+
+  /**
+   * Reset to page 1 when filters change
+   */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterState.status, filterState.searchQuery]);
 
   /**
    * Check if any filters are active
@@ -298,9 +319,23 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
         )}
       </div>
 
-      {/* Results Count */}
-      <div className="text-sm text-gray-600">
-        Showing {filteredAndSortedNCAs.length} of {ncas.length} NCAs
+      {/* Results Count and Pagination Info */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          {filteredAndSortedNCAs.length > 0 ? (
+            <>
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedNCAs.length)} of {filteredAndSortedNCAs.length} NCAs
+              {filteredAndSortedNCAs.length !== ncas.length && ` (filtered from ${ncas.length} total)`}
+            </>
+          ) : (
+            <>No NCAs found</>
+          )}
+        </div>
+        {totalPages > 1 && (
+          <div className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -356,7 +391,7 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedNCAs.length === 0 ? (
+            {paginatedNCAs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                   {hasActiveFilters ? (
@@ -370,7 +405,7 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAndSortedNCAs.map(nca => (
+              paginatedNCAs.map(nca => (
                 <TableRow
                   key={nca.id}
                   onClick={() => handleRowClick(nca)}
@@ -402,6 +437,69 @@ export function NCATable({ ncas, loading = false, error }: NCATableProps) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            {filteredAndSortedNCAs.length > 0 && (
+              <>Showing {startIndex + 1} to {Math.min(endIndex, filteredAndSortedNCAs.length)} of {filteredAndSortedNCAs.length}</>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              data-testid="nca-pagination-prev"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className="min-w-[40px]"
+                    data-testid={`nca-pagination-page-${pageNum}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              data-testid="nca-pagination-next"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
