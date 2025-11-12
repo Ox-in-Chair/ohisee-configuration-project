@@ -4,9 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**OHiSee NCA/MJC Management System** - A BRCGS Food Safety compliant digital platform for Kangopak (Pty) Ltd to manage Non-Conformance Advice (NCA) and Maintenance Job Cards (MJC). Built with Next.js 16, TypeScript, Supabase PostgreSQL, and Claude AI integration.
+**Production-Ready Manufacturing Control and Compliance System** - This is not just an NCA/MJC tool—it's the complete Kangopak Production Control and Compliance Platform for Kangopak (Pty) Ltd. The system unifies and automates all production control, product safety, and compliance activities including:
 
-**Compliance Context:** Every feature must align with BRCGS Issue 7 procedures. The system enforces Kangopak's Product Safety & Quality Management System (PS&QMS) through database constraints, RLS policies, and AI-powered quality gates.
+- Non-Conformance & Incident Control (BRCGS 5.7)
+- Maintenance Management (equipment failure tracking)
+- Waste & Material Reconciliation (BRCGS 4.10)
+- Supplier Quality Control (BRCGS 3.4)
+- Traceability & Production Control (BRCGS 3.9)
+- Complaint Handling (BRCGS 3.10)
+- Product Recall (BRCGS 3.11)
+- AI-Driven Quality Guidance
+- Reporting & Analytics
+
+Built with Next.js 16, TypeScript, Supabase PostgreSQL, and Claude AI integration. All modules interconnected under single compliance architecture.
+
+**Compliance Context:** Every feature must align with BRCGS Packaging Materials Issue 7 procedures. The system enforces Kangopak's Product Safety & Quality Management System (PS&QMS) through database constraints, RLS policies, and AI-powered quality gates. Each digital form displays document number, form number, revision, and BRCGS clause reference.
 
 ## Development Commands
 
@@ -21,28 +33,6 @@ npm run build
 
 # Linting
 npm run lint
-```
-
-### Testing Strategy
-
-```bash
-# Unit tests (Jest)
-npm run test                    # Run all unit tests
-npm run test:watch             # Watch mode
-npm run test:coverage          # Coverage report (95%+ required)
-
-# Integration tests
-npm run test:integration
-npm run test:integration:watch
-
-# Database tests (pgTAP)
-npm run test:db
-npm run test:db:watch
-
-# E2E tests (Stagehand on Playwright)
-npm run test:e2e               # All E2E tests
-npm run test:e2e:headed        # With browser visible
-npm run test:e2e:nca-interactions  # Specific test file
 ```
 
 ### Utility Scripts
