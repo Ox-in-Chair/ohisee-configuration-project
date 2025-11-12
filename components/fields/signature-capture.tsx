@@ -17,7 +17,8 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X, Check } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface SignatureCaptureProps {
   label?: string;
@@ -206,7 +207,7 @@ export function SignatureCapture({
         {hasSignature && (
           <div className="absolute top-2 right-2">
             <div className="flex items-center gap-2 bg-white/90 px-2 py-1 rounded border border-gray-200">
-              <Check className="h-4 w-4 text-success-600" />
+              <Icon name={ICONS.CHECK} size="sm" className="text-success-600" />
               <span className="text-xs text-gray-600">Signed</span>
             </div>
           </div>
@@ -225,7 +226,7 @@ export function SignatureCapture({
           disabled={!hasSignature || disabled}
           className="h-8"
         >
-          <X className="h-4 w-4 mr-1" />
+          <Icon name={ICONS.CLOSE} size="sm" className="mr-1" />
           Clear
         </Button>
       </div>

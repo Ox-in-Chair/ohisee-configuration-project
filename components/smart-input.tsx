@@ -4,7 +4,8 @@ import { FC, useState, useCallback, ChangeEvent, useMemo, useEffect, useRef } fr
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { HelpCircle, Loader2, CheckCircle2, X } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 import { createPackagingSafetyService } from '@/lib/knowledge/packaging-safety-service';
 import { createIndustryBenchmarksService } from '@/lib/knowledge/industry-benchmarks-service';
@@ -238,12 +239,12 @@ export const SmartInput: FC<SmartInputProps> = ({
           >
             {isProcessing ? (
               <>
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Icon name={ICONS.LOADING} size="xs" className="animate-spin" />
                 <span>Processing...</span>
               </>
             ) : (
               <>
-                <HelpCircle className="h-3 w-3" />
+                <Icon name={ICONS.HELP} size="xs" />
                 <span>Get Help</span>
               </>
             )}

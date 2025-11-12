@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface VoiceInputProps {
@@ -235,14 +236,14 @@ export function VoiceInput({
       >
         {isListening ? (
           <>
-            <MicOff className="h-4 w-4 mr-2" />
+            <Icon name={ICONS.MIC_OFF} size="sm" className="mr-2" />
             <span className="hidden sm:inline">Stop</span>
             {/* Pulsing animation */}
             <span className="absolute inset-0 rounded-md bg-red-500 animate-ping opacity-75" />
           </>
         ) : (
           <>
-            <Mic className="h-4 w-4 mr-2" />
+            <Icon name={ICONS.MIC_ON} size="sm" className="mr-2" />
             <span className="hidden sm:inline">Voice</span>
           </>
         )}

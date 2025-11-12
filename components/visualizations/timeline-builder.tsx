@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface TimelineEvent {
@@ -123,13 +124,13 @@ export function TimelineBuilder({
   const getEventIcon = (type: TimelineEvent['type']) => {
     switch (type) {
       case 'detection':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <Icon name={ICONS.WARNING} size="sm" className="text-red-500" />;
       case 'action':
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Icon name={ICONS.CLOCK} size="sm" className="text-blue-500" />;
       case 'observation':
-        return <MapPin className="h-4 w-4 text-green-500" />;
+        return <Icon name={ICONS.MAP_PIN} size="sm" className="text-green-500" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return <Icon name={ICONS.CLOCK} size="sm" className="text-gray-500" />;
     }
   };
 
@@ -148,7 +149,7 @@ export function TimelineBuilder({
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm">Timeline of Events</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={addEvent}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
               Add Event
             </Button>
           </div>
@@ -175,7 +176,7 @@ export function TimelineBuilder({
                   onClick={() => removeEvent(event.id)}
                   className="h-6 w-6"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Icon name={ICONS.DELETE} size="xs" />
                 </Button>
               </div>
 

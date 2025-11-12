@@ -2,24 +2,24 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useNavigation } from '@/lib/context/navigation-context';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   Home,
+  Plus,
   FileText,
+  TrendingUp,
   Wrench,
   LayoutDashboard,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  TrendingUp,
   Users,
+  Calendar,
   MessageSquare,
   AlertTriangle,
   Trash2,
 } from 'lucide-react';
+import { useNavigation } from '@/lib/context/navigation-context';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface NavItem {
   title: string;
@@ -103,9 +103,9 @@ export function DesktopSidebar() {
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {sidebarCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <Icon name={ICONS.CHEVRON_RIGHT} size="sm" />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <Icon name={ICONS.CHEVRON_LEFT} size="sm" />
           )}
         </Button>
       </div>
@@ -168,7 +168,7 @@ export function DesktopSidebar() {
               size="sm"
             >
               <Link href="/nca/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
                 New NCA
               </Link>
             </Button>
@@ -179,7 +179,7 @@ export function DesktopSidebar() {
               size="sm"
             >
               <Link href="/mjc/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
                 New MJC
               </Link>
             </Button>

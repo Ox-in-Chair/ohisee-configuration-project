@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useNavigation } from '@/lib/context/navigation-context';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 import { GlobalSearch } from './global-search';
 
@@ -48,9 +49,9 @@ export function Header({ className }: HeaderProps) {
           aria-label="Toggle menu"
         >
           {mobileDrawerOpen ? (
-            <X className="h-5 w-5" />
+            <Icon name={ICONS.CLOSE} size="md" />
           ) : (
-            <Menu className="h-5 w-5" />
+            <Icon name={ICONS.MENU} size="md" />
           )}
         </Button>
 
@@ -78,7 +79,7 @@ export function Header({ className }: HeaderProps) {
             aria-expanded={userMenuOpen}
             className="rounded-full"
           >
-            <User className="h-5 w-5" />
+            <Icon name={ICONS.USER} size="md" />
           </Button>
 
           {/* User dropdown (simplified for now) */}

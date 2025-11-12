@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, X, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 import type {
   NCAData,
@@ -128,8 +129,9 @@ function formatDate(dateString: string): string {
 
 /**
  * NCA Table Component
+ * Wrapped with React.memo to prevent unnecessary re-renders
  */
-export function NCATable({
+export const NCATable = memo(function NCATable({
   ncas,
   loading = false,
   error,
@@ -318,13 +320,13 @@ export function NCATable({
    */
   const renderSortIcon = (column: SortColumn) => {
     if (filterState.sortColumn !== column) {
-      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />;
+      return <Icon name={ICONS.ARROW_UP_DOWN} size="sm" className="ml-2 opacity-50" />;
     }
 
     return filterState.sortDirection === 'asc' ? (
-      <ArrowUp className="ml-2 h-4 w-4" />
+      <Icon name={ICONS.ARROW_UP} size="sm" className="ml-2" />
     ) : (
-      <ArrowDown className="ml-2 h-4 w-4" />
+      <Icon name={ICONS.ARROW_DOWN} size="sm" className="ml-2" />
     );
   };
 
@@ -376,7 +378,7 @@ export function NCATable({
         {/* Search Input */}
         <div className="flex-1 flex items-center gap-2 w-full md:max-w-md">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Icon name={ICONS.SEARCH} size="sm" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input
               type="text"
               placeholder="Search NCA number or description..."
@@ -397,7 +399,7 @@ export function NCATable({
             className="flex items-center gap-2 whitespace-nowrap"
             data-testid="nca-clear-filters"
           >
-            <X className="h-4 w-4" />
+            <Icon name={ICONS.CLOSE} size="sm" />
             Clear Filters
           </Button>
         )}
@@ -538,7 +540,7 @@ export function NCATable({
               disabled={currentPage === 1}
               data-testid="nca-pagination-prev"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <Icon name={ICONS.CHEVRON_LEFT} size="sm" />
               Previous
             </Button>
             
@@ -579,11 +581,16 @@ export function NCATable({
               data-testid="nca-pagination-next"
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <Icon name={ICONS.CHEVRON_RIGHT} size="sm" />
             </Button>
           </div>
         </div>
       )}
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if ncas data changed
+  // Ignore loading state changes, pagination changes to parent
+  // Return true if props are equal (skip re-render), false if different (re-render)
+  return JSON.stringify(prevProps.ncas) === JSON.stringify(nextProps.ncas);
+});

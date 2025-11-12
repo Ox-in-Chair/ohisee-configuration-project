@@ -1,25 +1,33 @@
 import { useState, useCallback, useRef } from 'react';
 import type { NCA, MJC, QualityScore, Suggestion, ValidationResult } from '@/lib/ai/types';
 import {
-  analyzeFieldQualityAction,
-  generateSuggestionsAction,
-  validateBeforeSubmitAction,
+  validateFieldQualityAction,
+  getWritingAssistanceAction,
+  validateSubmissionAction,
   recordSuggestionOutcomeAction,
-  type ServerActionResult,
-} from '@/app/actions/ai-quality-actions';
+} from '@/app/actions/quality-validation-actions';
+import type { ActionResponse } from '@/app/actions/types';
 
 /**
- * Hook for AI quality analysis and suggestions
+ * Unified hook for AI quality analysis and validation
+ * Consolidates useAIQuality and useQualityValidation into single implementation
  * Manages state for inline quality checks, suggestions, and validation
+ *
+ * Uses quality-validation-actions which includes:
+ * - Rule-based validation (fast, no AI needed for obvious issues)
+ * - AI-powered deep validation
+ * - Adaptive enforcement
+ * - Multi-agent orchestration
+ * - Enhanced RAG service
  */
 
-export interface UseAIQualityOptions {
+export interface UseQualityAnalysisOptions {
   formType: 'nca' | 'mjc';
   userId: string;
   debounceMs?: number;
 }
 
-export interface UseAIQualityReturn {
+export interface UseQualityAnalysisReturn {
   // State
   qualityScore: QualityScore | null;
   suggestions: Suggestion | null;
@@ -29,41 +37,65 @@ export interface UseAIQualityReturn {
   isValidating: boolean;
   error: string | null;
 
-  // Actions
+  // Actions (unified API supporting both naming conventions)
   checkQualityInline: (fieldData: Partial<NCA> | Partial<MJC>) => void;
+  validateField: (fieldData: Partial<NCA> | Partial<MJC>) => void; // Alias for checkQualityInline
+
   generateSuggestion: (formData: Partial<NCA> | Partial<MJC>) => Promise<void>;
+  getWritingHelp: (formData: Partial<NCA> | Partial<MJC>) => Promise<void>; // Alias for generateSuggestion
+
   validateBeforeSubmit: (
     formData: NCA | MJC,
     isConfidential?: boolean
-  ) => Promise<ServerActionResult<ValidationResult>>;
+  ) => Promise<ActionResponse<ValidationResult>>;
+  validateSubmission: (
+    formData: NCA | MJC,
+    isConfidential?: boolean
+  ) => Promise<ActionResponse<ValidationResult>>; // Alias for validateBeforeSubmit
+
   acceptSuggestion: (suggestion: Suggestion, fieldName: string, currentValue: string) => void;
   clearError: () => void;
   reset: () => void;
 }
 
 /**
- * useAIQuality Hook
+ * useQualityAnalysis Hook
+ *
+ * Unified quality analysis hook that supports both inline validation and pre-submit checks.
+ * Provides both old and new function names for backward compatibility during migration.
  *
  * @example
  * ```tsx
+ * // New naming convention
  * const {
  *   qualityScore,
  *   isChecking,
- *   checkQualityInline,
- *   generateSuggestion
- * } = useAIQuality({
+ *   validateField,
+ *   getWritingHelp,
+ *   validateSubmission
+ * } = useQualityAnalysis({
  *   formType: 'nca',
  *   userId: 'user-123',
  *   debounceMs: 3000
  * });
+ *
+ * // Old naming convention (still supported)
+ * const {
+ *   checkQualityInline,
+ *   generateSuggestion,
+ *   validateBeforeSubmit
+ * } = useQualityAnalysis({
+ *   formType: 'nca',
+ *   userId: 'user-123'
+ * });
  * ```
  */
-export function useAIQuality({
+export function useQualityAnalysis({
   formType,
   userId,
   debounceMs = 3000,
-}: UseAIQualityOptions): UseAIQualityReturn {
-  // State
+}: UseQualityAnalysisOptions): UseQualityAnalysisReturn {
+  // State management
   const [qualityScore, setQualityScore] = useState<QualityScore | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion | null>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -72,13 +104,14 @@ export function useAIQuality({
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs for debouncing and cancellation
+  // Refs for debouncing and request cancellation
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   /**
    * Check field quality inline (debounced)
    * Fires after user stops typing for `debounceMs`
+   * Runs rule-based validation first, then AI analysis for deeper insights
    */
   const checkQualityInline = useCallback(
     (fieldData: Partial<NCA> | Partial<MJC>) => {
@@ -101,10 +134,10 @@ export function useAIQuality({
         abortControllerRef.current = new AbortController();
 
         try {
-          const result = await analyzeFieldQualityAction(formType, fieldData, userId);
+          const result = await validateFieldQualityAction(formType, fieldData, userId);
 
           if (!result.success) {
-            setError(result.error || 'Quality check failed');
+            setError(result.error || 'Validation failed');
             setQualityScore(null);
             return;
           }
@@ -117,7 +150,7 @@ export function useAIQuality({
           }
 
           console.error('Quality check error:', err);
-          setError(err instanceof Error ? err.message : 'Quality check failed');
+          setError(err instanceof Error ? err.message : 'Validation failed');
           setQualityScore(null);
         } finally {
           setIsChecking(false);
@@ -130,6 +163,7 @@ export function useAIQuality({
   /**
    * Generate AI suggestion for a field
    * Not debounced - fires immediately when button clicked
+   * Enhanced with Phase 7: User-Guided Generation and Enhanced RAG
    */
   const generateSuggestion = useCallback(
     async (formData: Partial<NCA> | Partial<MJC>) => {
@@ -137,10 +171,10 @@ export function useAIQuality({
       setError(null);
 
       try {
-        const result = await generateSuggestionsAction(formType, formData, userId);
+        const result = await getWritingAssistanceAction(formType, formData, userId);
 
         if (!result.success) {
-          setError(result.error || 'Failed to generate suggestion');
+          setError(result.error || 'Failed to get writing assistance');
           setSuggestions(null);
           return;
         }
@@ -148,7 +182,7 @@ export function useAIQuality({
         setSuggestions(result.data || null);
       } catch (err) {
         console.error('Suggestion generation error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to generate suggestion');
+        setError(err instanceof Error ? err.message : 'Failed to get writing assistance');
         setSuggestions(null);
       } finally {
         setIsSuggesting(false);
@@ -159,18 +193,19 @@ export function useAIQuality({
 
   /**
    * Validate form before submission (quality gate)
-   * Deep validation that may show quality gate modal
+   * Deep validation with rule-based checks first, then AI analysis
+   * Applies adaptive enforcement based on attempt number
    */
   const validateBeforeSubmit = useCallback(
     async (
       formData: NCA | MJC,
       isConfidential: boolean = false
-    ): Promise<ServerActionResult<ValidationResult>> => {
+    ): Promise<ActionResponse<ValidationResult>> => {
       setIsValidating(true);
       setError(null);
 
       try {
-        const result = await validateBeforeSubmitAction(formType, formData, userId, isConfidential);
+        const result = await validateSubmissionAction(formType, formData, userId, isConfidential);
 
         if (!result.success) {
           setError(result.error || 'Validation failed');
@@ -197,6 +232,7 @@ export function useAIQuality({
 
   /**
    * Accept an AI suggestion and record the outcome
+   * Used for learning and improvement
    */
   const acceptSuggestion = useCallback(
     (suggestion: Suggestion, fieldName: string, currentValue: string) => {
@@ -225,7 +261,7 @@ export function useAIQuality({
   }, []);
 
   /**
-   * Reset all state
+   * Reset all state and cancel pending operations
    */
   const reset = useCallback(() => {
     setQualityScore(null);
@@ -255,12 +291,22 @@ export function useAIQuality({
     isValidating,
     error,
 
-    // Actions
+    // Actions (with both naming conventions for backward compatibility)
     checkQualityInline,
+    validateField: checkQualityInline, // Alias
+
     generateSuggestion,
+    getWritingHelp: generateSuggestion, // Alias
+
     validateBeforeSubmit,
+    validateSubmission: validateBeforeSubmit, // Alias
+
     acceptSuggestion,
     clearError,
     reset,
   };
 }
+
+// Re-export types for convenience
+export type { QualityScore, Suggestion, ValidationResult } from '@/lib/ai/types';
+export type { ActionResponse } from '@/app/actions/types';

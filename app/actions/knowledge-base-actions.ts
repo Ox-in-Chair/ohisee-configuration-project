@@ -13,16 +13,11 @@
 
 import { createServerClient } from '@/lib/database/client';
 import { revalidatePath } from 'next/cache';
+import type { ActionResponse } from './types';
 
 // ============================================================================
 // Response Types
 // ============================================================================
-
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
 
 // ============================================================================
 // Knowledge Base Types

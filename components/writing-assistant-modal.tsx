@@ -16,7 +16,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, BookOpen, AlertCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import type { Suggestion } from '@/lib/ai/types';
 
 /**
@@ -72,7 +73,7 @@ export const WritingAssistantModal: FC<WritingAssistantModalProps> = ({
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <FileText className="h-6 w-6 text-blue-600" />
+            <Icon name={ICONS.FILE_TEXT} size="lg" className="text-blue-600" />
             <DialogTitle className="text-xl">Writing Suggestions</DialogTitle>
           </div>
           <DialogDescription>
@@ -106,7 +107,7 @@ export const WritingAssistantModal: FC<WritingAssistantModalProps> = ({
             {suggestion.recommendations && Object.keys(suggestion.recommendations).length > 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <Icon name={ICONS.WARNING} size="md" className="text-yellow-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-yellow-900 mb-2">
                       Additional Recommendations:
@@ -127,7 +128,7 @@ export const WritingAssistantModal: FC<WritingAssistantModalProps> = ({
             {suggestion.procedure_references && suggestion.procedure_references.length > 0 && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
-                  <BookOpen className="h-5 w-5 text-gray-600 mt-0.5" />
+                  <Icon name={ICONS.BOOK_OPEN} size="md" className="text-gray-600 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-gray-700 mb-2">
                       Referenced Procedures:
@@ -154,7 +155,7 @@ export const WritingAssistantModal: FC<WritingAssistantModalProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
+            <Icon name={ICONS.WARNING} size="md" className="text-gray-400 mb-4" />
             <p className="text-gray-600 text-center">
               No writing suggestions available at this time.
             </p>

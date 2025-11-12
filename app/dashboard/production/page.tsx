@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { createServerClient } from '@/lib/database/client';
-import { AlertTriangle, CheckCircle2, Clock, FileText, Wrench } from "lucide-react";
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 /**
  * Production Dashboard Page (Operator View)
@@ -116,13 +117,13 @@ export default async function ProductionDashboardPage() {
           <div className="flex gap-3">
             <Link href="/nca/new">
               <Button size="lg" className="min-h-[44px]">
-                <FileText className="mr-2 h-5 w-5" />
+                <Icon name={ICONS.FILE_TEXT} size="md" className="mr-2" />
                 Create NCA
               </Button>
             </Link>
             <Link href="/mjc/new">
               <Button size="lg" variant="secondary" className="min-h-[44px]">
-                <Wrench className="mr-2 h-5 w-5" />
+                <Icon name={ICONS.WRENCH} size="md" className="mr-2" />
                 Create MJC
               </Button>
             </Link>
@@ -133,7 +134,7 @@ export default async function ProductionDashboardPage() {
         <Card data-testid="active-work-order-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary-600" />
+              <Icon name={ICONS.CLOCK} size="md" className="text-primary-600" />
               Active Work Order
             </CardTitle>
             <CardDescription>Current production run</CardDescription>
@@ -167,7 +168,7 @@ export default async function ProductionDashboardPage() {
           <Card data-testid="todays-ncas-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-critical-600" />
+                <Icon name={ICONS.FILE_TEXT} size="md" className="text-critical-600" />
                 Today's NCAs
               </CardTitle>
               <CardDescription>Non-conformance advisories created today</CardDescription>
@@ -190,7 +191,7 @@ export default async function ProductionDashboardPage() {
           <Card data-testid="todays-mjcs-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-warning-600" />
+                <Icon name={ICONS.WRENCH} size="md" className="text-warning-600" />
                 Today's MJCs
               </CardTitle>
               <CardDescription>Maintenance job cards created today</CardDescription>
@@ -214,7 +215,7 @@ export default async function ProductionDashboardPage() {
         <Card data-testid="active-alerts">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning-600" />
+              <Icon name={ICONS.ALERT} size="md" className="text-warning-600" />
               Active Alerts
             </CardTitle>
             <CardDescription>Critical issues requiring attention</CardDescription>
@@ -223,7 +224,7 @@ export default async function ProductionDashboardPage() {
             <div className="space-y-3" data-testid="machine-status">
               {stats.machineDownCount > 0 && (
                 <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
+                  <Icon name={ICONS.ALERT} size="sm" />
                   <AlertDescription>
                     <strong>{stats.machineDownCount}</strong> machine(s) currently down.
                     Immediate attention required.
@@ -233,7 +234,7 @@ export default async function ProductionDashboardPage() {
 
               {stats.criticalMJCs > 0 && (
                 <Alert>
-                  <AlertTriangle className="h-4 w-4" />
+                  <Icon name={ICONS.ALERT} size="sm" />
                   <AlertDescription>
                     <strong>{stats.criticalMJCs}</strong> critical maintenance job(s) pending.
                   </AlertDescription>
@@ -242,7 +243,7 @@ export default async function ProductionDashboardPage() {
 
               {stats.machineDownCount === 0 && stats.criticalMJCs === 0 && (
                 <Alert variant="default" className="border-success-600 bg-success-600/10">
-                  <CheckCircle2 className="h-4 w-4 text-success-600" />
+                  <Icon name={ICONS.SUCCESS} size="sm" className="text-success-600" />
                   <AlertDescription className="text-success-600">
                     No active alerts. All systems operational.
                   </AlertDescription>
@@ -263,7 +264,7 @@ export default async function ProductionDashboardPage() {
               <Link href="/nca/new" className="block">
                 <Button variant="outline" className="w-full min-h-[44px] h-auto py-4">
                   <div className="flex flex-col items-center gap-2">
-                    <FileText className="h-6 w-6" />
+                    <Icon name={ICONS.FILE_TEXT} size="lg" />
                     <span>Create NCA</span>
                   </div>
                 </Button>
@@ -272,7 +273,7 @@ export default async function ProductionDashboardPage() {
               <Link href="/mjc/new" className="block">
                 <Button variant="outline" className="w-full min-h-[44px] h-auto py-4">
                   <div className="flex flex-col items-center gap-2">
-                    <Wrench className="h-6 w-6" />
+                    <Icon name={ICONS.WRENCH} size="lg" />
                     <span>Create MJC</span>
                   </div>
                 </Button>
@@ -281,7 +282,7 @@ export default async function ProductionDashboardPage() {
               <Link href="/nca/register" className="block">
                 <Button variant="outline" className="w-full min-h-[44px] h-auto py-4">
                   <div className="flex flex-col items-center gap-2">
-                    <FileText className="h-6 w-6" />
+                    <Icon name={ICONS.FILE_TEXT} size="lg" />
                     <span>View NCAs</span>
                   </div>
                 </Button>
@@ -290,7 +291,7 @@ export default async function ProductionDashboardPage() {
               <Link href="/mjc/register" className="block">
                 <Button variant="outline" className="w-full min-h-[44px] h-auto py-4">
                   <div className="flex flex-col items-center gap-2">
-                    <Wrench className="h-6 w-6" />
+                    <Icon name={ICONS.WRENCH} size="lg" />
                     <span>View MJCs</span>
                   </div>
                 </Button>

@@ -7,7 +7,8 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -49,12 +50,12 @@ export const UserExplanation: FC<UserExplanationProps> = ({
               className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700"
               aria-label="Explain why this requirement exists"
             >
-              <HelpCircle className="h-3 w-3 mr-1" />
+              <Icon name={ICONS.HELP} size="xs" className="mr-1" />
               Why?
               {isOpen ? (
-                <ChevronUp className="h-3 w-3 ml-1" />
+                <Icon name={ICONS.CHEVRON_UP} size="xs" className="ml-1" />
               ) : (
-                <ChevronDown className="h-3 w-3 ml-1" />
+                <Icon name={ICONS.CHEVRON_DOWN} size="xs" className="ml-1" />
               )}
             </Button>
           </CollapsibleTrigger>

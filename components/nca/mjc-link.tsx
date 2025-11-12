@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Wrench, ExternalLink, Plus } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { getLinkedMJCs, createMJCFromNCA, linkMJCToNCA } from '@/app/actions/mjc-actions';
 import {
   Dialog,
@@ -140,7 +141,7 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
+            <Icon name={ICONS.WRENCH} size="md" />
             Linked Maintenance Job Cards
           </CardTitle>
         </CardHeader>
@@ -155,7 +156,7 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
     <Card className="mb-6" data-testid="mjc-link">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Wrench className="h-5 w-5" />
+          <Icon name={ICONS.WRENCH} size="md" />
           Linked Maintenance Job Cards
         </CardTitle>
       </CardHeader>
@@ -177,7 +178,7 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogTrigger asChild>
                   <Button variant="default" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
                     Create MJC
                   </Button>
                 </DialogTrigger>
@@ -263,7 +264,7 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
                 </div>
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/mjc/${mjc.id}`}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <Icon name={ICONS.EXTERNAL_LINK} size="sm" className="mr-2" />
                     View
                   </Link>
                 </Button>

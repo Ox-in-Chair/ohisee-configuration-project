@@ -11,7 +11,8 @@ import { createServerClient } from '@/lib/database/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Package, AlertCircle, CheckCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { UpdateSegregationArea } from '@/components/nca/update-segregation-area';
 import { FormHeader } from '@/components/nca/form-header';
 import { FormFooter } from '@/components/nca/form-footer';
@@ -90,7 +91,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           <div className="flex items-center gap-4">
             <Link href="/nca">
               <Button variant="outline" size="sm" data-testid="btn-back-to-register">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.ARROW_LEFT} size="sm" className="mr-2" />
                 Back to Register
               </Button>
             </Link>
@@ -112,7 +113,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
       <Card className="mb-6" data-testid="nca-detail-section-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <Icon name={ICONS.FILE_TEXT} size="md" />
             Section 1: NCA Identification
           </CardTitle>
           <CardDescription>Auto-generated identification information</CardDescription>
@@ -143,7 +144,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
       <Card className="mb-6" data-testid="nca-detail-work-order">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
+            <Icon name={ICONS.PACKAGE} size="md" />
             Linked Work Order
           </CardTitle>
         </CardHeader>
@@ -237,12 +238,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               <p className="text-gray-900 flex items-center gap-2">
                 {nca.sample_available ? (
                   <>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <Icon name={ICONS.SUCCESS_ALT} size="sm" className="text-green-600" />
                     Yes
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-4 w-4 text-gray-400" />
+                    <Icon name={ICONS.WARNING} size="sm" className="text-gray-400" />
                     No
                   </>
                 )}
@@ -376,12 +377,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
                 <p className="text-gray-900 flex items-center gap-2">
                   {nca.back_tracking_completed ? (
                     <>
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <Icon name={ICONS.SUCCESS_ALT} size="sm" className="text-green-600" />
                       Completed
                     </>
                   ) : (
                     <>
-                      <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      <Icon name={ICONS.WARNING} size="sm" className="text-yellow-600" />
                       Pending
                     </>
                   )}
@@ -395,12 +396,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               <p className="text-gray-900 flex items-center gap-2">
                 {nca.hold_label_completed ? (
                   <>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <Icon name={ICONS.SUCCESS_ALT} size="sm" className="text-green-600" />
                     Yes
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-4 w-4 text-gray-400" />
+                    <Icon name={ICONS.WARNING} size="sm" className="text-gray-400" />
                     No
                   </>
                 )}
@@ -411,12 +412,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               <p className="text-gray-900 flex items-center gap-2">
                 {nca.nca_logged ? (
                   <>
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <Icon name={ICONS.SUCCESS_ALT} size="sm" className="text-green-600" />
                     Yes
                   </>
                 ) : (
                   <>
-                    <AlertCircle className="h-4 w-4 text-gray-400" />
+                    <Icon name={ICONS.WARNING} size="sm" className="text-gray-400" />
                     No
                   </>
                 )}

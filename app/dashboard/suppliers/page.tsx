@@ -8,6 +8,8 @@
 import { Metadata } from 'next';
 import { createServerClient } from '@/lib/database/client';
 import { SupplierPerformanceDashboard } from '@/components/dashboard/supplier-performance-dashboard';
+import { LazyComponent } from '@/components/lazy-component';
+import { SupplierDashboardSkeleton } from '@/components/dashboard/skeletons';
 
 export const metadata: Metadata = {
   title: 'Supplier Performance | OHiSee',
@@ -54,7 +56,9 @@ export default async function SupplierPerformancePage() {
         </p>
       </div>
 
-      <SupplierPerformanceDashboard suppliers={suppliers} />
+      <LazyComponent fallback={<SupplierDashboardSkeleton />}>
+        <SupplierPerformanceDashboard suppliers={suppliers} />
+      </LazyComponent>
     </div>
   );
 }

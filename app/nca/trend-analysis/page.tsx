@@ -5,7 +5,8 @@ import { NCTrendAnalysisMonthlyChart } from '@/components/dashboard/nca-trend-an
 import { NCAAgeAnalysisChart } from '@/components/dashboard/nca-age-analysis-chart';
 import { NCACategoryBreakdownChart } from '@/components/dashboard/nca-category-breakdown-chart';
 import { NCASourceBreakdownChart } from '@/components/dashboard/nca-source-breakdown-chart';
-import { TrendingUp, Calendar, BarChart3, PieChart } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 /**
  * NCA Trend Analysis Dashboard Page
@@ -84,7 +85,7 @@ export default async function NCATrendAnalysisPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary-600" />
+            <Icon name={ICONS.TRENDING_UP} size="md" className="text-primary-600" />
             Monthly Trends - Opened vs Closed
           </CardTitle>
           <CardDescription>NCA count by month showing opened and closed trends</CardDescription>
@@ -98,7 +99,7 @@ export default async function NCATrendAnalysisPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary-600" />
+            <Icon name={ICONS.CALENDAR} size="md" className="text-primary-600" />
             Age Analysis
           </CardTitle>
           <CardDescription>NCA closure time distribution (&lt;10, &lt;20, &lt;30, &gt;30 days)</CardDescription>
@@ -114,7 +115,7 @@ export default async function NCATrendAnalysisPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary-600" />
+              <Icon name={ICONS.BAR_CHART} size="md" className="text-primary-600" />
               Issue Category Breakdown
             </CardTitle>
             <CardDescription>NCAs categorized by issue type</CardDescription>
@@ -128,7 +129,7 @@ export default async function NCATrendAnalysisPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-primary-600" />
+              <Icon name={ICONS.PIE_CHART} size="md" className="text-primary-600" />
               Source Breakdown
             </CardTitle>
             <CardDescription>NCAs by source (Kangopak, Supplier, Customer)</CardDescription>

@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle2, XCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { ncaTrainingModule, type TrainingModule } from '@/lib/training/nca-training-content';
 
 interface NCATrainingModuleProps {
@@ -58,7 +59,7 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+            <Icon name={ICONS.BOOK_OPEN} size="md" />
             {module.title}
           </DialogTitle>
           <DialogDescription>{module.description}</DialogDescription>
@@ -109,14 +110,14 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
                 onClick={handlePrevious}
                 disabled={currentSection === 0}
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.ARROW_LEFT} size="sm" className="mr-2" />
                 Previous
               </Button>
               <Button onClick={handleNext}>
                 {currentSection < module.sections.length - 1 ? (
                   <>
                     Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <Icon name={ICONS.ARROW_RIGHT} size="sm" className="ml-2" />
                   </>
                 ) : (
                   'Start Checkpoint Questions'
@@ -194,9 +195,9 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
                     <CardTitle className="text-base flex items-center gap-2">
                       Question {qIdx + 1}
                       {isCorrect ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <Icon name={ICONS.SUCCESS} size="md" className="text-green-600" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
+                        <Icon name={ICONS.ERROR} size="md" className="text-red-600" />
                       )}
                     </CardTitle>
                   </CardHeader>

@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Testing
+coverage
+
+# Configuration files
+*.config.js
+*.config.mjs
+next.config.js
+tailwind.config.js
+postcss.config.js
+
+# Environment files
+.env*
+!.env.example
+
+# Lock files
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Next.js
+next-env.d.ts
+
+# E2E tests (may use different linting rules)
+tests/e2e
+tests/playwright
+
+# Supabase
+supabase/functions
+
+# Generated files
+lib/types/supabase.ts

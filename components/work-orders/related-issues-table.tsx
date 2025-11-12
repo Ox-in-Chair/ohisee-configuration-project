@@ -6,7 +6,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { FileText, Wrench } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface RelatedNCA {
   id: string;
@@ -68,7 +69,7 @@ export function RelatedIssuesTable({ ncas, mjcs }: RelatedIssuesTableProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary-600" />
+            <Icon name={ICONS.FILE_TEXT} size="md" className="text-primary-600" />
             Linked NCAs ({ncas.length})
           </CardTitle>
           <CardDescription>Non-Conformance Advice linked to this work order</CardDescription>
@@ -118,7 +119,7 @@ export function RelatedIssuesTable({ ncas, mjcs }: RelatedIssuesTableProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5 text-warning-600" />
+            <Icon name={ICONS.WRENCH} size="md" className="text-warning-600" />
             Linked MJCs ({mjcs.length})
           </CardTitle>
           <CardDescription>Maintenance Job Cards linked to this work order</CardDescription>

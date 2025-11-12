@@ -1,6 +1,7 @@
 'use client';
 
-import { HelpCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 /**
@@ -82,7 +83,7 @@ export function NCAFieldTooltip({ fieldName, content, brcgsReference, procedureR
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+          <Icon name={ICONS.HELP} size="sm" className="text-gray-400 hover:text-gray-600 cursor-help" />
         </TooltipTrigger>
         <TooltipContent className="max-w-xs">
           <div className="space-y-1">

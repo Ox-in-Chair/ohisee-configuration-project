@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, FileText, Wrench, BookOpen, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 import { searchKnowledgeBase } from '@/app/actions/knowledge-base-actions';
 import { createBrowserClient } from '@/lib/database/client';
@@ -175,11 +176,11 @@ export function GlobalSearch() {
   const getResultIcon = (type: SearchResult['type']) => {
     switch (type) {
       case 'procedure':
-        return <BookOpen className="h-4 w-4" />;
+        return <Icon name={ICONS.BOOK_OPEN} size="sm" />;
       case 'nca':
-        return <FileText className="h-4 w-4" />;
+        return <Icon name={ICONS.FILE_TEXT} size="sm" />;
       case 'mjc':
-        return <Wrench className="h-4 w-4" />;
+        return <Icon name={ICONS.WRENCH} size="sm" />;
     }
   };
 
@@ -187,7 +188,7 @@ export function GlobalSearch() {
     <div ref={searchRef} className="relative flex-1 max-w-md mx-4 hidden md:block">
       {/* Search Input */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Icon name={ICONS.SEARCH} size="sm" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
         <Input
           ref={inputRef}
           type="text"
@@ -213,7 +214,7 @@ export function GlobalSearch() {
               inputRef.current?.focus();
             }}
           >
-            <X className="h-3 w-3" />
+            <Icon name={ICONS.CLOSE} size="xs" />
           </Button>
         )}
       </div>
@@ -223,7 +224,7 @@ export function GlobalSearch() {
         <div className="absolute top-full mt-2 w-full bg-surface border rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
           {isSearching && (
             <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Icon name={ICONS.LOADING} size="sm" className="animate-spin mr-2" />
               <span className="text-sm text-muted-foreground">Searching...</span>
             </div>
           )}

@@ -12,15 +12,8 @@ import { createServerClient } from '@/lib/database/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  ArrowLeft,
-  Wrench,
-  Package,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface MJCDetailPageProps {
   params: Promise<{
@@ -131,7 +124,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
           <div className="flex items-center gap-4">
             <Link href="/mjc">
               <Button variant="outline" size="sm" data-testid="btn-back-to-register">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.ARROW_LEFT} size="sm" className="mr-2" />
                 Back to Register
               </Button>
             </Link>
@@ -158,7 +151,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-700">
-              <Clock className="h-5 w-5" />
+              <Icon name={ICONS.CLOCK} size="md" />
               Temporary Repair - Close Out Required
             </CardTitle>
           </CardHeader>
@@ -187,7 +180,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
                 className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2"
                 data-testid="mjc-temp-repair-alert"
               >
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <Icon name={ICONS.ALERT} size="md" className="text-red-600" />
                 <span className="text-sm text-red-800 font-medium">
                   URGENT: Permanent repair required within {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}
                 </span>
@@ -201,7 +194,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
       <Card className="mb-6" data-testid="mjc-detail-section-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
+            <Icon name={ICONS.WRENCH} size="md" />
             Section 1: Job Card Identification
           </CardTitle>
           <CardDescription>Auto-generated identification information</CardDescription>
@@ -240,7 +233,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
       <Card className="mb-6" data-testid="mjc-detail-work-order">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
+            <Icon name={ICONS.PACKAGE} size="md" />
             Linked Work Order
           </CardTitle>
         </CardHeader>
@@ -444,7 +437,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
       <Card className="mb-6" data-testid="mjc-detail-section-9">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <Icon name={ICONS.ALERT} size="md" className="text-orange-600" />
             Section 9: Post Hygiene Clearance Record (BRCGS CRITICAL)
           </CardTitle>
           <CardDescription>All 10 items must be verified before production clearance</CardDescription>
@@ -542,7 +535,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
               )}
               {mjc.hygiene_clearance_signature && (
                 <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <Icon name={ICONS.SUCCESS_ALT} size="md" className="text-green-600" />
                   <span className="text-green-800 font-medium">Production Clearance Granted</span>
                 </div>
               )}
@@ -568,7 +561,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
             </div>
             {mjc.status === 'closed' && (
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <Icon name={ICONS.SUCCESS_ALT} size="md" className="text-green-600" />
                 <span className="text-green-800 font-medium">Job Card Closed</span>
               </div>
             )}

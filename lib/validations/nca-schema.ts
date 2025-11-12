@@ -4,17 +4,15 @@
  */
 
 import { z } from 'zod';
-
-/**
- * Signature validation schema
- * Enforces complete signature data structure
- */
-export const signatureSchema = z.object({
-  type: z.enum(['manual', 'digital']),
-  data: z.string().min(1, 'Signature data is required'),
-  name: z.string().min(1, 'Signer name is required'),
-  timestamp: z.string().min(1, 'Timestamp is required'),
-});
+import { signatureSchema, quantityUnitEnum, segregationAreaEnum } from './shared-schemas';
+import {
+  NC_TYPE,
+  NC_ORIGIN,
+  MACHINE_STATUS,
+  DISPOSITION_ACTION,
+  VALIDATION,
+  getConstValues
+} from '@/lib/config';
 
 /**
  * Main NCA Form Schema
@@ -30,12 +28,12 @@ export const ncaFormSchema = z
     wo_id: z.string().uuid().nullable().optional(), // Work Order ID for linking
 
     // Section 2: NC Classification (REQUIRED)
-    nc_type: z.enum(['raw-material', 'finished-goods', 'wip', 'incident', 'other'], {
+    nc_type: z.enum(getConstValues(NC_TYPE) as [string, ...string[]], {
       message: 'Please select a non-conformance type',
     }),
     nc_type_other: z.string().optional(),
     nc_origin: z
-      .enum(['supplier-based', 'kangopak-based', 'joint-investigation'])
+      .enum(getConstValues(NC_ORIGIN) as [string, ...string[]])
       .optional()
       .nullable(),
     
@@ -48,24 +46,24 @@ export const ncaFormSchema = z
     supplier_name: z.string().optional(),
     nc_product_description: z
       .string()
-      .min(10, 'Product description must be at least 10 characters')
-      .max(500, 'Product description cannot exceed 500 characters'),
+      .min(VALIDATION.NCA_PRODUCT_DESCRIPTION_MIN, `Product description must be at least ${VALIDATION.NCA_PRODUCT_DESCRIPTION_MIN} characters`)
+      .max(VALIDATION.NCA_PRODUCT_DESCRIPTION_MAX, `Product description cannot exceed ${VALIDATION.NCA_PRODUCT_DESCRIPTION_MAX} characters`),
     supplier_wo_batch: z.string().optional(),
     supplier_reel_box: z.string().optional(),
     sample_available: z.boolean().default(false),
     quantity: z.number().nullable().optional(),
-    quantity_unit: z.enum(['kg', 'units', 'meters', 'boxes', 'pallets']).nullable().optional(),
+    quantity_unit: quantityUnitEnum.nullable().optional(),
     carton_numbers: z.string().optional(),
 
     // Section 4: NC Description (REQUIRED, dynamic minimum based on NC type)
     // Minimum lengths enforced in superRefine based on nc_type
     nc_description: z
       .string()
-      .min(100, 'Description must be at least 100 characters for compliance')
-      .max(2000, 'Description cannot exceed 2000 characters'),
+      .min(VALIDATION.NCA_DESCRIPTION_MIN, `Description must be at least ${VALIDATION.NCA_DESCRIPTION_MIN} characters for compliance`)
+      .max(VALIDATION.NCA_DESCRIPTION_MAX, `Description cannot exceed ${VALIDATION.NCA_DESCRIPTION_MAX} characters`),
 
     // Section 5: Machine Status (REQUIRED, no default allowed)
-    machine_status: z.enum(['down', 'operational'], {
+    machine_status: z.enum([MACHINE_STATUS.DOWN, MACHINE_STATUS.OPERATIONAL] as [string, ...string[]], {
       message: 'Machine status must be explicitly selected',
     }),
     machine_down_since: z.string().nullable().optional(),
@@ -83,13 +81,13 @@ export const ncaFormSchema = z
     back_tracking_completed: z.boolean().default(false),
     hold_label_completed: z.boolean().default(false),
     nca_logged: z.boolean().default(false),
-    segregation_area: z.enum(['raw-materials', 'wip', 'finished-goods', 'other']).nullable().optional(),
+    segregation_area: segregationAreaEnum.nullable().optional(),
     segregation_area_other: z.string().optional(),
     relocation_notes: z.string().optional(),
 
     // Section 8: Disposition
     disposition_action: z
-      .enum(['reject', 'credit', 'uplift', 'rework', 'concession', 'discard'])
+      .enum(getConstValues(DISPOSITION_ACTION) as [string, ...string[]])
       .optional(),
     rework_instruction: z.string().optional(),
     disposition_authorized_by: z.string().optional(),
@@ -110,8 +108,8 @@ export const ncaFormSchema = z
   })
   .superRefine((data, ctx) => {
     // Enforce: Raw Material NCAs must be supplier-based
-    if (data.nc_type === 'raw-material') {
-      if (data.nc_origin && data.nc_origin !== 'supplier-based') {
+    if (data.nc_type === NC_TYPE.RAW_MATERIAL) {
+      if (data.nc_origin && data.nc_origin !== NC_ORIGIN.SUPPLIER_BASED) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Raw Material NCAs must be classified as supplier-based',
@@ -120,12 +118,12 @@ export const ncaFormSchema = z
       }
       // Auto-set to supplier-based if not set
       if (!data.nc_origin) {
-        data.nc_origin = 'supplier-based';
+        data.nc_origin = NC_ORIGIN.SUPPLIER_BASED;
       }
     }
-    
+
     // Conditional validation: If machine is down, timestamp is required
-    if (data.machine_status === 'down') {
+    if (data.machine_status === MACHINE_STATUS.DOWN) {
       if (!data.machine_down_since) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -154,11 +152,11 @@ export const ncaFormSchema = z
     }
 
     // Conditional validation: If disposition is rework, instruction required
-    if (data.disposition_action === 'rework') {
-      if (!data.rework_instruction || data.rework_instruction.trim().length < 20) {
+    if (data.disposition_action === DISPOSITION_ACTION.REWORK) {
+      if (!data.rework_instruction || data.rework_instruction.trim().length < VALIDATION.REWORK_INSTRUCTION_MIN) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Rework instruction must be at least 20 characters when rework is selected',
+          message: `Rework instruction must be at least ${VALIDATION.REWORK_INSTRUCTION_MIN} characters when rework is selected`,
           path: ['rework_instruction'],
         });
       }
@@ -167,14 +165,14 @@ export const ncaFormSchema = z
     // Progressive Quality Requirements: NC Description - Dynamic minimum based on NC type
     if (data.nc_description && data.nc_type) {
       const minLengths: Record<string, number> = {
-        'raw-material': 120,
-        'finished-goods': 150,
-        'wip': 130,
-        'incident': 200,
-        'other': 100,
+        [NC_TYPE.RAW_MATERIAL]: VALIDATION.NCA_DESCRIPTION_MIN_RAW_MATERIAL,
+        [NC_TYPE.FINISHED_GOODS]: VALIDATION.NCA_DESCRIPTION_MIN_FINISHED_GOODS,
+        [NC_TYPE.WIP]: VALIDATION.NCA_DESCRIPTION_MIN_WIP,
+        [NC_TYPE.INCIDENT]: VALIDATION.NCA_DESCRIPTION_MIN_INCIDENT,
+        [NC_TYPE.OTHER]: VALIDATION.NCA_DESCRIPTION_MIN_OTHER,
       };
 
-      const requiredMin = minLengths[data.nc_type] || 100;
+      const requiredMin = minLengths[data.nc_type] || VALIDATION.NCA_DESCRIPTION_MIN;
       if (data.nc_description.length < requiredMin) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -195,7 +193,7 @@ export const ncaFormSchema = z
 
       // Check for shallow responses (single sentence, no depth)
       const sentences = analysis.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-      const isShallow = sentences.length <= 1 && whyCount < 2;
+      const isShallow = sentences.length <= VALIDATION.RCA_MIN_SENTENCES && whyCount < VALIDATION.RCA_MIN_WHY_COUNT;
 
       // Check for generic statements
       const genericPatterns = [
@@ -203,7 +201,7 @@ export const ncaFormSchema = z
         /\b(machine (issue|problem|broken|failure))\b/i,
         /\b(bad|wrong|incorrect)\b/i,
       ];
-      const isGeneric = genericPatterns.some((pattern) => pattern.test(analysis)) && whyCount < 3;
+      const isGeneric = genericPatterns.some((pattern) => pattern.test(analysis)) && whyCount < VALIDATION.RCA_MIN_WHY_COUNT;
 
       if (isShallow) {
         ctx.addIssue({
@@ -219,7 +217,7 @@ export const ncaFormSchema = z
             'Root cause analysis is too generic. Please be more specific. Instead of "operator error", explain: Why did the operator make the error? Was training adequate? Was the procedure clear? Continue asking "why" until you identify the true root cause.',
           path: ['root_cause_analysis'],
         });
-      } else if (whyCount < 3 && analysis.length > 50) {
+      } else if (whyCount < VALIDATION.RCA_MIN_WHY_COUNT && analysis.length > 50) {
         // Only warn if there's substantial content but insufficient depth
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -240,7 +238,7 @@ export const ncaFormSchema = z
       const actionMatches = action.match(actionVerbPattern);
       const actionCount = actionMatches ? actionMatches.length : 0;
 
-      if (actionCount < 2) {
+      if (actionCount < VALIDATION.CA_MIN_ACTION_COUNT) {
         issues.push('Include at least 2 specific actions (e.g., "1) Calibrate sensors. 2) Update procedure.")');
       }
 

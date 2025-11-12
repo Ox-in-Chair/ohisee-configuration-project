@@ -24,7 +24,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle2, FileText, Wrench, Clock, X } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import Link from 'next/link';
 import { createBrowserClient } from '@/lib/database/client';
 import { submitEndOfDay } from '@/app/actions/end-of-day-actions';
@@ -206,7 +207,7 @@ export default function EndOfDayPage() {
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-4xl mx-auto">
           <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <Icon name={ICONS.ALERT} size="sm" />
             <AlertDescription>
               {error || 'Failed to load shift summary. Please try again.'}
             </AlertDescription>
@@ -234,7 +235,7 @@ export default function EndOfDayPage() {
         {/* Incomplete Drafts Warning */}
         {hasIncompleteDrafts && (
           <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <Icon name={ICONS.ALERT} size="sm" />
             <AlertDescription>
               <div className="space-y-2">
                 <p className="font-semibold">Incomplete drafts detected:</p>
@@ -262,7 +263,7 @@ export default function EndOfDayPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary-600" />
+              <Icon name={ICONS.CLOCK} size="md" className="text-primary-600" />
               Work Orders
             </CardTitle>
             <CardDescription>Active work orders for this shift</CardDescription>
@@ -297,7 +298,7 @@ export default function EndOfDayPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-critical-600" />
+              <Icon name={ICONS.FILE_TEXT} size="md" className="text-critical-600" />
               NCAs Created Today
             </CardTitle>
             <CardDescription>
@@ -349,7 +350,7 @@ export default function EndOfDayPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-warning-600" />
+              <Icon name={ICONS.WRENCH} size="md" className="text-warning-600" />
               MJCs Created Today
             </CardTitle>
             <CardDescription>
@@ -450,7 +451,7 @@ export default function EndOfDayPage() {
         {/* Error Message */}
         {error && (
           <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
+            <Icon name={ICONS.ALERT} size="sm" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}

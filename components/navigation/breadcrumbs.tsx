@@ -3,7 +3,8 @@
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 interface BreadcrumbItem {
@@ -85,7 +86,7 @@ export function Breadcrumbs() {
           return (
             <li key={item.href} className="flex items-center">
               {index > 0 && (
-                <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground" aria-hidden="true" />
+                <Icon name={ICONS.CHEVRON_RIGHT} size="sm" className="mx-1 text-muted-foreground" aria-hidden="true" />
               )}
               {isLast ? (
                 <span
@@ -100,7 +101,7 @@ export function Breadcrumbs() {
                   className="hover:text-foreground transition-colors"
                 >
                   {index === 0 ? (
-                    <Home className="h-4 w-4" aria-label="Home" />
+                    <Icon name={ICONS.HOME} size="sm" aria-label="Home" />
                   ) : (
                     item.label
                   )}

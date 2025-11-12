@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle, Edit2, Save, X } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { updateNCA } from '@/app/actions/nca-actions';
 import type { NCAUpdate } from '@/types/database';
 
@@ -107,21 +108,21 @@ export function UpdateSegregationArea({
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Edit2 className="h-5 w-5" />
+          <Icon name={ICONS.EDIT} size="md" />
           Update Segregation Area (After Disposition)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <Icon name={ICONS.WARNING} size="sm" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {success && (
           <Alert>
-            <CheckCircle className="h-4 w-4" />
+            <Icon name={ICONS.SUCCESS_ALT} size="sm" />
             <AlertDescription>Segregation area updated successfully</AlertDescription>
           </Alert>
         )}
@@ -152,7 +153,7 @@ export function UpdateSegregationArea({
               onClick={() => setIsEditing(true)}
               className="flex items-center gap-2"
             >
-              <Edit2 className="h-4 w-4" />
+              <Icon name={ICONS.EDIT} size="sm" />
               Update Segregation Area
             </Button>
           </div>
@@ -209,7 +210,7 @@ export function UpdateSegregationArea({
                   <>Saving...</>
                 ) : (
                   <>
-                    <Save className="h-4 w-4" />
+                    <Icon name={ICONS.SAVE} size="sm" />
                     Save Changes
                   </>
                 )}
@@ -221,7 +222,7 @@ export function UpdateSegregationArea({
                 disabled={isSaving}
                 className="flex items-center gap-2"
               >
-                <X className="h-4 w-4" />
+                <Icon name={ICONS.CLOSE} size="sm" />
                 Cancel
               </Button>
             </div>

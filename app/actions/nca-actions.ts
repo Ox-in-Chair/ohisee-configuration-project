@@ -7,49 +7,17 @@
  */
 
 import { createServerClient } from '@/lib/database/client';
+import { getUserIdFromAuth } from '@/lib/database/auth-utils';
 import type { NCAInsert, NCAUpdate, Signature } from '@/types/database';
 import type { NCAFormData } from '@/lib/validations/nca-schema';
 import { revalidatePath } from 'next/cache';
 import type { INotificationService, NotificationPayload, SupplierNCANotificationPayload } from '@/lib/types/notification';
 import { createProductionNotificationService } from '@/lib/services/create-notification-service';
-
-/**
- * Server Action Response Type
- */
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
- * Transform form signature to database signature format
- */
-function transformSignature(formSignature: {
-  type: 'manual' | 'digital';
-  data: string;
-  name: string;
-  timestamp: string;
-} | null | undefined): Signature | null {
-  if (!formSignature) return null;
-
-  return {
-    type: formSignature.type === 'manual' ? 'drawn' : 'uploaded',
-    name: formSignature.name,
-    timestamp: formSignature.timestamp,
-    ip: '0.0.0.0', // TODO: Get real IP from request headers
-    data: formSignature.data,
-  };
-}
-
-/**
- * Generate NCA number in format: NCA-YYYY-NNNNNNNN
- */
-function generateNCANumber(): string {
-  const year = new Date().getFullYear();
-  const random = String(Math.floor(Math.random() * 100000000)).padStart(8, '0');
-  return `NCA-${year}-${random}`;
-}
+import type { ActionResponse } from './types';
+import { transformSignature, generateRecordNumber } from '@/lib/actions/utils';
+import { logError, logSupabaseError } from '@/lib/utils/error-handler';
+import { NCADatabaseService } from '@/lib/services/nca-database-service';
+import { LoggerFactory } from '@/lib/services/logger-factory';
 
 /**
  * Transform form data to database insert format
@@ -64,7 +32,7 @@ function transformFormDataToInsert(
 
   return {
     // Auto-generated fields
-    nca_number: generateNCANumber(),
+    nca_number: generateRecordNumber('NCA'),
     date: dateString,
     time: timeString,
     raised_by_user_id: userId,
@@ -154,6 +122,8 @@ async function sendMachineDownAlertIfNeeded(
   ncaNumber: string,
   notificationService?: INotificationService
 ): Promise<void> {
+  const logger = LoggerFactory.createLogger('nca-actions.sendMachineDownAlert');
+
   // Only send alert if machine status is 'down'
   if (ncaData.machine_status !== 'down') {
     return;
@@ -161,7 +131,10 @@ async function sendMachineDownAlertIfNeeded(
 
   // Skip if no notification service provided (production will inject real service)
   if (!notificationService) {
-    console.warn('Machine down alert skipped - notification service not configured');
+    logger.warn('Machine down alert skipped - notification service not configured', {
+      ncaNumber,
+      machineStatus: ncaData.machine_status,
+    });
     return;
   }
 
@@ -183,9 +156,16 @@ async function sendMachineDownAlertIfNeeded(
 
     // Send alert (errors are logged internally, won't throw)
     await notificationService.sendMachineDownAlert(payload);
+    logger.info('Machine down alert sent successfully', {
+      ncaNumber,
+      machineName,
+    });
   } catch (error) {
     // Log error but don't fail NCA creation if notification fails
-    console.error('Failed to send machine down alert:', error);
+    logger.error('Failed to send machine down alert', error, {
+      ncaNumber,
+      machineStatus: ncaData.machine_status,
+    });
   }
 }
 
@@ -200,6 +180,8 @@ async function sendSupplierNotificationIfNeeded(
   formData?: NCAFormData,
   notificationService?: INotificationService
 ): Promise<void> {
+  const logger = LoggerFactory.createLogger('nca-actions.sendSupplierNotification');
+
   // Only send notification if NC type is 'raw-material' and supplier name is provided
   if (ncaData.nc_type !== 'raw-material' || !ncaData.supplier_name) {
     return;
@@ -207,7 +189,10 @@ async function sendSupplierNotificationIfNeeded(
 
   // Skip if no notification service provided (production will inject real service)
   if (!notificationService) {
-    console.warn('Supplier notification skipped - notification service not configured');
+    logger.warn('Supplier notification skipped - notification service not configured', {
+      ncaNumber,
+      supplierName: ncaData.supplier_name,
+    });
     return;
   }
 
@@ -223,7 +208,11 @@ async function sendSupplierNotificationIfNeeded(
 
     // If supplier not found or no email, log warning but don't fail
     if (supplierError || !supplier || !(supplier as { contact_email?: string }).contact_email) {
-      console.warn(`Supplier email not found for ${ncaData.supplier_name}. Notification not sent.`);
+      logger.warn('Supplier email not found - notification not sent', {
+        ncaNumber,
+        supplierName: ncaData.supplier_name,
+        error: supplierError?.message,
+      });
       return;
     }
 
@@ -247,9 +236,17 @@ async function sendSupplierNotificationIfNeeded(
 
     // Send notification (errors are logged internally, won't throw)
     await notificationService.sendSupplierNCANotification(payload);
+    logger.info('Supplier notification sent successfully', {
+      ncaNumber,
+      supplierName: payload.supplier_name,
+      supplierEmail: payload.supplier_email,
+    });
   } catch (error) {
     // Log error but don't fail NCA creation if notification fails
-    console.error('Failed to send supplier notification:', error);
+    logger.error('Failed to send supplier notification', error, {
+      ncaNumber,
+      supplierName: ncaData.supplier_name,
+    });
   }
 }
 
@@ -262,38 +259,55 @@ export async function createNCA(
   formData: NCAFormData,
   notificationService?: INotificationService
 ): Promise<ActionResponse<{ id: string; nca_number: string }>> {
+  const logger = LoggerFactory.createLogger('nca-actions.createNCA');
+  let userId: string | null | undefined;
+
   try {
     // Create server-side Supabase client (dependency injection)
     const supabase = createServerClient();
 
-    // TODO: Get real user ID from auth session
-    // For now, using seed data operator user (John Smith)
-    const userId = '10000000-0000-0000-0000-000000000001';
+    // Get authenticated user ID
+    userId = await getUserIdFromAuth(supabase);
+    if (!userId) {
+      logger.warn('Unauthorized NCA creation attempt');
+      return {
+        success: false,
+        error: 'User must be authenticated to create NCA',
+      };
+    }
 
     // Transform form data to database format
     const ncaData = transformFormDataToInsert(formData, userId);
 
-    // Insert into database (using type assertion due to Supabase generic type inference with 'never' types)
-    const { data, error } = await (supabase
-      .from('ncas') as any)
-      .insert(ncaData)
-      .select('id, nca_number')
-      .single();
+    // Insert into database using service
+    const ncaService = new NCADatabaseService(supabase);
+    const { data, error } = await ncaService.createNCA(ncaData);
 
     if (error) {
-      console.error('Supabase error creating NCA:', error);
+      logger.error('Failed to create NCA in database', new Error(error), {
+        userId,
+        ncType: ncaData.nc_type,
+      });
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
     if (!data) {
+      logger.error('No data returned from NCA creation', undefined, { userId });
       return {
         success: false,
         error: 'No data returned from database',
       };
     }
+
+    logger.info('NCA created successfully', {
+      ncaId: data.id,
+      ncaNumber: data.nca_number,
+      userId,
+      ncType: ncaData.nc_type,
+    });
 
     // Create waste manifest if disposition includes discard
     if (ncaData.disposition_discard) {
@@ -310,9 +324,12 @@ export async function createNCA(
           },
           userId
         );
-        // Note: Waste manifest creation errors are logged but don't fail NCA creation
+        logger.info('Waste manifest created', { ncaId: data.id });
       } catch (error) {
-        console.error('Failed to create waste manifest:', error);
+        logger.error('Failed to create waste manifest', error, {
+          ncaId: data.id,
+          userId,
+        });
         // Continue - waste manifest can be created manually later
       }
     }
@@ -320,23 +337,36 @@ export async function createNCA(
     // Send notifications if applicable (non-blocking)
     // Use provided notification service (for testing) or create production service
     const service = notificationService || createProductionNotificationService();
-    
-    // Send machine down alert if applicable
-    await sendMachineDownAlertIfNeeded(ncaData, data.nca_number, service);
-    
+
     // NOTE: Supplier notification is NOT sent automatically on creation
     // It will be sent by Production Manager when disposition is completed (see updateNCA function)
 
+    // Parallelize independent async operations (machine down alert + supplier performance update)
+    const parallelOperations: Promise<void>[] = [
+      // Send machine down alert if applicable
+      sendMachineDownAlertIfNeeded(ncaData, data.nca_number, service),
+    ];
+
     // Update supplier performance if supplier-based NCA
     if (ncaData.nc_type === 'raw-material' || ncaData.nc_origin === 'supplier-based') {
-      try {
-        const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
-        await updateSupplierPerformanceFromNCA(data.id);
-        // Note: Supplier performance update errors are logged but don't fail NCA creation
-      } catch (error) {
-        console.error('Failed to update supplier performance:', error);
-      }
+      parallelOperations.push(
+        (async () => {
+          try {
+            const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
+            await updateSupplierPerformanceFromNCA(data.id);
+            logger.info('Supplier performance updated', { ncaId: data.id });
+          } catch (error) {
+            logger.error('Failed to update supplier performance', error, {
+              ncaId: data.id,
+              userId,
+            });
+          }
+        })()
+      );
     }
+
+    // Wait for all parallel operations to complete
+    await Promise.all(parallelOperations);
 
     // Revalidate NCA list page
     revalidatePath('/nca');
@@ -349,11 +379,12 @@ export async function createNCA(
       },
     };
   } catch (error) {
-    console.error('Unexpected error creating NCA:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    return logError(error, {
+      context: 'createNCA',
+      userId,
+      severity: 'error',
+      metadata: { formData: { nc_type: formData.nc_type } },
+    });
   }
 }
 
@@ -366,7 +397,15 @@ export async function saveDraftNCA(
 ): Promise<ActionResponse<{ id: string; nca_number: string }>> {
   try {
     const supabase = createServerClient();
-    const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth (using seed operator for now)
+
+    // Get authenticated user ID
+    const userId = await getUserIdFromAuth(supabase);
+    if (!userId) {
+      return {
+        success: false,
+        error: 'User must be authenticated to save draft NCA',
+      };
+    }
 
     const now = new Date();
     const dateString = now.toISOString().split('T')[0];
@@ -374,7 +413,7 @@ export async function saveDraftNCA(
 
     // Minimal required fields for draft
     const draftData: Partial<NCAInsert> = {
-      nca_number: generateNCANumber(),
+      nca_number: generateRecordNumber('NCA'),
       date: dateString,
       time: timeString,
       raised_by_user_id: userId,
@@ -388,17 +427,13 @@ export async function saveDraftNCA(
       machine_status: formData.machine_status || 'operational',
     };
 
-    const { data, error } = await (supabase
-      .from('ncas') as any)
-      .insert(draftData)
-      .select('id, nca_number')
-      .single();
+    const ncaService = new NCADatabaseService(supabase);
+    const { data, error } = await ncaService.createNCA(draftData as NCAInsert);
 
     if (error) {
-      console.error('Supabase error saving draft NCA:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -436,18 +471,14 @@ export async function getNCAById(
 ): Promise<ActionResponse> {
   try {
     const supabase = createServerClient();
+    const ncaService = new NCADatabaseService(supabase);
 
-    const { data, error } = await supabase
-      .from('ncas')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = await ncaService.getNCAById(id);
 
     if (error) {
-      console.error('Supabase error fetching NCA:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -456,11 +487,11 @@ export async function getNCAById(
       data,
     };
   } catch (error) {
-    console.error('Unexpected error fetching NCA:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-    };
+    return logError(error, {
+      context: 'getNCAById',
+      severity: 'error',
+      metadata: { ncaId: id },
+    });
   }
 }
 
@@ -475,31 +506,24 @@ export async function listNCAs(filters?: {
 }): Promise<ActionResponse> {
   try {
     const supabase = createServerClient();
+    const ncaService = new NCADatabaseService(supabase);
 
-    let query = supabase.from('ncas').select('*', { count: 'exact' });
+    // Convert offset to page number (if provided)
+    const page = filters?.offset && filters?.limit
+      ? Math.floor(filters.offset / filters.limit) + 1
+      : undefined;
 
-    if (filters?.status) {
-      query = query.eq('status', filters.status);
-    }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-
-    if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
-    }
-
-    // Order by created_at descending
-    query = query.order('created_at', { ascending: false });
-
-    const { data, error, count } = await query;
+    const { data, total, error } = await ncaService.listNCAs({
+      status: filters?.status as any,
+      pageSize: filters?.limit || 10,
+      page,
+    });
 
     if (error) {
-      console.error('Supabase error listing NCAs:', error);
+      console.error('Error listing NCAs:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -507,7 +531,7 @@ export async function listNCAs(filters?: {
       success: true,
       data: {
         ncas: data,
-        total: count,
+        total,
       },
     };
   } catch (error) {
@@ -532,10 +556,10 @@ export async function updateNCA(
   try {
     const supabase = createServerClient();
 
-    // Fetch current NCA to check if disposition was just completed
+    // Fetch current NCA once with all needed fields (fix N+1 pattern)
     const { data: currentNCA, error: fetchError } = await supabase
       .from('ncas')
-      .select('nca_number, nc_type, supplier_name, date, nc_product_description, supplier_wo_batch, supplier_reel_box, quantity, quantity_unit, nc_description, disposition_signature, nc_origin')
+      .select('nca_number, nc_type, supplier_name, date, nc_product_description, supplier_wo_batch, supplier_reel_box, quantity, quantity_unit, nc_description, disposition_signature, nc_origin, close_out_signature, status')
       .eq('id', ncaId)
       .single();
 
@@ -559,38 +583,28 @@ export async function updateNCA(
       quantity_unit: string | null;
       nc_description: string;
       disposition_signature: Signature | null;
+      nc_origin: string | null;
+      close_out_signature: Signature | null;
+      status: string;
     };
     const typedCurrentNCA = currentNCA as CurrentNCAType;
 
     // Check if disposition is being completed (disposition_signature is being set)
     const wasDispositionComplete = typedCurrentNCA.disposition_signature !== null;
     const isDispositionBeingCompleted = updates.disposition_signature !== undefined && updates.disposition_signature !== null;
-    
+
     // Check if closure is being completed (close_out_signature is being set)
-    const { data: currentNCAForClosure } = await supabase
-      .from('ncas')
-      .select('close_out_signature, status')
-      .eq('id', ncaId)
-      .single();
-    const wasClosureComplete = (currentNCAForClosure as any)?.close_out_signature !== null;
+    const wasClosureComplete = typedCurrentNCA.close_out_signature !== null;
     const isClosureBeingCompleted = updates.close_out_signature !== undefined && updates.close_out_signature !== null;
 
-    // Update the NCA
-    const { data, error } = await (supabase
-      .from('ncas') as any)
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', ncaId)
-      .select('id, nca_number, nc_type, supplier_name')
-      .single();
+    // Update the NCA using service
+    const ncaService = new NCADatabaseService(supabase);
+    const { data, error } = await ncaService.updateNCA(ncaId, updates);
 
     if (error) {
-      console.error('Supabase error updating NCA:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -632,20 +646,25 @@ export async function updateNCA(
         const manifestResult = await getWasteManifestByNCA(ncaId);
         
         if (!manifestResult.success || !manifestResult.data) {
-          // Create new waste manifest
-          const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth
-          const { createWasteManifestFromNCA } = await import('./waste-actions');
-          await createWasteManifestFromNCA(
-            ncaId,
-            {
-              waste_description: typedCurrentNCA.nc_product_description || 'Non-conforming product',
-              waste_type: 'non-hazardous',
-              physical_quantity: typedCurrentNCA.quantity || 0,
-              quantity_unit: (typedCurrentNCA.quantity_unit as any) || 'kg',
-              document_reference: '4.10F1',
-            },
-            userId
-          );
+          // Get authenticated user ID for waste manifest
+          const wasteUserId = await getUserIdFromAuth(supabase);
+          if (!wasteUserId) {
+            console.error('Cannot create waste manifest - user not authenticated');
+            // Continue - waste manifest can be created manually later
+          } else {
+            const { createWasteManifestFromNCA } = await import('./waste-actions');
+            await createWasteManifestFromNCA(
+              ncaId,
+              {
+                waste_description: typedCurrentNCA.nc_product_description || 'Non-conforming product',
+                waste_type: 'non-hazardous',
+                physical_quantity: typedCurrentNCA.quantity || 0,
+                quantity_unit: (typedCurrentNCA.quantity_unit as any) || 'kg',
+                document_reference: '4.10F1',
+              },
+              wasteUserId
+            );
+          }
         }
         // Note: Waste manifest creation errors are logged but don't fail NCA update
       } catch (error) {
@@ -654,42 +673,53 @@ export async function updateNCA(
       }
     }
 
+    // Parallelize independent async operations (supplier performance update + supplier notification)
+    const updateParallelOperations: Promise<void>[] = [];
+
     // Update supplier performance if supplier-based NCA
     const currentNCAType = typedCurrentNCA.nc_type;
-    const currentNCAOrigin = (currentNCA as any)?.nc_origin || data.nc_origin;
+    const currentNCAOrigin = typedCurrentNCA.nc_origin;
     if (currentNCAType === 'raw-material' || currentNCAOrigin === 'supplier-based') {
-      try {
-        const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
-        await updateSupplierPerformanceFromNCA(ncaId);
-        // Note: Supplier performance update errors are logged but don't fail NCA update
-      } catch (error) {
-        console.error('Failed to update supplier performance:', error);
-      }
+      updateParallelOperations.push(
+        (async () => {
+          try {
+            const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
+            await updateSupplierPerformanceFromNCA(ncaId);
+            // Note: Supplier performance update errors are logged but don't fail NCA update
+          } catch (error) {
+            console.error('Failed to update supplier performance:', error);
+          }
+        })()
+      );
     }
 
     // Send supplier notification if disposition was just completed
     // Only for raw material NCAs that haven't been notified yet
     if (isDispositionBeingCompleted && !wasDispositionComplete) {
       const service = notificationService || createProductionNotificationService();
-      
-      // Send supplier notification if applicable (raw material NCA)
-      await sendSupplierNotificationIfNeeded(
-        {
-          nc_type: data.nc_type || typedCurrentNCA.nc_type,
-          supplier_name: data.supplier_name || typedCurrentNCA.supplier_name,
-          date: typedCurrentNCA.date,
-          nc_product_description: typedCurrentNCA.nc_product_description,
-          supplier_wo_batch: typedCurrentNCA.supplier_wo_batch,
-          supplier_reel_box: typedCurrentNCA.supplier_reel_box,
-          quantity: typedCurrentNCA.quantity,
-          quantity_unit: typedCurrentNCA.quantity_unit,
-          nc_description: typedCurrentNCA.nc_description,
-        },
-        typedCurrentNCA.nca_number,
-        undefined,
-        service
+
+      updateParallelOperations.push(
+        sendSupplierNotificationIfNeeded(
+          {
+            nc_type: typedCurrentNCA.nc_type,
+            supplier_name: typedCurrentNCA.supplier_name,
+            date: typedCurrentNCA.date,
+            nc_product_description: typedCurrentNCA.nc_product_description,
+            supplier_wo_batch: typedCurrentNCA.supplier_wo_batch,
+            supplier_reel_box: typedCurrentNCA.supplier_reel_box,
+            quantity: typedCurrentNCA.quantity,
+            quantity_unit: typedCurrentNCA.quantity_unit,
+            nc_description: typedCurrentNCA.nc_description,
+          },
+          typedCurrentNCA.nca_number,
+          undefined,
+          service
+        )
       );
     }
+
+    // Wait for all parallel operations to complete
+    await Promise.all(updateParallelOperations);
 
     // Revalidate NCA pages
     revalidatePath('/nca');

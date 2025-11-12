@@ -17,7 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { closeWorkOrder } from '@/app/actions/work-order-actions';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface CloseWorkOrderButtonProps {
   woId: string;
@@ -74,7 +75,7 @@ export function CloseWorkOrderButton({
           {hasOpenIssues && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <Icon name={ICONS.ALERT} size="md" className="text-yellow-600 mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold text-yellow-800">Open Issues Detected</p>
                   <p className="text-sm text-yellow-700 mt-1">

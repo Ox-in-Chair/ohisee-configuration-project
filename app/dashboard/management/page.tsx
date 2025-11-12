@@ -2,17 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { createServerClient } from '@/lib/database/client';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  FileText,
-  TrendingUp,
-  Wrench,
-} from "lucide-react";
-import { getNCTrendData, getMaintenanceResponseData } from '@/app/actions/dashboard-actions';
-import { NCTrendChart } from '@/components/dashboard/nc-trend-chart';
-import { MaintenanceResponseChart } from '@/components/dashboard/maintenance-response-chart';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
+import { LazyComponent } from '@/components/lazy-component';
+import { LazyNCTrendChart } from '@/components/dashboard/lazy-nc-trend-chart';
+import { LazyMaintenanceResponseChart } from '@/components/dashboard/lazy-maintenance-response-chart';
+import { NCTrendChartSkeleton, MaintenanceResponseChartSkeleton } from '@/components/dashboard/skeletons';
 
 /**
  * Management Dashboard Page
@@ -126,11 +121,11 @@ async function getTemporaryRepairsApproachingDeadline(): Promise<TemporaryRepair
 }
 
 export default async function ManagementDashboardPage() {
-  const [kpis, tempRepairs, ncTrendData, maintenanceResponseData] = await Promise.all([
+  // Fetch only essential above-the-fold data
+  // Charts will load on-demand when scrolled into view
+  const [kpis, tempRepairs] = await Promise.all([
     getManagementKPIs(),
     getTemporaryRepairsApproachingDeadline(),
-    getNCTrendData(),
-    getMaintenanceResponseData(),
   ]);
 
   return (
@@ -160,7 +155,7 @@ export default async function ManagementDashboardPage() {
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+                  <Icon name={ICONS.FILE_TEXT} size="sm" />
                   Open NCAs
                 </CardTitle>
               </CardHeader>
@@ -183,7 +178,7 @@ export default async function ManagementDashboardPage() {
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                  <Icon name={ICONS.CLOCK} size="sm" />
                   Pending Clearances
                 </CardTitle>
               </CardHeader>
@@ -206,7 +201,7 @@ export default async function ManagementDashboardPage() {
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" />
+                  <Icon name={ICONS.ALERT} size="sm" />
                   Overdue Repairs
                 </CardTitle>
               </CardHeader>
@@ -229,7 +224,7 @@ export default async function ManagementDashboardPage() {
             >
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  <Wrench className="h-4 w-4" />
+                  <Icon name={ICONS.WRENCH} size="sm" />
                   Critical Jobs
                 </CardTitle>
               </CardHeader>
@@ -243,19 +238,21 @@ export default async function ManagementDashboardPage() {
           </Link>
         </div>
 
-        {/* Charts Row */}
+        {/* Charts Row - Lazy loaded on scroll */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* NC Trend Chart */}
           <Card data-testid="nc-trend-chart">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary-600" />
+                <Icon name={ICONS.TRENDING_UP} size="md" className="text-primary-600" />
                 NC Trend (12 Weeks)
               </CardTitle>
               <CardDescription>Non-conformance trends over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <NCTrendChart data={ncTrendData} />
+              <LazyComponent fallback={<NCTrendChartSkeleton />}>
+                <LazyNCTrendChart />
+              </LazyComponent>
             </CardContent>
           </Card>
 
@@ -263,13 +260,15 @@ export default async function ManagementDashboardPage() {
           <Card data-testid="maintenance-response-chart">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-warning-600" />
+                <Icon name={ICONS.CLOCK} size="md" className="text-warning-600" />
                 Maintenance Response Time
               </CardTitle>
               <CardDescription>Average response time by urgency</CardDescription>
             </CardHeader>
             <CardContent>
-              <MaintenanceResponseChart data={maintenanceResponseData} />
+              <LazyComponent fallback={<MaintenanceResponseChartSkeleton />}>
+                <LazyMaintenanceResponseChart />
+              </LazyComponent>
             </CardContent>
           </Card>
         </div>
@@ -278,7 +277,7 @@ export default async function ManagementDashboardPage() {
         <Card data-testid="temp-repairs-table">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning-600" />
+              <Icon name={ICONS.ALERT} size="md" className="text-warning-600" />
               Temporary Repairs Approaching Deadline
             </CardTitle>
             <CardDescription>
@@ -288,7 +287,7 @@ export default async function ManagementDashboardPage() {
           <CardContent>
             {tempRepairs.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-success-600" />
+                <Icon name={ICONS.SUCCESS} size="md" className="mx-auto mb-2 text-success-600" />
                 <p>No temporary repairs approaching deadline</p>
               </div>
             ) : (
