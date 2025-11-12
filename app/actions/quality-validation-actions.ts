@@ -30,18 +30,13 @@ import type {
   HazardClassification,
   User,
 } from '@/lib/ai/types';
+import type { ActionResponse } from './types';
 
 /**
  * Server Actions for Quality Validation
  * Rule-based validation runs first, then AI analysis (invisible to users)
  * All responses frame validation as standard system requirements, not AI opinions
  */
-
-export interface ServerActionResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
 
 /**
  * Validate field quality inline (fast mode, <2s)
@@ -52,7 +47,7 @@ export async function validateFieldQualityAction(
   formType: 'nca' | 'mjc',
   fieldData: Partial<NCA> | Partial<MJC>,
   userId: string
-): Promise<ServerActionResult<QualityScore>> {
+): Promise<ActionResponse<QualityScore>> {
   try {
     // Step 1: Run rule-based validation first (fast, no AI needed)
     if (formType === 'nca') {
@@ -170,7 +165,7 @@ export async function getWritingAssistanceAction(
   userId: string,
   fieldName?: string,
   userPrompt?: string
-): Promise<ServerActionResult<Suggestion>> {
+): Promise<ActionResponse<Suggestion>> {
   try {
     const config = getPhase7Config();
 
@@ -253,7 +248,7 @@ export async function validateSubmissionAction(
   isConfidential: boolean = false,
   attemptNumber?: number,
   formId?: string
-): Promise<ServerActionResult<ValidationResult>> {
+): Promise<ActionResponse<ValidationResult>> {
   try {
     // Get attempt number if not provided
     const currentAttemptNumber = attemptNumber || (await getAttemptNumber(formType, formId, userId));
@@ -569,7 +564,7 @@ export async function validateSubmissionAction(
 export async function classifyHazardAction(
   description: string,
   userId: string
-): Promise<ServerActionResult<HazardClassification>> {
+): Promise<ActionResponse<HazardClassification>> {
   try {
     const aiService = createAIService();
 
@@ -598,7 +593,7 @@ export async function recordSuggestionOutcomeAction(
   originalText: string,
   finalText: string,
   userId: string
-): Promise<ServerActionResult<void>> {
+): Promise<ActionResponse<void>> {
   try {
     // TODO: Implement feedback recording in database
     console.log('Recording suggestion outcome:', {
@@ -628,7 +623,7 @@ export async function recordManagerApprovalAction(
   qualityScore: number,
   justification: string,
   managerId: string
-): Promise<ServerActionResult<void>> {
+): Promise<ActionResponse<void>> {
   try {
     // TODO: Implement approval recording in database
     // Must be logged for BRCGS compliance

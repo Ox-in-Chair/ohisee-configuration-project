@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface WhyNode {
@@ -173,7 +174,7 @@ export function FiveWhyBuilder({
                 onClick={addWhy}
                 disabled={whys.length >= maxDepth}
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
                 Add Why
               </Button>
             )}
@@ -192,7 +193,7 @@ export function FiveWhyBuilder({
               {/* Visual connector */}
               {index > 0 && (
                 <div className="flex items-center justify-center py-2">
-                  <ChevronRight className="h-4 w-4 text-muted-foreground rotate-90" />
+                  <Icon name={ICONS.CHEVRON_RIGHT} size="sm" className="text-muted-foreground rotate-90" />
                 </div>
               )}
 
@@ -210,7 +211,7 @@ export function FiveWhyBuilder({
                       onClick={() => removeWhy(why.id)}
                       className="h-6 w-6"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Icon name={ICONS.DELETE} size="xs" />
                     </Button>
                   )}
                 </div>
@@ -261,7 +262,7 @@ export function FiveWhyBuilder({
             />
             {isComplete && (
               <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle2 className="h-4 w-4" />
+                <Icon name={ICONS.SUCCESS} size="sm" />
                 <span>Analysis complete</span>
               </div>
             )}

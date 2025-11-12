@@ -1,0 +1,16 @@
+
+> ohisee-reports@0.1.0 build
+> next build
+
+ ⚠ `eslint` configuration in next.config.ts is no longer supported. See more info here: https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+ ⚠ Invalid next.config.ts options detected: 
+ ⚠     Unrecognized key(s) in object: 'logging' at "experimental"
+ ⚠     Unrecognized key(s) in object: 'swcMinify', 'eslint'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+
+> Build error occurred
+Error: Fatal next config errors found in next.config.ts that must be fixed:
+    Unrecognized key(s) in object: 'quality' at "images"
+These configuration options are required or have been migrated. Please update your configuration.
+See more info here: https://nextjs.org/docs/messages/invalid-next-config
+    at ignore-listed frames

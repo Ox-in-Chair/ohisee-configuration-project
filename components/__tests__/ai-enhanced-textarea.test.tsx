@@ -87,7 +87,7 @@ describe('EnhancedTextarea', () => {
       render(
         <EnhancedTextarea
           {...defaultProps}
-          value="A".repeat(100)
+          value={"A".repeat(100)}
           minLength={50}
           data-testid="textarea"
         />
@@ -101,7 +101,7 @@ describe('EnhancedTextarea', () => {
       render(
         <EnhancedTextarea
           {...defaultProps}
-          value="A".repeat(30)
+          value={"A".repeat(30)}
           minLength={100}
           data-testid="textarea"
         />
@@ -144,7 +144,7 @@ describe('EnhancedTextarea', () => {
       render(
         <EnhancedTextarea
           {...defaultProps}
-          value="A".repeat(100)
+          value={"A".repeat(100)}
           minLength={50}
           data-testid="textarea"
         />

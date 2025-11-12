@@ -3,7 +3,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { AIQualityBadge } from '@/components/ai-quality-badge';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 /**
  * AIEnhancedTextarea Props Interface
@@ -107,12 +108,12 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
           >
             {isSuggesting ? (
               <>
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Icon name={ICONS.LOADING} size="xs" className="animate-spin" />
                 <span>Analyzing...</span>
               </>
             ) : (
               <>
-                <Sparkles className="h-3 w-3" />
+                <Icon name={ICONS.SPARKLES} size="xs" />
                 <span>Kangopak Core</span>
               </>
             )}

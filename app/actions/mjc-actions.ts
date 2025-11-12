@@ -7,48 +7,14 @@
  */
 
 import { createServerClient } from '@/lib/database/client';
+import { getUserIdFromAuth } from '@/lib/database/auth-utils';
 import type { MJCInsert, MJCUpdate, Signature, HygieneChecklistItem } from '@/types/database';
 import type { MJCFormData } from '@/lib/validations/mjc-schema';
 import { revalidatePath } from 'next/cache';
 import { createProductionNotificationService } from '@/lib/services/create-notification-service';
-
-/**
- * Server Action Response Type
- */
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
- * Transform form signature to database signature format
- */
-function transformSignature(formSignature: {
-  type: 'manual' | 'digital';
-  data: string;
-  name: string;
-  timestamp: string;
-} | null | undefined): Signature | null {
-  if (!formSignature) return null;
-
-  return {
-    type: formSignature.type === 'manual' ? 'drawn' : 'uploaded',
-    name: formSignature.name,
-    timestamp: formSignature.timestamp,
-    ip: '0.0.0.0', // TODO: Get real IP from request headers
-    data: formSignature.data,
-  };
-}
-
-/**
- * Generate MJC number in format: MJC-YYYY-NNNNNNNN
- */
-function generateMJCNumber(): string {
-  const year = new Date().getFullYear();
-  const random = String(Math.floor(Math.random() * 100000000)).padStart(8, '0');
-  return `MJC-${year}-${random}`;
-}
+import type { ActionResponse } from './types';
+import { transformSignature, generateRecordNumber } from '@/lib/actions/utils';
+import { MJCDatabaseService } from '@/lib/services/mjc-database-service';
 
 /**
  * Calculate temporary repair due date (14 days from now)
@@ -103,7 +69,7 @@ function transformFormDataToInsert(
 
   return {
     // Auto-generated fields
-    job_card_number: generateMJCNumber(),
+    job_card_number: generateRecordNumber('MJC'),
     date: dateString,
     time: timeString,
     raised_by_user_id: userId,
@@ -231,25 +197,27 @@ export async function createMJC(
     // Create server-side Supabase client (dependency injection)
     const supabase = createServerClient();
 
-    // TODO: Get real user ID from auth session
-    // For now, using seed data operator user (John Smith)
-    const userId = '10000000-0000-0000-0000-000000000001';
+    // Get authenticated user ID
+    const userId = await getUserIdFromAuth(supabase);
+    if (!userId) {
+      return {
+        success: false,
+        error: 'User must be authenticated to create MJC',
+      };
+    }
 
     // Transform form data to database format
     const mjcData = transformFormDataToInsert(formData, userId);
 
-    // Insert into database
-    const { data: insertedData, error } = await supabase
-      .from('mjcs')
-      .insert(mjcData as any)
-      .select('id, job_card_number')
-      .single();
+    // Insert into database using service
+    const mjcService = new MJCDatabaseService(supabase);
+    const { data: insertedData, error } = await mjcService.createMJC(mjcData);
 
     if (error) {
-      console.error('Supabase error creating MJC:', error);
+      console.error('Error creating MJC:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -315,7 +283,15 @@ export async function saveDraftMJC(
 ): Promise<ActionResponse<{ id: string; job_card_number: string }>> {
   try {
     const supabase = createServerClient();
-    const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth (using seed operator for now)
+
+    // Get authenticated user ID
+    const userId = await getUserIdFromAuth(supabase);
+    if (!userId) {
+      return {
+        success: false,
+        error: 'User must be authenticated to save draft MJC',
+      };
+    }
 
     const now = new Date();
     const dateString = now.toISOString().split('T')[0];
@@ -323,7 +299,7 @@ export async function saveDraftMJC(
 
     // Minimal required fields for draft
     const draftData: Partial<MJCInsert> = {
-      job_card_number: generateMJCNumber(),
+      job_card_number: generateRecordNumber('MJC'),
       date: dateString,
       time: timeString,
       raised_by_user_id: userId,
@@ -340,17 +316,14 @@ export async function saveDraftMJC(
       description_required: formData.maintenance_description || '',
     };
 
-    const { data: insertedData, error } = await supabase
-      .from('mjcs')
-      .insert(draftData as any)
-      .select('id, job_card_number')
-      .single();
+    const mjcService = new MJCDatabaseService(supabase);
+    const { data: insertedData, error } = await mjcService.createMJC(draftData as MJCInsert);
 
     if (error) {
-      console.error('Supabase error saving draft MJC:', error);
+      console.error('Error saving draft MJC:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -388,18 +361,15 @@ export async function getMJCById(
 ): Promise<ActionResponse> {
   try {
     const supabase = createServerClient();
+    const mjcService = new MJCDatabaseService(supabase);
 
-    const { data: mjcData, error } = await supabase
-      .from('mjcs')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data: mjcData, error } = await mjcService.getMJCById(id);
 
     if (error) {
-      console.error('Supabase error fetching MJC:', error);
+      console.error('Error fetching MJC:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
@@ -428,43 +398,33 @@ export async function listMJCs(filters?: {
 }): Promise<ActionResponse> {
   try {
     const supabase = createServerClient();
+    const mjcService = new MJCDatabaseService(supabase);
 
-    let query = supabase.from('mjcs').select('*', { count: 'exact' });
+    // Convert offset to page number (if provided)
+    const page = filters?.offset && filters?.limit
+      ? Math.floor(filters.offset / filters.limit) + 1
+      : undefined;
 
-    if (filters?.status) {
-      query = query.eq('status', filters.status);
-    }
-
-    if (filters?.urgency) {
-      query = query.eq('urgency', filters.urgency);
-    }
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-
-    if (filters?.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
-    }
-
-    // Order by urgency (critical first) and created_at descending
-    query = query.order('urgency', { ascending: true }).order('created_at', { ascending: false });
-
-    const { data: mjcList, error, count } = await query;
+    const { data, total, error } = await mjcService.listMJCs({
+      status: filters?.status as any,
+      urgency: filters?.urgency as any,
+      pageSize: filters?.limit || 10,
+      page,
+    });
 
     if (error) {
-      console.error('Supabase error listing MJCs:', error);
+      console.error('Error listing MJCs:', error);
       return {
         success: false,
-        error: `Database error: ${error.message}`,
+        error,
       };
     }
 
     return {
       success: true,
       data: {
-        mjcs: mjcList,
-        total: count,
+        mjcs: data,
+        total,
       },
     };
   } catch (error) {
@@ -738,22 +698,20 @@ export async function getLinkedMJCs(
 ): Promise<ActionResponse<Array<{ id: string; job_card_number: string; status: string; description_required: string }>>> {
   try {
     const supabase = createServerClient();
+    const mjcService = new MJCDatabaseService(supabase);
 
-    const { data: mjcs, error } = await supabase
-      .from('mjcs')
-      .select('id, job_card_number, status, description_required')
-      .eq('linked_nca_id', ncaId);
+    const { data: mjcs, error } = await mjcService.getLinkedToNCA(ncaId);
 
     if (error) {
       return {
         success: false,
-        error: `Failed to fetch linked MJCs: ${error.message}`,
+        error: `Failed to fetch linked MJCs: ${error}`,
       };
     }
 
     return {
       success: true,
-      data: (mjcs || []) as Array<{ id: string; job_card_number: string; status: string; description_required: string }>,
+      data: mjcs as Array<{ id: string; job_card_number: string; status: string; description_required: string }>,
     };
   } catch (error) {
     return {

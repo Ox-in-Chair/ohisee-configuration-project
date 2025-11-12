@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, Pause, Play, Square } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface TextToSpeechProps {
@@ -195,17 +196,17 @@ export function TextToSpeech({
       >
         {isPlaying && !isPaused ? (
           <>
-            <Pause className="h-4 w-4 mr-2" />
+            <Icon name={ICONS.PAUSE} size="sm" className="mr-2" />
             <span className="hidden sm:inline">Pause</span>
           </>
         ) : isPaused ? (
           <>
-            <Play className="h-4 w-4 mr-2" />
+            <Icon name={ICONS.PLAY} size="sm" className="mr-2" />
             <span className="hidden sm:inline">Resume</span>
           </>
         ) : (
           <>
-            <Volume2 className="h-4 w-4 mr-2" />
+            <Icon name={ICONS.VOLUME_ON} size="sm" className="mr-2" />
             <span className="hidden sm:inline">Listen</span>
           </>
         )}
@@ -220,7 +221,7 @@ export function TextToSpeech({
           disabled={disabled}
           aria-label="Stop playback"
         >
-          <Square className="h-4 w-4 mr-2" />
+          <Icon name={ICONS.STOP} size="sm" className="mr-2" />
           <span className="hidden sm:inline">Stop</span>
         </Button>
       )}

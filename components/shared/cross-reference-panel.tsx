@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { FileText, ExternalLink, Link2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import {
   getRelatedRecords,
   getProcedureReferences,
@@ -56,7 +57,7 @@ export function CrossReferencePanel({ recordType, recordId }: CrossReferencePane
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
+            <Icon name={ICONS.LINK} size="md" />
             Cross-References
           </CardTitle>
         </CardHeader>
@@ -87,7 +88,7 @@ export function CrossReferencePanel({ recordType, recordId }: CrossReferencePane
     <Card className="mb-6" data-testid="cross-reference-panel">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Link2 className="h-5 w-5" />
+          <Icon name={ICONS.LINK} size="md" />
           Cross-References
         </CardTitle>
       </CardHeader>
@@ -119,7 +120,7 @@ export function CrossReferencePanel({ recordType, recordId }: CrossReferencePane
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={ref.link}>
-                        <ExternalLink className="h-4 w-4" />
+                        <Icon name={ICONS.EXTERNAL_LINK} size="sm" />
                       </Link>
                     </Button>
                   </div>
@@ -136,7 +137,7 @@ export function CrossReferencePanel({ recordType, recordId }: CrossReferencePane
             <div className="space-y-2">
               {procedureRefs.map((ref, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="h-4 w-4 text-gray-400" />
+                  <Icon name={ICONS.FILE_TEXT} size="sm" className="text-gray-400" />
                   <div className="flex-1">
                     <span className="text-sm font-medium">
                       Procedure {ref.procedure} ({ref.formNumber})

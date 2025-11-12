@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { createServerClient } from '@/lib/database/client';
 
 interface RecallFlagProps {
@@ -71,7 +72,7 @@ export function RecallFlag({ ncaId, recallId, recallFlagged }: RecallFlagProps) 
       <Card className="mb-6 border-red-200 bg-red-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-900">
-            <AlertTriangle className="h-5 w-5" />
+            <Icon name={ICONS.ALERT} size="md" />
             Recall Flagged
           </CardTitle>
         </CardHeader>
@@ -103,7 +104,7 @@ export function RecallFlag({ ncaId, recallId, recallFlagged }: RecallFlagProps) 
     <Card className="mb-6 border-red-200 bg-red-50" data-testid="recall-flag">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-red-900">
-          <AlertTriangle className="h-5 w-5" />
+          <Icon name={ICONS.ALERT} size="md" />
           Product Recall Flagged (Form 3.11F1)
         </CardTitle>
       </CardHeader>
@@ -141,7 +142,7 @@ export function RecallFlag({ ncaId, recallId, recallFlagged }: RecallFlagProps) 
         <div className="pt-2 border-t">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/recalls/${recall.id}`}>
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.EXTERNAL_LINK} size="sm" className="mr-2" />
               View Full Recall
             </Link>
           </Button>

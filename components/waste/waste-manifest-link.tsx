@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { FileText, ExternalLink } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { getWasteManifestByNCA } from '@/app/actions/waste-actions';
 import type { WasteManifest } from '@/app/actions/waste-actions';
 
@@ -49,7 +50,7 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <Icon name={ICONS.FILE_TEXT} size="md" />
             Waste Manifest (Form 4.10F1)
           </CardTitle>
         </CardHeader>
@@ -65,7 +66,7 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <Icon name={ICONS.FILE_TEXT} size="md" />
             Waste Manifest (Form 4.10F1)
           </CardTitle>
         </CardHeader>
@@ -82,7 +83,7 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
     <Card className="mb-6" data-testid="waste-manifest-link">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
+          <Icon name={ICONS.FILE_TEXT} size="md" />
           Waste Manifest (Form 4.10F1)
         </CardTitle>
       </CardHeader>
@@ -143,7 +144,7 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
         <div className="pt-2 border-t">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/waste/${manifest.id}`}>
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.EXTERNAL_LINK} size="sm" className="mr-2" />
               View Full Manifest
             </Link>
           </Button>

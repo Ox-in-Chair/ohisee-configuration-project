@@ -4,19 +4,8 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useNavigation } from '@/lib/context/navigation-context';
 import { cn } from '@/lib/utils';
-import {
-  Home,
-  FileText,
-  Wrench,
-  LayoutDashboard,
-  Calendar,
-  Plus,
-  X,
-  Users,
-  MessageSquare,
-  AlertTriangle,
-  Trash2,
-} from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { Button } from '@/components/ui/button';
 
 interface NavItem {
@@ -123,7 +112,7 @@ export function MobileDrawer() {
             onClick={() => setMobileDrawerOpen(false)}
             aria-label="Close menu"
           >
-            <X className="h-5 w-5" />
+            <Icon name={ICONS.CLOSE} size="md" />
           </Button>
         </div>
 
@@ -177,7 +166,7 @@ export function MobileDrawer() {
             onClick={handleLinkClick}
           >
             <Link href="/nca/new">
-              <Plus className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
               New NCA
             </Link>
           </Button>
@@ -189,7 +178,7 @@ export function MobileDrawer() {
             onClick={handleLinkClick}
           >
             <Link href="/mjc/new">
-              <Plus className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
               New MJC
             </Link>
           </Button>

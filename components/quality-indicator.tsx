@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 /**
  * QualityIndicator Props Interface
@@ -39,7 +40,7 @@ export const QualityIndicator: FC<QualityIndicatorProps> = ({
         className="flex items-center gap-2 bg-gray-50 text-gray-600"
         data-testid="quality-indicator-loading"
       >
-        <Loader2 className="h-3 w-3 animate-spin" />
+        <Icon name={ICONS.LOADING} size="xs" className="animate-spin" />
         <span>Validating...</span>
       </Badge>
     );
@@ -58,9 +59,9 @@ export const QualityIndicator: FC<QualityIndicatorProps> = ({
   };
 
   const getIcon = () => {
-    if (score >= threshold) return <CheckCircle2 className="h-3 w-3" />;
-    if (score >= 60) return <AlertCircle className="h-3 w-3" />;
-    return <XCircle className="h-3 w-3" />;
+    if (score >= threshold) return <Icon name={ICONS.SUCCESS} size="xs" />;
+    if (score >= 60) return <Icon name={ICONS.WARNING} size="xs" />;
+    return <Icon name={ICONS.ERROR} size="xs" />;
   };
 
   const getMessage = (): string => {

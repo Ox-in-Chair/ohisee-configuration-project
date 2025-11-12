@@ -5,7 +5,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, Package, Wrench } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 interface WorkOrder {
   id: string;
@@ -50,7 +51,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.PACKAGE} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Work Order Number</p>
               <p className="font-semibold">{workOrder.wo_number}</p>
@@ -58,7 +59,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.PACKAGE} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Product</p>
               <p className="font-semibold">{workOrder.product || 'N/A'}</p>
@@ -66,7 +67,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Wrench className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.WRENCH} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Machine ID</p>
               <p className="font-semibold">{workOrder.machine_id || 'N/A'}</p>
@@ -74,7 +75,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.USER} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Operator ID</p>
               <p className="font-semibold">{workOrder.operator_id || 'N/A'}</p>
@@ -82,7 +83,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.CALENDAR} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Created At</p>
               <p className="font-semibold">
@@ -92,7 +93,7 @@ export function WorkOrderDetail({ workOrder }: WorkOrderDetailProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
+            <Icon name={ICONS.CALENDAR} size="sm" className="text-gray-500" />
             <div>
               <p className="text-sm text-gray-600">Last Updated</p>
               <p className="font-semibold">

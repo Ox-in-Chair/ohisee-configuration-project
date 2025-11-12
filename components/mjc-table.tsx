@@ -6,9 +6,10 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -52,8 +53,9 @@ interface MJCTableProps {
  * MJC Table with advanced filtering, sorting, and search
  * All features implemented with React hooks and TypeScript
  * Server-side pagination with URL parameter sync
+ * Wrapped with React.memo to prevent unnecessary re-renders
  */
-export function MJCTable({
+export const MJCTable = memo(function MJCTable({
   data,
   isLoading = false,
   total,
@@ -596,7 +598,7 @@ export function MJCTable({
               disabled={currentPage === 1}
               data-testid="mjc-pagination-prev"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <Icon name={ICONS.CHEVRON_LEFT} size="sm" />
               Previous
             </Button>
             
@@ -637,11 +639,16 @@ export function MJCTable({
               data-testid="mjc-pagination-next"
             >
               Next
-              <ChevronRight className="h-4 w-4" />
+              <Icon name={ICONS.CHEVRON_RIGHT} size="sm" />
             </Button>
           </div>
         </div>
       )}
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if data array changed
+  // Ignore loading state changes, pagination changes to parent
+  // Return true if props are equal (skip re-render), false if different (re-render)
+  return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data);
+});

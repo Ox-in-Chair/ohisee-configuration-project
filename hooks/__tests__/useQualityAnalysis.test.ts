@@ -1,18 +1,19 @@
 /**
- * useQualityValidation Hook Unit Tests
+ * useQualityAnalysis Hook Unit Tests
  * Tests debouncing, error handling, state management, and API interactions
+ * Unified test suite for quality analysis and validation
  */
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
-import { useQualityValidation } from '../useQualityValidation';
+import { useQualityAnalysis } from '../useQualityAnalysis';
 import * as qualityValidationActions from '@/app/actions/quality-validation-actions';
 import type { QualityScore, Suggestion, ValidationResult } from '@/lib/ai/types';
 
 // Mock the server actions
 jest.mock('@/app/actions/quality-validation-actions');
 
-describe('useQualityValidation', () => {
+describe('useQualityAnalysis', () => {
   const mockUserId = 'user-123';
   const mockFormType = 'nca';
 
@@ -90,7 +91,7 @@ describe('useQualityValidation', () => {
   describe('Initialization', () => {
     it('should initialize with default state', () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -107,7 +108,7 @@ describe('useQualityValidation', () => {
 
     it('should accept custom debounce delay', () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 5000,
@@ -121,7 +122,7 @@ describe('useQualityValidation', () => {
   describe('validateField - Debouncing', () => {
     it('should debounce quality check calls', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 3000,
@@ -159,7 +160,7 @@ describe('useQualityValidation', () => {
 
     it('should cancel previous request when new input arrives', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 2000,
@@ -204,7 +205,7 @@ describe('useQualityValidation', () => {
 
     it('should update quality score after debounce completes', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -229,7 +230,7 @@ describe('useQualityValidation', () => {
 
     it('should set isChecking to true during API call', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -262,7 +263,7 @@ describe('useQualityValidation', () => {
       });
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -292,7 +293,7 @@ describe('useQualityValidation', () => {
       );
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -323,7 +324,7 @@ describe('useQualityValidation', () => {
       });
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 1000,
@@ -369,7 +370,7 @@ describe('useQualityValidation', () => {
   describe('getWritingHelp', () => {
     it('should generate AI suggestions immediately (no debounce)', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -396,7 +397,7 @@ describe('useQualityValidation', () => {
 
     it('should set isSuggesting to true during API call', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -426,7 +427,7 @@ describe('useQualityValidation', () => {
       });
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -444,7 +445,7 @@ describe('useQualityValidation', () => {
   describe('validateSubmission', () => {
     it('should validate form data and return result', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -472,7 +473,7 @@ describe('useQualityValidation', () => {
 
     it('should bypass quality gate for confidential reports', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -508,7 +509,7 @@ describe('useQualityValidation', () => {
       });
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -537,7 +538,7 @@ describe('useQualityValidation', () => {
   describe('acceptSuggestion', () => {
     it('should record suggestion acceptance and clear suggestions', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -576,7 +577,7 @@ describe('useQualityValidation', () => {
       );
 
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -598,7 +599,7 @@ describe('useQualityValidation', () => {
   describe('Utility Functions', () => {
     it('should clear error when clearError is called', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -634,7 +635,7 @@ describe('useQualityValidation', () => {
 
     it('should reset all state when reset is called', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
         })
@@ -663,7 +664,7 @@ describe('useQualityValidation', () => {
 
     it('should cancel pending requests on reset', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: mockFormType,
           userId: mockUserId,
           debounceMs: 5000,
@@ -700,7 +701,7 @@ describe('useQualityValidation', () => {
   describe('MJC Form Type', () => {
     it('should work with MJC form type', async () => {
       const { result } = renderHook(() =>
-        useQualityValidation({
+        useQualityAnalysis({
           formType: 'mjc',
           userId: mockUserId,
         })

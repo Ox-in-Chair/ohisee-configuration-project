@@ -20,7 +20,7 @@ import { EnhancedTextarea } from '@/components/enhanced-textarea';
 import { SmartInput } from '@/components/smart-input';
 import { WritingAssistantModal } from '@/components/writing-assistant-modal';
 import { QualityGateModal } from '@/components/quality-gate-modal';
-import { useQualityValidation } from '@/hooks/useQualityValidation';
+import { useQualityAnalysis } from '@/hooks/useQualityAnalysis';
 import type { Suggestion } from '@/lib/ai/types';
 
 // Visualization imports
@@ -38,7 +38,8 @@ import {
 // Training and Tooltips imports
 import { NCATrainingModule } from '@/components/nca/nca-training-module';
 import { NCAFieldTooltip } from '@/components/nca/nca-field-tooltip';
-import { BookOpen } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 
 // Form Header import
 import { FormHeader } from '@/components/nca/form-header';
@@ -213,8 +214,8 @@ export default function NewNCAPage(): React.ReactElement {
     }
   }, [ncType, setValue]);
 
-  // Initialize Quality Validation Hook
-  const qualityValidation = useQualityValidation({
+  // Initialize Quality Analysis Hook (Unified)
+  const qualityValidation = useQualityAnalysis({
     formType: 'nca',
     userId: 'current-user-id', // TODO: Get from auth
     debounceMs: 3000, // Validate field 3 seconds after user stops typing
@@ -432,7 +433,7 @@ export default function NewNCAPage(): React.ReactElement {
           onClick={() => setShowTrainingModule(true)}
           className="flex items-center gap-2"
         >
-          <BookOpen className="h-4 w-4" />
+          <Icon name={ICONS.BOOK_OPEN} size="sm" />
           Training Module
         </Button>
       </div>

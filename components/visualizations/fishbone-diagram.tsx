@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface FishboneCategory {
@@ -195,7 +196,7 @@ export function FishboneDiagram({
                   size="sm"
                   onClick={() => addCause(category.id)}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Icon name={ICONS.PLUS} size="sm" className="mr-2" />
                   Add Cause
                 </Button>
               </div>
@@ -223,7 +224,7 @@ export function FishboneDiagram({
                       onClick={() => removeCause(category.id, index)}
                       className="h-8 w-8"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Icon name={ICONS.DELETE} size="xs" />
                     </Button>
                   </div>
                 ))}
@@ -247,7 +248,7 @@ export function FishboneDiagram({
             </div>
             {isComplete && (
               <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle2 className="h-4 w-4" />
+                <Icon name={ICONS.SUCCESS} size="sm" />
                 <span>Analysis complete</span>
               </div>
             )}

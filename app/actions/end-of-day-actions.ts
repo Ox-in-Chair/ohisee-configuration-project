@@ -11,6 +11,8 @@ import { revalidatePath } from 'next/cache';
 import type { Signature } from '@/types/database';
 import { createProductionNotificationService } from '@/lib/services/create-notification-service';
 import { generateEndOfDayPDF } from '@/lib/services/report-generator';
+import type { ActionResponse } from './types';
+import { transformSignature } from '@/lib/actions/utils';
 
 interface EndOfDaySubmissionData {
   shiftNotes?: string;
@@ -21,30 +23,6 @@ interface EndOfDaySubmissionData {
     timestamp: string;
   };
   userId: string;
-}
-
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-/**
- * Transform form signature to database signature format
- */
-function transformSignature(formSignature: {
-  type: 'manual' | 'digital';
-  data: string;
-  name: string;
-  timestamp: string;
-}): Signature {
-  return {
-    type: formSignature.type === 'manual' ? 'drawn' : 'uploaded',
-    name: formSignature.name,
-    timestamp: formSignature.timestamp,
-    ip: '0.0.0.0', // TODO: Get real IP from request headers
-    data: formSignature.data,
-  };
 }
 
 /**

@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { cn } from '@/lib/utils';
 
 export interface RewriteAssistantProps {
@@ -131,7 +132,7 @@ export function RewriteAssistant({
     <div className={cn('inline-flex items-center gap-2', className)}>
       {isCheckingQuality ? (
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Icon name={ICONS.LOADING} size="sm" className="animate-spin" />
           <span>Checking quality...</span>
         </div>
       ) : shouldShow ? (
@@ -146,12 +147,12 @@ export function RewriteAssistant({
         >
           {isRewriting ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Icon name={ICONS.LOADING} size="sm" className="animate-spin" />
               <span>Rewriting...</span>
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4" />
+              <Icon name={ICONS.SPARKLES} size="sm" />
               <span>Rewrite for Better Quality</span>
             </>
           )}

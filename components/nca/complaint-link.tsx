@@ -11,7 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { MessageSquare, ExternalLink } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { getComplaintByNCA } from '@/app/actions/complaint-actions';
 import type { Complaint } from '@/app/actions/complaint-actions';
 
@@ -49,7 +50,7 @@ export function ComplaintLink({ ncaId }: ComplaintLinkProps) {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+            <Icon name={ICONS.MESSAGE} size="md" />
             Linked Customer Complaint
           </CardTitle>
         </CardHeader>
@@ -98,7 +99,7 @@ export function ComplaintLink({ ncaId }: ComplaintLinkProps) {
     <Card className="mb-6" data-testid="complaint-link">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
+          <Icon name={ICONS.MESSAGE} size="md" />
           Linked Customer Complaint (Form 3.10F2)
         </CardTitle>
       </CardHeader>
@@ -149,7 +150,7 @@ export function ComplaintLink({ ncaId }: ComplaintLinkProps) {
         <div className="pt-2 border-t">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/complaints/${complaint.id}`}>
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <Icon name={ICONS.EXTERNAL_LINK} size="sm" className="mr-2" />
               View Full Complaint
             </Link>
           </Button>

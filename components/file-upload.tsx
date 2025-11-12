@@ -7,7 +7,8 @@
  */
 
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, X, FileIcon, Loader2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -250,12 +251,12 @@ export function FileUpload({
           <div className="flex flex-col items-center justify-center space-y-3">
             {isUploading ? (
               <>
-                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                <Icon name={ICONS.LOADING} size="md" className="text-blue-500 animate-spin" />
                 <p className="text-sm text-gray-600">Uploading...</p>
               </>
             ) : (
               <>
-                <Upload className="h-10 w-10 text-gray-400" />
+                <Icon name={ICONS.UPLOAD} size="md" className="text-gray-400" />
                 <div className="text-center">
                   <p className="text-sm text-gray-600">
                     Drag and drop a file here, or{' '}
@@ -297,7 +298,7 @@ export function FileUpload({
         <div className="space-y-2">
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+              <Icon name={ICONS.LOADING} size="md" className="text-gray-400 animate-spin" />
               <span className="ml-2 text-sm text-gray-500">Loading files...</span>
             </div>
           ) : files.length > 0 ? (
@@ -306,7 +307,7 @@ export function FileUpload({
                 <Card key={file.name} className="p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <FileIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      <Icon name={ICONS.FILE_ICON} size="md" className="text-gray-400 flex-shrink-0" />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
                         <p className="text-xs text-gray-500">
@@ -321,7 +322,7 @@ export function FileUpload({
                       onClick={() => handleDelete(file.name)}
                       className="flex-shrink-0 ml-2"
                     >
-                      <X className="h-4 w-4" />
+                      <Icon name={ICONS.CLOSE} size="sm" />
                     </Button>
                   </div>
                 </Card>

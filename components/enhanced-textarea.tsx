@@ -3,7 +3,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { QualityIndicator } from '@/components/quality-indicator';
-import { HelpCircle, Loader2, CheckCircle2 } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { getRequirementChecklist } from '@/lib/validations/quality-messages';
 import { cn } from '@/lib/utils';
 import { VoiceInput } from '@/components/fields/voice-input';
@@ -213,12 +214,12 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Icon name={ICONS.LOADING} size="xs" className="animate-spin" />
                   <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <HelpCircle className="h-3 w-3" />
+                  <Icon name={ICONS.HELP} size="xs" />
                   <span>Get Help</span>
                 </>
               )}
@@ -304,7 +305,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
               }`}
             >
               {item.checked ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+                <Icon name={ICONS.SUCCESS} size={14} className="text-green-600 flex-shrink-0" />
               ) : (
                 <div className="h-3.5 w-3.5 rounded-full border-2 border-gray-300 flex-shrink-0" />
               )}

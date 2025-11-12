@@ -8,12 +8,7 @@
 import { createServerClient } from '@/lib/database/client';
 import { revalidatePath } from 'next/cache';
 import type { WorkOrderUpdate } from '@/types/database';
-
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+import type { ActionResponse } from './types';
 
 /**
  * Get work order by ID

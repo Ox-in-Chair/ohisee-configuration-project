@@ -18,6 +18,7 @@
  */
 
 import { createServerClient } from '@/lib/database/client';
+import { getUserIdFromAuth } from '@/lib/database/auth-utils';
 import { createAIService } from '@/lib/ai';
 import { revalidatePath } from 'next/cache';
 import type {
@@ -30,20 +31,11 @@ import type {
   ValidationWarning,
   AIServiceError
 } from '@/lib/ai/types';
+import type { ActionResponse } from './types';
 
 // ============================================================================
 // Response Types
 // ============================================================================
-
-/**
- * Standard Server Action response format
- * Consistent error handling across all AI actions
- */
-interface ActionResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
 
 // ============================================================================
 // User Quality Metrics Types
@@ -108,21 +100,25 @@ interface DashboardFilters {
 
 /**
  * Get authenticated user from session
- * TODO: Replace with real auth when implemented
  */
 async function getCurrentUser(): Promise<User> {
-  // For now, return seed data operator user
-  // In production, this would use auth.uid() and fetch from users table
   const supabase = createServerClient();
 
+  // Get authenticated user ID
+  const userId = await getUserIdFromAuth(supabase);
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+
+  // Fetch user profile from users table
   const { data, error } = await supabase
     .from('users')
     .select('id, role, name, department')
-    .eq('id', '10000000-0000-0000-0000-000000000001')
+    .eq('id', userId)
     .single();
 
   if (error || !data) {
-    throw new Error('User not authenticated');
+    throw new Error('User profile not found');
   }
 
   // Type assertion to work around Supabase type inference limitations

@@ -4,17 +4,15 @@
  */
 
 import { z } from 'zod';
-
-/**
- * Signature validation schema
- * Enforces complete signature data structure
- */
-export const signatureSchema = z.object({
-  type: z.enum(['manual', 'digital']),
-  data: z.string().min(1, 'Signature data is required'),
-  name: z.string().min(1, 'Signer name is required'),
-  timestamp: z.string().min(1, 'Timestamp is required'),
-});
+import { signatureSchema } from './shared-schemas';
+import {
+  MAINTENANCE_CATEGORY,
+  MAINTENANCE_TYPE,
+  MACHINE_STATUS,
+  URGENCY_LEVEL,
+  VALIDATION,
+  getConstValues
+} from '@/lib/config';
 
 /**
  * Hygiene checklist item schema
@@ -46,22 +44,22 @@ export const mjcFormSchema = z
     machine_equipment_id: z
       .string()
       .min(1, 'Machine/Equipment ID is required')
-      .max(100, 'Machine/Equipment ID cannot exceed 100 characters'),
+      .max(VALIDATION.MJC_MACHINE_ID_MAX, `Machine/Equipment ID cannot exceed ${VALIDATION.MJC_MACHINE_ID_MAX} characters`),
 
     // Section 3: Maintenance Type & Classification (REQUIRED)
-    maintenance_category: z.enum(['reactive', 'planned'], {
+    maintenance_category: z.enum(getConstValues(MAINTENANCE_CATEGORY) as [string, ...string[]], {
       message: 'Maintenance category must be selected',
     }),
-    maintenance_type: z.enum(['electrical', 'mechanical', 'pneumatical', 'other'], {
+    maintenance_type: z.enum(getConstValues(MAINTENANCE_TYPE) as [string, ...string[]], {
       message: 'Maintenance type must be selected',
     }),
     maintenance_type_other: z.string().optional(),
 
     // Section 4: Machine Status & Urgency (REQUIRED, no default)
-    machine_status: z.enum(['down', 'operational'], {
+    machine_status: z.enum([MACHINE_STATUS.DOWN, MACHINE_STATUS.OPERATIONAL] as [string, ...string[]], {
       message: 'Machine status must be explicitly selected',
     }),
-    urgency_level: z.enum(['critical', 'high', 'medium', 'low'], {
+    urgency_level: z.enum(getConstValues(URGENCY_LEVEL) as [string, ...string[]], {
       message: 'Urgency level is required',
     }),
     machine_down_time: z.string().nullable().optional(),
@@ -75,8 +73,8 @@ export const mjcFormSchema = z
     // Section 6: Description of Maintenance Required (REQUIRED, minimum 100 characters)
     maintenance_description: z
       .string()
-      .min(100, 'Description must be at least 100 characters for BRCGS compliance')
-      .max(2000, 'Description cannot exceed 2000 characters'),
+      .min(VALIDATION.MJC_DESCRIPTION_MIN, `Description must be at least ${VALIDATION.MJC_DESCRIPTION_MIN} characters for BRCGS compliance`)
+      .max(VALIDATION.MJC_DESCRIPTION_MAX, `Description cannot exceed ${VALIDATION.MJC_DESCRIPTION_MAX} characters`),
     maintenance_description_attachments: z.any().optional(),
 
     // Section 7: Maintenance Performed
@@ -109,7 +107,7 @@ export const mjcFormSchema = z
   })
   .superRefine((data, ctx) => {
     // Conditional validation: If machine is down, machine_down_time auto-calculated
-    if (data.machine_status === 'down') {
+    if (data.machine_status === MACHINE_STATUS.DOWN) {
       if (!data.machine_down_time) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -131,11 +129,11 @@ export const mjcFormSchema = z
     }
 
     // Conditional validation: If maintenance type is "other", additional details required
-    if (data.maintenance_type === 'other') {
-      if (!data.maintenance_type_other || data.maintenance_type_other.trim().length < 10) {
+    if (data.maintenance_type === MAINTENANCE_TYPE.OTHER) {
+      if (!data.maintenance_type_other || data.maintenance_type_other.trim().length < VALIDATION.MJC_TYPE_OTHER_MIN) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'Please specify the maintenance type (minimum 10 characters)',
+          message: `Please specify the maintenance type (minimum ${VALIDATION.MJC_TYPE_OTHER_MIN} characters)`,
           path: ['maintenance_type_other'],
         });
       }

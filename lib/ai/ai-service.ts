@@ -36,6 +36,7 @@ import { NCAQualityScoringPrompt } from './prompts/nca-quality-scoring';
 import { MJCQualityScoringPrompt } from './prompts/mjc-quality-scoring';
 import { HazardClassificationPrompt } from './prompts/hazard-classification';
 import { RoleAdaptationPrompt } from './prompts/role-adaptation';
+import { AI_CONFIG } from '@/lib/config';
 
 export class AIService implements IAIService {
   private readonly config: AIConfig;
@@ -48,15 +49,15 @@ export class AIService implements IAIService {
     private readonly rateLimiter: IRateLimiter,
     config: Partial<AIConfig> = {}
   ) {
-    // Default configuration from environment
+    // Default configuration from environment (with fallback to constants)
     this.config = {
-      mode: (config.mode ?? process.env.AI_MODE ?? 'adaptive') as 'fast' | 'adaptive' | 'deep',
-      model: config.model ?? process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5-20250929',
-      quality_threshold: config.quality_threshold ?? Number(process.env.AI_QUALITY_THRESHOLD ?? 75),
-      fast_response_timeout: config.fast_response_timeout ?? Number(process.env.AI_FAST_RESPONSE_TIMEOUT ?? 2000),
-      deep_validation_timeout: config.deep_validation_timeout ?? Number(process.env.AI_DEEP_VALIDATION_TIMEOUT ?? 30000),
-      temperature: config.temperature ?? 0.3,
-      max_tokens: config.max_tokens ?? 4096
+      mode: (config.mode ?? process.env.AI_MODE ?? AI_CONFIG.MODE_ADAPTIVE) as 'fast' | 'adaptive' | 'deep',
+      model: config.model ?? process.env.ANTHROPIC_MODEL ?? AI_CONFIG.DEFAULT_MODEL,
+      quality_threshold: config.quality_threshold ?? Number(process.env.AI_QUALITY_THRESHOLD ?? AI_CONFIG.QUALITY_THRESHOLD),
+      fast_response_timeout: config.fast_response_timeout ?? Number(process.env.AI_FAST_RESPONSE_TIMEOUT ?? AI_CONFIG.FAST_RESPONSE_TIMEOUT),
+      deep_validation_timeout: config.deep_validation_timeout ?? Number(process.env.AI_DEEP_VALIDATION_TIMEOUT ?? AI_CONFIG.DEEP_VALIDATION_TIMEOUT),
+      temperature: config.temperature ?? AI_CONFIG.DEFAULT_TEMPERATURE,
+      max_tokens: config.max_tokens ?? AI_CONFIG.DEFAULT_MAX_TOKENS
     };
 
     this.qualityScorer = new QualityScorer();
@@ -80,7 +81,7 @@ export class AIService implements IAIService {
 
     try {
       // Determine timeout based on mode
-      const timeout = this.config.mode === 'fast'
+      const timeout = this.config.mode === AI_CONFIG.MODE_FAST
         ? this.config.fast_response_timeout
         : this.config.deep_validation_timeout;
 

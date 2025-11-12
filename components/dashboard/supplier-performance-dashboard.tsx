@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import { getSupplierTrendAnalysis, calculateSupplierPerformanceScore } from '@/lib/services/supplier-performance-service';
 
 interface Supplier {
@@ -42,33 +43,64 @@ export function SupplierPerformanceDashboard({ suppliers }: SupplierPerformanceD
   const [filterRisk, setFilterRisk] = useState<string>('all');
   const [supplierScores, setSupplierScores] = useState<Record<string, number>>({});
   const [supplierTrends, setSupplierTrends] = useState<Record<string, { trend: string; change: number }>>({});
+  const [loading, setLoading] = useState(true);
 
   // Calculate performance scores and trends
+  // OPTIMIZED: Fetch all supplier metrics in parallel instead of sequentially
   useEffect(() => {
     async function loadMetrics() {
-      const scores: Record<string, number> = {};
-      const trends: Record<string, { trend: string; change: number }> = {};
-
-      for (const supplier of suppliers) {
-        try {
-          const [score, trend] = await Promise.all([
-            calculateSupplierPerformanceScore(supplier.id),
-            getSupplierTrendAnalysis(supplier.id),
-          ]);
-          scores[supplier.id] = score;
-          trends[supplier.id] = { trend: trend.trend, change: trend.change };
-        } catch (error) {
-          console.error(`Error loading metrics for ${supplier.supplier_name}:`, error);
-        }
+      if (suppliers.length === 0) {
+        setLoading(false);
+        return;
       }
 
-      setSupplierScores(scores);
-      setSupplierTrends(trends);
+      try {
+        setLoading(true);
+
+        // Fetch all scores and trends in parallel for better performance
+        const metricsPromises = suppliers.map(async (supplier) => {
+          try {
+            const [score, trend] = await Promise.all([
+              calculateSupplierPerformanceScore(supplier.id),
+              getSupplierTrendAnalysis(supplier.id),
+            ]);
+            return {
+              supplierId: supplier.id,
+              score,
+              trend: { trend: trend.trend, change: trend.change },
+            };
+          } catch (error) {
+            console.error(`Error loading metrics for ${supplier.supplier_name}:`, error);
+            return {
+              supplierId: supplier.id,
+              score: 0,
+              trend: { trend: 'stable', change: 0 },
+            };
+          }
+        });
+
+        // Wait for all metrics to load in parallel
+        const results = await Promise.all(metricsPromises);
+
+        // Convert array results to maps
+        const scores: Record<string, number> = {};
+        const trends: Record<string, { trend: string; change: number }> = {};
+
+        results.forEach(({ supplierId, score, trend }) => {
+          scores[supplierId] = score;
+          trends[supplierId] = trend;
+        });
+
+        setSupplierScores(scores);
+        setSupplierTrends(trends);
+      } catch (error) {
+        console.error('Error loading supplier metrics:', error);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    if (suppliers.length > 0) {
-      loadMetrics();
-    }
+    loadMetrics();
   }, [suppliers]);
 
   // Filter suppliers
@@ -98,11 +130,11 @@ export function SupplierPerformanceDashboard({ suppliers }: SupplierPerformanceD
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'improving':
-        return <TrendingDown className="h-4 w-4 text-green-600" />;
+        return <Icon name={ICONS.TRENDING_DOWN} size="sm" className="text-green-600" />;
       case 'declining':
-        return <TrendingUp className="h-4 w-4 text-red-600" />;
+        return <Icon name={ICONS.TRENDING_UP} size="sm" className="text-red-600" />;
       default:
-        return <Minus className="h-4 w-4 text-gray-400" />;
+        return <Icon name={ICONS.MINUS} size="sm" className="text-gray-400" />;
     }
   };
 
@@ -213,7 +245,16 @@ export function SupplierPerformanceDashboard({ suppliers }: SupplierPerformanceD
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSuppliers.length === 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-gray-500 py-8">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin" />
+                      Loading supplier metrics...
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredSuppliers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-gray-500">
                     No suppliers found

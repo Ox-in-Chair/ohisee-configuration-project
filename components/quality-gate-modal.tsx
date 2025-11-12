@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, XCircle, CheckCircle2, Shield, FileText } from 'lucide-react';
+import { Icon } from '@/components/ui/icons';
+import { ICONS } from '@/lib/config/icons';
 import type { ValidationResult } from '@/lib/ai/types';
 import { UserExplanation } from '@/lib/ai/explainable/user-explanation-component';
 import { TransparencyService } from '@/lib/ai/explainable/transparency-service';
@@ -76,9 +77,9 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
   };
 
   const getScoreIcon = () => {
-    if (score >= 75) return <CheckCircle2 className="h-6 w-6 text-green-600" />;
-    if (score >= 60) return <AlertCircle className="h-6 w-6 text-yellow-600" />;
-    return <XCircle className="h-6 w-6 text-red-600" />;
+    if (score >= 75) return <Icon name={ICONS.SUCCESS} size="lg" className="text-green-600" />;
+    if (score >= 60) return <Icon name={ICONS.WARNING} size="lg" className="text-yellow-600" />;
+    return <Icon name={ICONS.ERROR} size="lg" className="text-red-600" />;
   };
 
   const getScoreMessage = (): string => {
@@ -124,7 +125,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         {requirements && requirements.length > 0 && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start gap-2 mb-3">
-              <FileText className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <Icon name={ICONS.FILE_TEXT} size="md" className="text-yellow-600 mt-0.5" />
               <div className="flex-1">
                 <p className="font-semibold text-yellow-900 mb-2">Additional Details Required:</p>
                 <ul className="space-y-2">
@@ -176,7 +177,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         {errors && errors.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start gap-2 mb-2">
-              <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+              <Icon name={ICONS.ERROR} size="md" className="text-red-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-red-900">Critical Issues Found:</p>
                 <ul className="list-disc list-inside space-y-1 mt-2">
@@ -200,7 +201,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         {warnings && warnings.length > 0 && (!requirements || requirements.length === 0) && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <Icon name={ICONS.WARNING} size="md" className="text-blue-600 mt-0.5" />
               <div className="flex-1">
                 <p className="font-semibold text-blue-900 mb-2">Suggestions for Improvement:</p>
                 <ul className="space-y-3">
@@ -226,7 +227,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         {compliance && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
             <div className="flex items-start gap-2">
-              <Shield className="h-4 w-4 text-green-600 mt-0.5" />
+              <Icon name={ICONS.SHIELD} size="sm" className="text-green-600 mt-0.5" />
               <div>
                 <p className="font-semibold text-green-900 mb-1">Compliance Check:</p>
                 <p className="text-green-800">
@@ -248,7 +249,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         {(!compliance || !compliance.passed) && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
             <div className="flex items-start gap-2">
-              <Shield className="h-4 w-4 text-blue-600 mt-0.5" />
+              <Icon name={ICONS.SHIELD} size="sm" className="text-blue-600 mt-0.5" />
               <p className="text-blue-800">
                 <span className="font-semibold">BRCGS Compliance:</span> System validation ensures
                 submissions meet food safety documentation standards (Section 3.3 - Document Control).
