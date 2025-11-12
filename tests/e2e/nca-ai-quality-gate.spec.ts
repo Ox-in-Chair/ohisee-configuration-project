@@ -300,3 +300,4 @@ test.describe('NCA AI Suggestions Modal', () => {
     await expect(rootCauseTextarea).toHaveValue('Initial text');
   });
 });
+
