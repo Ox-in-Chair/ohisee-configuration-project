@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { createServerClient } from '@/lib/database/client';
 import { NCATable } from '@/components/nca-table';
 import type { NCATableRow } from '@/lib/types/nca';
+import { FormHeader } from '@/components/nca/form-header';
 
 /**
  * NCA Register Page (Server Component)
@@ -118,6 +119,9 @@ export default async function NCARegisterPage({ searchParams }: NCARegisterPageP
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/* Form Header */}
+      <FormHeader className="mb-6" />
+      
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">NCA Register</h1>
         <p className="text-gray-600 mt-2">

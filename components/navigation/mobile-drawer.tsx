@@ -12,6 +12,10 @@ import {
   Calendar,
   Plus,
   X,
+  Users,
+  MessageSquare,
+  AlertTriangle,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -53,12 +57,21 @@ const navSections: NavSection[] = [
     items: [
       { title: 'Management', href: '/dashboard/management', icon: LayoutDashboard },
       { title: 'Production', href: '/dashboard/production', icon: LayoutDashboard },
+      { title: 'Supplier Performance', href: '/dashboard/suppliers', icon: Users },
     ],
   },
   {
     title: 'Operations',
     items: [
       { title: 'End of Day', href: '/end-of-day', icon: Calendar },
+    ],
+  },
+  {
+    title: 'Quality & Compliance',
+    items: [
+      { title: 'Complaints', href: '/complaints', icon: MessageSquare },
+      { title: 'Recalls', href: '/recalls', icon: AlertTriangle },
+      { title: 'Waste Manifests', href: '/waste', icon: Trash2 },
     ],
   },
 ];

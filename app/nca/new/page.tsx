@@ -40,6 +40,9 @@ import { NCATrainingModule } from '@/components/nca/nca-training-module';
 import { NCAFieldTooltip } from '@/components/nca/nca-field-tooltip';
 import { BookOpen } from 'lucide-react';
 
+// Form Header import
+import { FormHeader } from '@/components/nca/form-header';
+
 // Signature Capture import
 import { SignatureCapture } from '@/components/fields/signature-capture';
 
@@ -137,6 +140,10 @@ export default function NewNCAPage(): React.ReactElement {
       nca_logged: false,
       nc_description: '',
       nc_product_description: '',
+      // Procedure reference defaults (locked on creation)
+      procedure_reference: '5.7',
+      procedure_revision: 'Rev 9',
+      procedure_revision_date: new Date().toLocaleDateString('en-GB'),
     },
   });
 
@@ -197,6 +204,14 @@ export default function NewNCAPage(): React.ReactElement {
 
     fetchActiveWorkOrder();
   }, [setValue]);
+
+  // Auto-set nc_origin when nc_type changes to raw-material
+  const ncType = watch('nc_type');
+  useEffect(() => {
+    if (ncType === 'raw-material') {
+      setValue('nc_origin', 'supplier-based', { shouldValidate: true });
+    }
+  }, [ncType, setValue]);
 
   // Initialize Quality Validation Hook
   const qualityValidation = useQualityValidation({
@@ -406,6 +421,9 @@ export default function NewNCAPage(): React.ReactElement {
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
+      {/* Form Header */}
+      <FormHeader className="mb-6" />
+      
       {/* Training Module Button */}
       <div className="mb-4 flex justify-end">
         <Button
@@ -567,6 +585,63 @@ export default function NewNCAPage(): React.ReactElement {
               <p className="text-red-600 text-sm mt-2">{errors.nc_type.message}</p>
             )}
             </div>
+            
+            {/* NC Origin Classification (conditional based on nc_type) */}
+            {watch('nc_type') && watch('nc_type') !== 'other' && (
+              <div className="space-y-2">
+                <Label>
+                  NC Origin Classification
+                  <NCAFieldTooltip fieldName="nc_origin" />
+                </Label>
+                <RadioGroup
+                  value={watch('nc_origin') || ''}
+                  onValueChange={(value) => {
+                    setValue('nc_origin', value as 'supplier-based' | 'kangopak-based' | 'joint-investigation', {
+                      shouldValidate: true,
+                    });
+                  }}
+                >
+                  {watch('nc_type') === 'raw-material' ? (
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="supplier-based" id="supplier-based" disabled />
+                      <Label htmlFor="supplier-based" className="text-gray-600">
+                        Supplier-based (Required for Raw Material)
+                      </Label>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="supplier-based"
+                          id="supplier-based"
+                          data-testid="nc-origin-supplier"
+                        />
+                        <Label htmlFor="supplier-based">Supplier-based</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="kangopak-based"
+                          id="kangopak-based"
+                          data-testid="nc-origin-kangopak"
+                        />
+                        <Label htmlFor="kangopak-based">Kangopak-based</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="joint-investigation"
+                          id="joint-investigation"
+                          data-testid="nc-origin-joint"
+                        />
+                        <Label htmlFor="joint-investigation">Joint Investigation</Label>
+                      </div>
+                    </>
+                  )}
+                </RadioGroup>
+                {errors.nc_origin && (
+                  <p className="text-red-600 text-sm mt-2">{errors.nc_origin.message}</p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

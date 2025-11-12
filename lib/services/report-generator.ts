@@ -43,9 +43,16 @@ export async function generateEndOfDayPDF(
 
   // For now, return a simple text-based report
   // TODO: Implement proper PDF generation with @react-pdf/renderer or puppeteer
+  const currentDate = new Date().toLocaleDateString('en-GB');
   const reportContent = `
+================================================================================
+Form 5.7F1 | Procedure 5.7 Rev 9 | BRCGS Issue 7 Section 5
+Non-Conformance Advice (NCA) - Controlled Document
+Controlled Status: Current | Revision Date: ${currentDate}
+================================================================================
+
 END-OF-DAY SUMMARY REPORT
-Date: ${new Date().toLocaleDateString('en-GB')}
+Date: ${currentDate}
 Operator: ${userId}
 
 WORK ORDERS (${workOrders.length})
@@ -60,6 +67,12 @@ ${mjcs.map((mjc: any) => `- ${mjc.job_card_number}: ${mjc.urgency} - ${mjc.statu
 ${shiftNotes ? `SHIFT NOTES:\n${shiftNotes}` : ''}
 
 Generated: ${new Date().toISOString()}
+
+================================================================================
+Kangopak (Pty) Ltd - BRCGS Certified | Controlled Document - Do Not Copy
+This document is a controlled record under the Product Safety and Quality 
+Management System (PS & QMS)
+================================================================================
   `.trim();
 
   // Convert to Buffer (for now, just text - TODO: implement proper PDF)

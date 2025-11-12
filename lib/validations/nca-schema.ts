@@ -34,6 +34,15 @@ export const ncaFormSchema = z
       message: 'Please select a non-conformance type',
     }),
     nc_type_other: z.string().optional(),
+    nc_origin: z
+      .enum(['supplier-based', 'kangopak-based', 'joint-investigation'])
+      .optional()
+      .nullable(),
+    
+    // Procedure Reference (auto-populated, locked on creation)
+    procedure_reference: z.string().optional(),
+    procedure_revision: z.string().optional(),
+    procedure_revision_date: z.string().optional(),
 
     // Section 3: Supplier & Product Information
     supplier_name: z.string().optional(),
@@ -100,6 +109,21 @@ export const ncaFormSchema = z
     close_out_date: z.string().optional(),
   })
   .superRefine((data, ctx) => {
+    // Enforce: Raw Material NCAs must be supplier-based
+    if (data.nc_type === 'raw-material') {
+      if (data.nc_origin && data.nc_origin !== 'supplier-based') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Raw Material NCAs must be classified as supplier-based',
+          path: ['nc_origin'],
+        });
+      }
+      // Auto-set to supplier-based if not set
+      if (!data.nc_origin) {
+        data.nc_origin = 'supplier-based';
+      }
+    }
+    
     // Conditional validation: If machine is down, timestamp is required
     if (data.machine_status === 'down') {
       if (!data.machine_down_since) {

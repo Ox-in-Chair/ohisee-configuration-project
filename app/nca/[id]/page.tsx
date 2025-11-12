@@ -13,6 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Package, AlertCircle, CheckCircle } from 'lucide-react';
 import { UpdateSegregationArea } from '@/components/nca/update-segregation-area';
+import { FormHeader } from '@/components/nca/form-header';
+import { FormFooter } from '@/components/nca/form-footer';
+import { WasteManifestLink } from '@/components/waste/waste-manifest-link';
+import { MJCLink } from '@/components/nca/mjc-link';
+import { ComplaintLink } from '@/components/nca/complaint-link';
+import { RecallFlag } from '@/components/nca/recall-flag';
+import { CrossReferencePanel } from '@/components/shared/cross-reference-panel';
 
 interface NCADetailPageProps {
   params: Promise<{
@@ -70,6 +77,13 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
 
   return (
     <div className="container mx-auto py-8 px-4" data-testid="nca-detail-page">
+      {/* Form Header */}
+      <FormHeader 
+        procedureRevision={nca.procedure_revision || 'Rev 9'}
+        revisionDate={nca.procedure_revision_date || undefined}
+        className="mb-6"
+      />
+      
       {/* Header Section */}
       <div className="mb-6" data-testid="nca-detail-header">
         <div className="flex items-center justify-between mb-4">
@@ -167,10 +181,27 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               {nca.nc_type.replace('-', ' ')}
             </p>
           </div>
+          {nca.nc_origin && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">NC Origin</label>
+              <p className="text-gray-900 capitalize">
+                {nca.nc_origin.replace('-', ' ')}
+              </p>
+            </div>
+          )}
           {nca.nc_type === 'other' && nca.nc_type_other && (
             <div>
               <label className="text-sm font-medium text-gray-700">Other NC Type</label>
               <p className="text-gray-900">{nca.nc_type_other}</p>
+            </div>
+          )}
+          {nca.procedure_reference && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Procedure Reference</label>
+              <p className="text-gray-900">
+                {nca.procedure_reference} {nca.procedure_revision || ''}
+                {nca.procedure_revision_date && ` (${new Date(nca.procedure_revision_date).toLocaleDateString('en-GB')})`}
+              </p>
             </div>
           )}
         </CardContent>
@@ -461,6 +492,9 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
         />
       )}
 
+      {/* Waste Manifest Link (if disposition includes discard) */}
+      {nca.disposition_discard && <WasteManifestLink ncaId={id} />}
+
       {/* Section 9: Root Cause Analysis */}
       <Card className="mb-6" data-testid="nca-detail-section-9">
         <CardHeader>
@@ -474,6 +508,27 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* MJC Link (if equipment-related root cause) */}
+      {nca.root_cause_analysis && (
+        <MJCLink
+          ncaId={id}
+          rootCauseAnalysis={nca.root_cause_analysis}
+          machineStatus={nca.machine_status}
+        />
+      )}
+
+      {/* Complaint Link (if NCA generated from complaint) */}
+      <ComplaintLink ncaId={id} />
+
+      {/* Recall Flag (if NCA flagged for recall) */}
+      {nca.recall_flagged && (
+        <RecallFlag
+          ncaId={id}
+          recallId={nca.recall_id}
+          recallFlagged={nca.recall_flagged}
+        />
+      )}
 
       {/* Section 10: Corrective Action */}
       <Card className="mb-6" data-testid="nca-detail-section-10">
@@ -554,7 +609,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
       </Card>
 
       {/* Audit Trail */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Audit Trail</CardTitle>
         </CardHeader>
@@ -575,6 +630,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Cross-Reference Panel */}
+      <CrossReferencePanel recordType="nca" recordId={id} />
+
+      {/* Form Footer */}
+      <FormFooter className="mt-6" />
     </div>
   );
 }

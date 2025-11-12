@@ -75,6 +75,12 @@ export interface NCA {
   // Section 2: NC Classification
   readonly nc_type: NCType;
   readonly nc_type_other: string | null;
+  readonly nc_origin: 'supplier-based' | 'kangopak-based' | 'joint-investigation' | null;
+  
+  // Procedure Reference (locked on creation)
+  readonly procedure_reference: string | null;
+  readonly procedure_revision: string | null;
+  readonly procedure_revision_date: string | null;
 
   // Section 3: Supplier & Product Information
   readonly supplier_name: string | null;

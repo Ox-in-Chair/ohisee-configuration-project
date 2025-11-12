@@ -29,6 +29,12 @@ export interface NCAFormData {
   // Section 2: NC Classification
   nc_type: NCType;
   nc_type_other?: string;
+  nc_origin?: 'supplier-based' | 'kangopak-based' | 'joint-investigation';
+  
+  // Procedure Reference (auto-populated, locked on creation)
+  procedure_reference?: string;
+  procedure_revision?: string;
+  procedure_revision_date?: string;
 
   // Section 3: Supplier & Product Information
   supplier_name?: string;

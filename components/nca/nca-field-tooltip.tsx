@@ -20,6 +20,11 @@ const FIELD_TOOLTIPS: Record<string, { content: string; brcgsReference?: string;
     content: 'Select the type of non-conformance: Raw Material (supplier issues), Finished Goods (completed products), WIP (work-in-progress), Incident (safety/quality events), or Other.',
     procedureReference: 'Procedure 5.7'
   },
+  'nc_origin': {
+    content: 'Classify the origin of the non-conformance: Supplier-based (fault originates from supplied materials), Kangopak-based (internal process deviation), or Joint Investigation (shared responsibility). Raw Material NCAs are always Supplier-based.',
+    brcgsReference: 'BRCGS Issue 7 Section 5',
+    procedureReference: 'Procedure 5.7 Section 2'
+  },
   'nc_product_description': {
     content: 'Describe the non-conforming product in detail. Include material type, specifications, and any identifying information.',
     procedureReference: 'Procedure 5.7 Section 3'

@@ -76,6 +76,12 @@ function transformFormDataToInsert(
     // Section 2: Classification
     nc_type: formData.nc_type,
     nc_type_other: formData.nc_type_other || null,
+    nc_origin: formData.nc_origin || (formData.nc_type === 'raw-material' ? 'supplier-based' : null),
+    
+    // Procedure Reference (locked on creation)
+    procedure_reference: formData.procedure_reference || '5.7',
+    procedure_revision: formData.procedure_revision || 'Rev 9',
+    procedure_revision_date: formData.procedure_revision_date || dateString,
 
     // Section 3: Supplier & Product
     supplier_name: formData.supplier_name || null,
@@ -289,6 +295,28 @@ export async function createNCA(
       };
     }
 
+    // Create waste manifest if disposition includes discard
+    if (ncaData.disposition_discard) {
+      try {
+        const { createWasteManifestFromNCA } = await import('./waste-actions');
+        await createWasteManifestFromNCA(
+          data.id,
+          {
+            waste_description: ncaData.nc_product_description || 'Non-conforming product',
+            waste_type: 'non-hazardous',
+            physical_quantity: ncaData.quantity || 0,
+            quantity_unit: ncaData.quantity_unit || 'kg',
+            document_reference: '4.10F1',
+          },
+          userId
+        );
+        // Note: Waste manifest creation errors are logged but don't fail NCA creation
+      } catch (error) {
+        console.error('Failed to create waste manifest:', error);
+        // Continue - waste manifest can be created manually later
+      }
+    }
+
     // Send notifications if applicable (non-blocking)
     // Use provided notification service (for testing) or create production service
     const service = notificationService || createProductionNotificationService();
@@ -298,6 +326,17 @@ export async function createNCA(
     
     // NOTE: Supplier notification is NOT sent automatically on creation
     // It will be sent by Production Manager when disposition is completed (see updateNCA function)
+
+    // Update supplier performance if supplier-based NCA
+    if (ncaData.nc_type === 'raw-material' || ncaData.nc_origin === 'supplier-based') {
+      try {
+        const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
+        await updateSupplierPerformanceFromNCA(data.id);
+        // Note: Supplier performance update errors are logged but don't fail NCA creation
+      } catch (error) {
+        console.error('Failed to update supplier performance:', error);
+      }
+    }
 
     // Revalidate NCA list page
     revalidatePath('/nca');
@@ -496,7 +535,7 @@ export async function updateNCA(
     // Fetch current NCA to check if disposition was just completed
     const { data: currentNCA, error: fetchError } = await supabase
       .from('ncas')
-      .select('nca_number, nc_type, supplier_name, date, nc_product_description, supplier_wo_batch, supplier_reel_box, quantity, quantity_unit, nc_description, disposition_signature')
+      .select('nca_number, nc_type, supplier_name, date, nc_product_description, supplier_wo_batch, supplier_reel_box, quantity, quantity_unit, nc_description, disposition_signature, nc_origin')
       .eq('id', ncaId)
       .single();
 
@@ -526,6 +565,15 @@ export async function updateNCA(
     // Check if disposition is being completed (disposition_signature is being set)
     const wasDispositionComplete = typedCurrentNCA.disposition_signature !== null;
     const isDispositionBeingCompleted = updates.disposition_signature !== undefined && updates.disposition_signature !== null;
+    
+    // Check if closure is being completed (close_out_signature is being set)
+    const { data: currentNCAForClosure } = await supabase
+      .from('ncas')
+      .select('close_out_signature, status')
+      .eq('id', ncaId)
+      .single();
+    const wasClosureComplete = (currentNCAForClosure as any)?.close_out_signature !== null;
+    const isClosureBeingCompleted = updates.close_out_signature !== undefined && updates.close_out_signature !== null;
 
     // Update the NCA
     const { data, error } = await (supabase
@@ -551,6 +599,72 @@ export async function updateNCA(
         success: false,
         error: 'No data returned from database',
       };
+    }
+
+    // Run reconciliation validation before closure
+    if (isClosureBeingCompleted && !wasClosureComplete) {
+      try {
+        const { validateNCAQuantities } = await import('@/lib/services/reconciliation-service');
+        const reconciliation = await validateNCAQuantities(ncaId);
+        
+        if (!reconciliation.isValid) {
+          return {
+            success: false,
+            error: `Reconciliation validation failed. Cannot close NCA:\n${reconciliation.errors.join('\n')}`,
+          };
+        }
+        
+        if (reconciliation.warnings.length > 0) {
+          console.warn('Reconciliation warnings:', reconciliation.warnings);
+          // Warnings don't block closure, but are logged
+        }
+      } catch (error) {
+        console.error('Reconciliation validation error:', error);
+        // Don't block closure if reconciliation service fails - log and continue
+      }
+    }
+
+    // Create waste manifest if disposition_discard is being set and no manifest exists
+    if (updates.disposition_discard === true) {
+      try {
+        // Check if waste manifest already exists
+        const { getWasteManifestByNCA } = await import('./waste-actions');
+        const manifestResult = await getWasteManifestByNCA(ncaId);
+        
+        if (!manifestResult.success || !manifestResult.data) {
+          // Create new waste manifest
+          const userId = '10000000-0000-0000-0000-000000000001'; // TODO: Get from auth
+          const { createWasteManifestFromNCA } = await import('./waste-actions');
+          await createWasteManifestFromNCA(
+            ncaId,
+            {
+              waste_description: typedCurrentNCA.nc_product_description || 'Non-conforming product',
+              waste_type: 'non-hazardous',
+              physical_quantity: typedCurrentNCA.quantity || 0,
+              quantity_unit: (typedCurrentNCA.quantity_unit as any) || 'kg',
+              document_reference: '4.10F1',
+            },
+            userId
+          );
+        }
+        // Note: Waste manifest creation errors are logged but don't fail NCA update
+      } catch (error) {
+        console.error('Failed to create waste manifest:', error);
+        // Continue - waste manifest can be created manually later
+      }
+    }
+
+    // Update supplier performance if supplier-based NCA
+    const currentNCAType = typedCurrentNCA.nc_type;
+    const currentNCAOrigin = (currentNCA as any)?.nc_origin || data.nc_origin;
+    if (currentNCAType === 'raw-material' || currentNCAOrigin === 'supplier-based') {
+      try {
+        const { updateSupplierPerformanceFromNCA } = await import('@/lib/services/supplier-performance-service');
+        await updateSupplierPerformanceFromNCA(ncaId);
+        // Note: Supplier performance update errors are logged but don't fail NCA update
+      } catch (error) {
+        console.error('Failed to update supplier performance:', error);
+      }
     }
 
     // Send supplier notification if disposition was just completed

@@ -144,7 +144,11 @@ function transformFormDataToInsert(
 
     // Section 7: Maintenance Performed
     maintenance_performed: formData.maintenance_performed || null,
-    maintenance_technician: formData.maintenance_technician_signature || null,
+    maintenance_technician: formData.maintenance_technician_signature 
+      ? (typeof formData.maintenance_technician_signature === 'string' 
+          ? formData.maintenance_technician_signature 
+          : formData.maintenance_technician_signature.name || null)
+      : null,
     maintenance_signature: null, // TODO: Transform signature
     work_started_at: null, // TODO: Timestamp when work starts
     work_completed_at: null, // TODO: Timestamp when work completes
@@ -163,7 +167,9 @@ function transformFormDataToInsert(
     hygiene_clearance_signature: formData.clearance_signature
       ? transformSignature({
           type: 'digital',
-          data: formData.clearance_signature,
+          data: typeof formData.clearance_signature === 'string' 
+            ? formData.clearance_signature 
+            : (formData.clearance_signature as any).data || '',
           name: formData.clearance_qa_supervisor || 'Unknown',
           timestamp: new Date().toISOString(),
         })
@@ -574,6 +580,185 @@ export async function grantHygieneClearance(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+/**
+ * Create MJC from NCA
+ * PRD Enhancement: Auto-create MJC when root cause indicates equipment issue
+ */
+export async function createMJCFromNCA(
+  ncaId: string,
+  mjcData: Partial<MJCFormData>,
+  userId: string
+): Promise<ActionResponse<{ id: string; job_card_number: string }>> {
+  try {
+    const supabase = createServerClient();
+
+    // Fetch NCA to get context
+    const { data: nca, error: ncaError } = await supabase
+      .from('ncas')
+      .select('nc_product_description, machine_status, machine_down_since, estimated_downtime, wo_id, root_cause_analysis')
+      .eq('id', ncaId)
+      .single();
+
+    if (ncaError || !nca) {
+      return {
+        success: false,
+        error: `NCA not found: ${ncaError?.message || 'Unknown error'}`,
+      };
+    }
+
+    const ncaData = nca as any;
+
+    // Create MJC with data from NCA
+    const mjcFormData: MJCFormData = {
+      department: mjcData.department || 'maintenance',
+      machine_equipment_id: mjcData.machine_equipment_id || ncaData.nc_product_description || 'Equipment from NCA',
+      maintenance_category: mjcData.maintenance_category || 'reactive',
+      maintenance_type: mjcData.maintenance_type || 'mechanical',
+      machine_status: (ncaData.machine_status as 'down' | 'operational') || 'down',
+      urgency_level: mjcData.urgency_level || 'high',
+      machine_down_time: ncaData.machine_down_since || undefined,
+      temporary_repair: mjcData.temporary_repair || 'no',
+      maintenance_description: mjcData.maintenance_description || `Maintenance required due to NCA: ${ncaData.root_cause_analysis || 'Equipment issue identified'}`,
+      wo_id: ncaData.wo_id || undefined,
+      hygiene_check_1: mjcData.hygiene_check_1 ?? false,
+      hygiene_check_2: mjcData.hygiene_check_2 ?? false,
+      hygiene_check_3: mjcData.hygiene_check_3 ?? false,
+      hygiene_check_4: mjcData.hygiene_check_4 ?? false,
+      hygiene_check_5: mjcData.hygiene_check_5 ?? false,
+      hygiene_check_6: mjcData.hygiene_check_6 ?? false,
+      hygiene_check_7: mjcData.hygiene_check_7 ?? false,
+      hygiene_check_8: mjcData.hygiene_check_8 ?? false,
+      hygiene_check_9: mjcData.hygiene_check_9 ?? false,
+      hygiene_check_10: mjcData.hygiene_check_10 ?? false,
+      production_cleared: mjcData.production_cleared ?? false,
+      ...mjcData,
+    };
+
+    // Create MJC using existing createMJC function
+    const result = await createMJC(mjcFormData);
+    
+    if (!result.success || !result.data) {
+      return result;
+    }
+
+    // Link MJC to NCA bidirectionally
+    const { error: linkError } = await (supabase
+      .from('ncas') as any)
+      .update({ linked_mjc_id: result.data.id })
+      .eq('id', ncaId);
+
+    if (linkError) {
+      console.error('Failed to link MJC to NCA:', linkError);
+      // Don't fail - MJC was created, just linking failed
+    } else {
+      // Also link NCA to MJC
+      await (supabase
+        .from('mjcs') as any)
+        .update({ linked_nca_id: ncaId })
+        .eq('id', result.data.id);
+    }
+
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error creating MJC from NCA',
+    };
+  }
+}
+
+/**
+ * Link existing MJC to NCA
+ */
+export async function linkMJCToNCA(
+  ncaId: string,
+  mjcId: string
+): Promise<ActionResponse<{ id: string; job_card_number: string }>> {
+  try {
+    const supabase = createServerClient();
+
+    // Verify MJC exists
+    const { data: mjc, error: mjcError } = await (supabase
+      .from('mjcs') as any)
+      .select('id, job_card_number')
+      .eq('id', mjcId)
+      .single();
+
+    if (mjcError || !mjc) {
+      return {
+        success: false,
+        error: `MJC not found: ${mjcError?.message || 'Unknown error'}`,
+      };
+    }
+
+    // Link bidirectionally
+    const [ncaUpdate, mjcUpdate] = await Promise.all([
+      (supabase.from('ncas') as any).update({ linked_mjc_id: mjcId }).eq('id', ncaId),
+      (supabase.from('mjcs') as any).update({ linked_nca_id: ncaId }).eq('id', mjcId),
+    ]);
+
+    if (ncaUpdate.error) {
+      return {
+        success: false,
+        error: `Failed to link MJC to NCA: ${ncaUpdate.error.message}`,
+      };
+    }
+
+    if (mjcUpdate.error) {
+      return {
+        success: false,
+        error: `Failed to link NCA to MJC: ${mjcUpdate.error.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        id: (mjc as any).id,
+        job_card_number: (mjc as any).job_card_number,
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error linking MJC to NCA',
+    };
+  }
+}
+
+/**
+ * Get all MJCs linked to an NCA
+ */
+export async function getLinkedMJCs(
+  ncaId: string
+): Promise<ActionResponse<Array<{ id: string; job_card_number: string; status: string; description_required: string }>>> {
+  try {
+    const supabase = createServerClient();
+
+    const { data: mjcs, error } = await supabase
+      .from('mjcs')
+      .select('id, job_card_number, status, description_required')
+      .eq('linked_nca_id', ncaId);
+
+    if (error) {
+      return {
+        success: false,
+        error: `Failed to fetch linked MJCs: ${error.message}`,
+      };
+    }
+
+    return {
+      success: true,
+      data: (mjcs || []) as Array<{ id: string; job_card_number: string; status: string; description_required: string }>,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error fetching linked MJCs',
     };
   }
 }

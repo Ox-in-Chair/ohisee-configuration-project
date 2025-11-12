@@ -450,6 +450,222 @@ export interface MJCInsert {
 export interface MJCUpdate extends Partial<MJCInsert> {}
 
 // =============================================================================
+// Table: waste_manifests
+// =============================================================================
+
+export interface WasteManifest {
+  id: string;
+  manifest_number: string;
+  nca_id: string | null;
+  waste_description: string;
+  risk_level: 'low' | 'medium' | 'high' | null;
+  waste_type: 'hazardous' | 'non-hazardous' | 'recyclable' | 'organic' | 'trademarked';
+  specialized_storage: string | null;
+  document_reference: string | null;
+  physical_quantity: number;
+  quantity_unit: 'kg' | 'units' | 'meters' | 'boxes' | 'pallets' | null;
+  service_provider: string | null;
+  disposal_certificate: string | null;
+  disposal_date: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WasteManifestInsert {
+  id?: string;
+  manifest_number?: string;
+  nca_id?: string | null;
+  waste_description: string;
+  risk_level?: 'low' | 'medium' | 'high' | null;
+  waste_type: 'hazardous' | 'non-hazardous' | 'recyclable' | 'organic' | 'trademarked';
+  specialized_storage?: string | null;
+  document_reference?: string | null;
+  physical_quantity: number;
+  quantity_unit?: 'kg' | 'units' | 'meters' | 'boxes' | 'pallets' | null;
+  service_provider?: string | null;
+  disposal_certificate?: string | null;
+  disposal_date?: string | null;
+  created_by: string;
+}
+
+export interface WasteManifestUpdate extends Partial<WasteManifestInsert> {}
+
+// =============================================================================
+// Table: complaints
+// =============================================================================
+
+export interface Complaint {
+  id: string;
+  complaint_number: string;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string | null;
+  complaint_date: string;
+  complaint_received_via: 'phone' | 'email' | 'in-person' | 'other' | null;
+  complaint_description: string;
+  complaint_type: 'quality' | 'safety' | 'legality' | 'delivery' | 'other' | null;
+  severity: 'low' | 'medium' | 'high' | 'critical' | null;
+  investigation_status: 'pending' | 'investigating' | 'valid' | 'invalid' | 'closed';
+  investigation_notes: string | null;
+  root_cause_analysis: string | null;
+  corrective_action: string | null;
+  corrective_action_verified: boolean;
+  verified_by: string | null;
+  verified_at: string | null;
+  linked_nca_id: string | null;
+  closed_by: string | null;
+  closed_at: string | null;
+  closure_notes: string | null;
+  cycle_time_days: number | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ComplaintInsert {
+  id?: string;
+  complaint_number?: string;
+  customer_name: string;
+  customer_email?: string | null;
+  customer_phone?: string | null;
+  complaint_date?: string;
+  complaint_received_via?: 'phone' | 'email' | 'in-person' | 'other' | null;
+  complaint_description: string;
+  complaint_type?: 'quality' | 'safety' | 'legality' | 'delivery' | 'other' | null;
+  severity?: 'low' | 'medium' | 'high' | 'critical' | null;
+  investigation_status?: 'pending' | 'investigating' | 'valid' | 'invalid' | 'closed';
+  investigation_notes?: string | null;
+  root_cause_analysis?: string | null;
+  corrective_action?: string | null;
+  corrective_action_verified?: boolean;
+  verified_by?: string | null;
+  verified_at?: string | null;
+  linked_nca_id?: string | null;
+  closed_by?: string | null;
+  closed_at?: string | null;
+  closure_notes?: string | null;
+  cycle_time_days?: number | null;
+  created_by: string;
+}
+
+export interface ComplaintUpdate extends Partial<ComplaintInsert> {}
+
+// =============================================================================
+// Table: recalls
+// =============================================================================
+
+export interface Recall {
+  id: string;
+  recall_number: string;
+  recall_date: string;
+  recall_class: 'class-i' | 'class-ii' | 'class-iii';
+  recall_reason: string;
+  product_description: string;
+  product_code: string | null;
+  batch_numbers: string[] | null;
+  carton_numbers: string[] | null;
+  supplier_reel_box: string[] | null;
+  job_numbers: string[] | null;
+  customer_notification_date: string | null;
+  customer_notification_completed: boolean;
+  stock_quarantined: boolean;
+  distribution_stopped: boolean;
+  authorities_notified: boolean;
+  root_cause_analysis: string | null;
+  corrective_action: string | null;
+  post_recall_review_date: string | null;
+  review_completed: boolean;
+  status: 'initiated' | 'in-progress' | 'completed' | 'closed';
+  affected_nca_ids: string[] | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  closed_at: string | null;
+}
+
+export interface RecallInsert {
+  id?: string;
+  recall_number?: string;
+  recall_date?: string;
+  recall_class: 'class-i' | 'class-ii' | 'class-iii';
+  recall_reason: string;
+  product_description: string;
+  product_code?: string | null;
+  batch_numbers?: string[] | null;
+  carton_numbers?: string[] | null;
+  supplier_reel_box?: string[] | null;
+  job_numbers?: string[] | null;
+  customer_notification_date?: string | null;
+  customer_notification_completed?: boolean;
+  stock_quarantined?: boolean;
+  distribution_stopped?: boolean;
+  authorities_notified?: boolean;
+  root_cause_analysis?: string | null;
+  corrective_action?: string | null;
+  post_recall_review_date?: string | null;
+  review_completed?: boolean;
+  status?: 'initiated' | 'in-progress' | 'completed' | 'closed';
+  affected_nca_ids?: string[] | null;
+  created_by: string;
+  closed_at?: string | null;
+}
+
+export interface RecallUpdate extends Partial<RecallInsert> {}
+
+// =============================================================================
+// Table: suppliers
+// =============================================================================
+
+export interface Supplier {
+  id: string;
+  supplier_code: string;
+  supplier_name: string;
+  supplier_type: 'raw-material' | 'packaging-material' | 'service-provider';
+  approval_status: 'approved' | 'conditional' | 'suspended' | 'rejected';
+  approved_date: string | null;
+  approval_valid_until: string | null;
+  contact_person: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  nca_count_ytd: number;
+  nca_count_last_12mo: number;
+  on_time_delivery_pct: number | null;
+  quality_rating: number | null;
+  risk_level: 'low' | 'medium' | 'high' | 'critical' | null;
+  last_audit_date: string | null;
+  next_audit_due: string | null;
+  packaging_materials_approved: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SupplierInsert {
+  id?: string;
+  supplier_code: string;
+  supplier_name: string;
+  supplier_type: 'raw-material' | 'packaging-material' | 'service-provider';
+  approval_status?: 'approved' | 'conditional' | 'suspended' | 'rejected';
+  approved_date?: string | null;
+  approval_valid_until?: string | null;
+  contact_person?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  address?: string | null;
+  nca_count_ytd?: number;
+  nca_count_last_12mo?: number;
+  on_time_delivery_pct?: number | null;
+  quality_rating?: number | null;
+  risk_level?: 'low' | 'medium' | 'high' | 'critical' | null;
+  last_audit_date?: string | null;
+  next_audit_due?: string | null;
+  packaging_materials_approved?: string[] | null;
+}
+
+export interface SupplierUpdate extends Partial<SupplierInsert> {}
+
+// =============================================================================
 // Table: audit_trail
 // =============================================================================
 
@@ -503,6 +719,26 @@ export interface Database {
         Row: MJC;
         Insert: MJCInsert;
         Update: MJCUpdate;
+      };
+      waste_manifests: {
+        Row: WasteManifest;
+        Insert: WasteManifestInsert;
+        Update: WasteManifestUpdate;
+      };
+      complaints: {
+        Row: Complaint;
+        Insert: ComplaintInsert;
+        Update: ComplaintUpdate;
+      };
+      recalls: {
+        Row: Recall;
+        Insert: RecallInsert;
+        Update: RecallUpdate;
+      };
+      suppliers: {
+        Row: Supplier;
+        Insert: SupplierInsert;
+        Update: SupplierUpdate;
       };
       audit_trail: {
         Row: AuditTrail;

@@ -60,7 +60,7 @@ async function fetchMJCs(
       status,
       urgency,
       machine_equipment,
-      maintenance_description,
+      description_required,
       machine_status,
       temporary_repair,
       created_at,
@@ -84,7 +84,7 @@ async function fetchMJCs(
   // Apply search filter
   if (search && search.trim()) {
     query = query.or(
-      `job_card_number.ilike.%${search}%,machine_equipment.ilike.%${search}%,maintenance_description.ilike.%${search}%`
+      `job_card_number.ilike.%${search}%,machine_equipment.ilike.%${search}%,description_required.ilike.%${search}%`
     );
   }
 
@@ -110,7 +110,7 @@ async function fetchMJCs(
     id: mjc.id,
     mjc_number: mjc.job_card_number,
     machine_equipment_id: mjc.machine_equipment || '',
-    maintenance_description: mjc.maintenance_description || '',
+    maintenance_description: mjc.description_required || '',
     urgency_level: mjc.urgency || 'low',
     machine_status: mjc.machine_status || 'operational',
     maintenance_type: 'mechanical', // TODO: Map from maintenance_type fields

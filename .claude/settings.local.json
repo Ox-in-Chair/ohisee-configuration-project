@@ -1,6 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(test:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

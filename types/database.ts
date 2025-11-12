@@ -223,6 +223,12 @@ export interface NCA {
   // Section 2: Classification
   nc_type: NCType;
   nc_type_other: string | null;
+  nc_origin: 'supplier-based' | 'kangopak-based' | 'joint-investigation' | null;
+  
+  // Procedure Reference (locked on creation)
+  procedure_reference: string | null;
+  procedure_revision: string | null;
+  procedure_revision_date: string | null;
 
   // Section 3: Supplier & Product
   supplier_name: string | null;
@@ -290,6 +296,9 @@ export interface NCA {
   closed_at: string | null;
   close_out_due_date: string | null;
   is_overdue: boolean;
+  complaint_id: string | null; // UUID FK to complaints
+  recall_id: string | null; // UUID FK to recalls
+  recall_flagged: boolean;
 }
 
 export interface NCAInsert {
@@ -302,6 +311,13 @@ export interface NCAInsert {
   time?: string;
   nc_type: NCType;
   nc_type_other?: string | null;
+  nc_origin?: 'supplier-based' | 'kangopak-based' | 'joint-investigation' | null;
+  procedure_reference?: string | null;
+  procedure_revision?: string | null;
+  procedure_revision_date?: string | null;
+  complaint_id?: string | null;
+  recall_id?: string | null;
+  recall_flagged?: boolean;
   supplier_name?: string | null;
   nc_product_description: string;
   supplier_wo_batch?: string | null;
