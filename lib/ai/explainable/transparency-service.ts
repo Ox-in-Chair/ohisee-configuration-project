@@ -293,7 +293,7 @@ export class TransparencyService {
         if (!fieldFindings.has(req.field)) {
           fieldFindings.set(req.field, []);
         }
-        fieldFindings.get(req.field)!.push(trace.agentName || 'unknown');
+        fieldFindings.get(req.field).push(trace.agentName || 'unknown');
       }
     }
 

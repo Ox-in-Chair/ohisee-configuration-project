@@ -233,8 +233,7 @@ export default function EndOfDayPage() {
         </div>
 
         {/* Incomplete Drafts Warning */}
-        {hasIncompleteDrafts && (
-          <Alert variant="destructive">
+        {hasIncompleteDrafts ? <Alert variant="destructive">
             <Icon name={ICONS.ALERT} size="sm" />
             <AlertDescription>
               <div className="space-y-2">
@@ -256,8 +255,7 @@ export default function EndOfDayPage() {
                 </p>
               </div>
             </AlertDescription>
-          </Alert>
-        )}
+          </Alert> : null}
 
         {/* Work Orders */}
         <Card>
@@ -449,12 +447,10 @@ export default function EndOfDayPage() {
         </Card>
 
         {/* Error Message */}
-        {error && (
-          <Alert variant="destructive">
+        {error ? <Alert variant="destructive">
             <Icon name={ICONS.ALERT} size="sm" />
             <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          </Alert> : null}
 
         {/* Submit Button */}
         <div className="flex items-center justify-between pt-4 border-t">

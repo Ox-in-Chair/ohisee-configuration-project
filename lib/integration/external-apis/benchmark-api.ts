@@ -37,7 +37,7 @@ export class BenchmarkAPIService {
   private apiBaseUrl?: string | undefined;
   private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string  , apiKey?: string  ) {
     this.supabase = supabase || createServerClient();
     this.apiBaseUrl = apiBaseUrl ?? process.env['BENCHMARK_API_BASE_URL'];
     this.apiKey = apiKey ?? process.env['BENCHMARK_API_KEY'];

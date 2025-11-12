@@ -62,17 +62,13 @@ export const UserExplanation: FC<UserExplanationProps> = ({
           <CollapsibleContent className="mt-2 pl-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm space-y-2">
               <p className="text-blue-900">{explanation}</p>
-              {ruleReference && (
-                <p className="text-xs text-blue-700">
+              {ruleReference ? <p className="text-xs text-blue-700">
                   <span className="font-medium">Reference:</span> {ruleReference}
-                </p>
-              )}
-              {example && (
-                <div className="mt-2 pt-2 border-t border-blue-200">
+                </p> : null}
+              {example ? <div className="mt-2 pt-2 border-t border-blue-200">
                   <p className="text-xs font-medium text-blue-900 mb-1">Example:</p>
                   <p className="text-xs text-blue-800 italic">{example}</p>
-                </div>
-              )}
+                </div> : null}
             </div>
           </CollapsibleContent>
         </Collapsible>

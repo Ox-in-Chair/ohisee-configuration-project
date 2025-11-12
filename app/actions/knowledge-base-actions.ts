@@ -112,7 +112,7 @@ export async function uploadProcedure(
 
     // Type assertion for existing document
     type ExistingDoc = { id: string; revision: number; document_number: string };
-    const existingCurrent = (rawExisting as any) as ExistingDoc | null;
+    const existingCurrent = (rawExisting) as ExistingDoc | null;
 
     // If uploading same or lower revision, reject
     if (existingCurrent && metadata.revision <= existingCurrent.revision) {
@@ -335,7 +335,7 @@ export async function searchKnowledgeBase(
     const results: KnowledgeBaseResult[] = (procedures ?? []).map((proc: any, index: number) => ({
       procedure_number: proc.document_number,
       procedure_title: proc.document_name,
-      content: proc.full_text.substring(0, 500) + '...', // Return excerpt
+      content: `${proc.full_text.substring(0, 500)  }...`, // Return excerpt
       relevance_score: 1 - (index * 0.1), // Mock relevance (0.9, 0.8, 0.7...)
       revision: proc.revision,
       effective_date: proc.effective_date

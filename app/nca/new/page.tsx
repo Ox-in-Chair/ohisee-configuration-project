@@ -441,19 +441,15 @@ export default function NewNCAPage(): React.ReactElement {
         Non-Conformance Advice Form
       </h1>
 
-      {submitSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+      {submitSuccess ? <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
           {ncaNumber
             ? `NCA submitted successfully! Reference: ${ncaNumber}`
             : 'NCA submitted successfully!'}
-        </div>
-      )}
+        </div> : null}
 
-      {submitError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+      {submitError ? <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
           Error: {submitError}
-        </div>
-      )}
+        </div> : null}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Section 1: NCA Identification */}
@@ -500,22 +496,16 @@ export default function NewNCAPage(): React.ReactElement {
                   readOnly
                   className={workOrderError ? 'border-yellow-500' : ''}
                 />
-                {workOrderLoading && (
-                  <span className="absolute right-3 top-3 text-sm text-gray-500">
+                {workOrderLoading ? <span className="absolute right-3 top-3 text-sm text-gray-500">
                     Loading...
-                  </span>
-                )}
+                  </span> : null}
               </div>
-              {workOrderError && (
-                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
+              {workOrderError ? <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
                   <strong>Warning:</strong> {workOrderError}. You can still submit this NCA, but it will not be linked to a work order.
-                </div>
-              )}
-              {activeWorkOrder && (
-                <div className="mt-2 text-sm text-green-600">
+                </div> : null}
+              {activeWorkOrder ? <div className="mt-2 text-sm text-green-600">
                   Linked to: {activeWorkOrder.product} (Machine: {activeWorkOrder.machine_id})
-                </div>
-              )}
+                </div> : null}
             </div>
             {/* Confidential Report Checkbox */}
             <div className="col-span-2 flex items-center space-x-2">
@@ -544,7 +534,7 @@ export default function NewNCAPage(): React.ReactElement {
             <div className="space-y-2">
               <RadioGroup
                 onValueChange={(value) =>
-                  setValue('nc_type', value as NCAFormData['nc_type'], {
+                  setValue('nc_type', value, {
                     shouldValidate: true,
                   })
                 }
@@ -582,9 +572,7 @@ export default function NewNCAPage(): React.ReactElement {
                 <Label htmlFor="other">Other</Label>
               </div>
             </RadioGroup>
-            {errors.nc_type && (
-              <p className="text-red-600 text-sm mt-2">{errors.nc_type.message}</p>
-            )}
+            {errors.nc_type ? <p className="text-red-600 text-sm mt-2">{errors.nc_type.message}</p> : null}
             </div>
             
             {/* NC Origin Classification (conditional based on nc_type) */}
@@ -638,9 +626,7 @@ export default function NewNCAPage(): React.ReactElement {
                     </>
                   )}
                 </RadioGroup>
-                {errors.nc_origin && (
-                  <p className="text-red-600 text-sm mt-2">{errors.nc_origin.message}</p>
-                )}
+                {errors.nc_origin ? <p className="text-red-600 text-sm mt-2">{errors.nc_origin.message}</p> : null}
               </div>
             )}
           </CardContent>
@@ -772,11 +758,9 @@ export default function NewNCAPage(): React.ReactElement {
                 <Label htmlFor="machine-operational">MACHINE OPERATIONAL</Label>
               </div>
             </RadioGroup>
-            {errors.machine_status && (
-              <p className="text-red-600 text-sm mt-2">
+            {errors.machine_status ? <p className="text-red-600 text-sm mt-2">
                 {errors.machine_status.message}
-              </p>
-            )}
+              </p> : null}
             </div>
 
             {machineStatus === 'down' && (
@@ -784,11 +768,9 @@ export default function NewNCAPage(): React.ReactElement {
                 <div className="space-y-2">
                   <Label>Machine Down Since</Label>
                   <Input type="datetime-local" {...register('machine_down_since')} />
-                  {errors.machine_down_since && (
-                    <p className="text-red-600 text-sm mt-1">
+                  {errors.machine_down_since ? <p className="text-red-600 text-sm mt-1">
                       {errors.machine_down_since.message}
-                    </p>
-                  )}
+                    </p> : null}
                 </div>
                 <div className="space-y-2">
                   <Label>Estimated Downtime (minutes)</Label>
@@ -796,11 +778,9 @@ export default function NewNCAPage(): React.ReactElement {
                     type="number"
                     {...register('estimated_downtime', { valueAsNumber: true })}
                   />
-                  {errors.estimated_downtime && (
-                    <p className="text-red-600 text-sm mt-1">
+                  {errors.estimated_downtime ? <p className="text-red-600 text-sm mt-1">
                       {errors.estimated_downtime.message}
-                    </p>
-                  )}
+                    </p> : null}
                 </div>
               </div>
             )}
@@ -885,8 +865,7 @@ export default function NewNCAPage(): React.ReactElement {
               </RadioGroup>
             </div>
 
-            {crossContamination && (
-              <div className="border-l-4 border-yellow-500 pl-4 space-y-2">
+            {crossContamination ? <div className="border-l-4 border-yellow-500 pl-4 space-y-2">
                 <SmartInput
                   label="Back Tracking Person *"
                   value={watch('back_tracking_person') || ''}
@@ -898,8 +877,7 @@ export default function NewNCAPage(): React.ReactElement {
                   error={errors.back_tracking_person?.message}
                   required
                 />
-              </div>
-            )}
+              </div> : null}
 
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -967,7 +945,7 @@ export default function NewNCAPage(): React.ReactElement {
                 onValueChange={(value) =>
                   setValue(
                     'disposition_action',
-                    value as NCAFormData['disposition_action'],
+                    value,
                     { shouldValidate: true }
                   )
                 }

@@ -48,7 +48,7 @@ export class SupplierAPIService {
   private apiBaseUrl?: string | undefined;
   private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string  , apiKey?: string  ) {
     this.supabase = supabase || createServerClient();
     this.apiBaseUrl = apiBaseUrl ?? process.env['SUPPLIER_API_BASE_URL'];
     this.apiKey = apiKey ?? process.env['SUPPLIER_API_KEY'];
@@ -126,7 +126,7 @@ export class SupplierAPIService {
    * Sync supplier certifications to database
    */
   async syncCertifications(certifications: SupplierCertification[]): Promise<SyncResult> {
-    let recordsInserted = 0;
+    const recordsInserted = 0;
     let recordsUpdated = 0;
     const errors: string[] = [];
 

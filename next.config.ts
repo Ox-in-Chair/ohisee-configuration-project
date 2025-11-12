@@ -87,7 +87,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
 
     // Disable static image import optimization in development for faster builds
-    unoptimized: isDevelopment ? false : false,
+    unoptimized: false,
   },
 
   // --------------------------------------------------------------------------

@@ -49,7 +49,7 @@ export async function validateNCAQuantities(ncaId: string): Promise<Reconciliati
     };
   }
 
-  const ncaData = nca as any;
+  const ncaData = nca;
   const ncaQuantity = ncaData.quantity;
   const ncaUnit = ncaData.quantity_unit;
 
@@ -63,7 +63,7 @@ export async function validateNCAQuantities(ncaId: string): Promise<Reconciliati
       .single();
 
     if (!woError && wo) {
-      const woData = wo as any;
+      const woData = wo;
       // TODO: Implement proper quantity conversion if units differ
       productionLogQuantity = woData.quantity_produced || null;
       
@@ -162,7 +162,7 @@ export async function validateWasteReconciliation(ncaId: string): Promise<Reconc
     };
   }
 
-  const ncaData = nca as any;
+  const ncaData = nca;
 
   if (!ncaData.disposition_discard) {
     return {
@@ -278,7 +278,7 @@ export async function checkProductionLogReconciliation(
     return sum + nca.quantity;
   }, 0);
 
-  const woData = wo as any;
+  const woData = wo;
   const productionQuantity = woData.quantity_produced || 0;
 
   if (totalNCAQuantity > productionQuantity) {

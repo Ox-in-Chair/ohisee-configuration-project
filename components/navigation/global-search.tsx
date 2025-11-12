@@ -72,7 +72,7 @@ export function GlobalSearch() {
             id: proc.procedure_number,
             type: 'procedure',
             title: proc.procedure_title,
-            description: proc.content.substring(0, 100) + '...',
+            description: `${proc.content.substring(0, 100)  }...`,
             href: `/procedures/${proc.procedure_number}`,
             relevance: proc.relevance_score,
           });
@@ -203,8 +203,7 @@ export function GlobalSearch() {
           onKeyDown={handleKeyDown}
           className="pl-10 pr-10"
         />
-        {query && (
-          <Button
+        {query ? <Button
             variant="ghost"
             size="icon-sm"
             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
@@ -215,19 +214,15 @@ export function GlobalSearch() {
             }}
           >
             <Icon name={ICONS.CLOSE} size="xs" />
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Search Results Dropdown */}
-      {isOpen && (query.length >= 2 || results.length > 0) && (
-        <div className="absolute top-full mt-2 w-full bg-surface border rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-          {isSearching && (
-            <div className="flex items-center justify-center p-4">
+      {isOpen && (query.length >= 2 || results.length > 0) ? <div className="absolute top-full mt-2 w-full bg-surface border rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+          {isSearching ? <div className="flex items-center justify-center p-4">
               <Icon name={ICONS.LOADING} size="sm" className="animate-spin mr-2" />
               <span className="text-sm text-muted-foreground">Searching...</span>
-            </div>
-          )}
+            </div> : null}
 
           {!isSearching && results.length === 0 && query.length >= 2 && (
             <div className="p-4 text-sm text-muted-foreground text-center">
@@ -269,8 +264,7 @@ export function GlobalSearch() {
               Type at least 2 characters to search
             </div>
           )}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

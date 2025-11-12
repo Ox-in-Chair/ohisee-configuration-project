@@ -14,7 +14,7 @@ export interface AIEnhancedTextareaProps {
   value: string;
   onChange: (value: string) => void;
   onKangopakCore?: (() => void) | undefined;
-  qualityScore?: (number | null) | undefined;
+  qualityScore?: (  null) | undefined;
   isCheckingQuality?: boolean | undefined;
   isSuggesting?: boolean | undefined;
   showQualityBadge?: boolean | undefined;
@@ -92,11 +92,10 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required ? <span className="text-red-500 ml-1">*</span> : null}
         </Label>
 
-        {onKangopakCore && (
-          <Button
+        {onKangopakCore ? <Button
             type="button"
             variant="outline"
             size="sm"
@@ -117,8 +116,7 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
                 <span>Kangopak Core</span>
               </>
             )}
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Textarea */}
@@ -150,33 +148,27 @@ export const AIEnhancedTextarea: FC<AIEnhancedTextareaProps> = ({
             data-testid={`${testId}-char-count`}
           >
             {value.length} / {minLength} minimum
-            {maxLength && ` (${maxLength} max)`}
+            {maxLength ? ` (${maxLength} max)` : null}
           </span>
 
-          {showMinimumNotMet && (
-            <span className="text-xs text-red-600" data-testid={`${testId}-minimum-warning`}>
+          {showMinimumNotMet ? <span className="text-xs text-red-600" data-testid={`${testId}-minimum-warning`}>
               {minLength - value.length} characters needed
-            </span>
-          )}
+            </span> : null}
         </div>
 
         {/* Quality badge */}
-        {showQualityBadge && (
-          <AIQualityBadge
+        {showQualityBadge ? <AIQualityBadge
             score={qualityScore}
             isChecking={isCheckingQuality}
             threshold={75}
             showDetails={false}
-          />
-        )}
+          /> : null}
       </div>
 
       {/* Error message */}
-      {error && (
-        <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
+      {error ? <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
           {error}
-        </p>
-      )}
+        </p> : null}
     </div>
   );
 };

@@ -73,9 +73,9 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
                 Section {currentSection + 1} of {module.sections.length}
               </span>
               <Badge variant="outline">
-                {currentSectionData.brcgsReference && `BRCGS: ${currentSectionData.brcgsReference}`}
-                {currentSectionData.brcgsReference && currentSectionData.procedureReference && ' • '}
-                {currentSectionData.procedureReference && currentSectionData.procedureReference}
+                {currentSectionData.brcgsReference ? `BRCGS: ${currentSectionData.brcgsReference}` : null}
+                {currentSectionData.brcgsReference && currentSectionData.procedureReference ? ' • ' : null}
+                {currentSectionData.procedureReference ? currentSectionData.procedureReference : null}
               </Badge>
             </div>
 
@@ -127,8 +127,7 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
           </div>
         )}
 
-        {showCheckpoint && !showResults && (
-          <div className="space-y-6">
+        {showCheckpoint && !showResults ? <div className="space-y-6">
             <h3 className="text-lg font-semibold">Checkpoint Questions</h3>
             {module.checkpointQuestions.map((question, qIdx) => (
               <Card key={question.id}>
@@ -166,11 +165,9 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
             <Button onClick={handleSubmitAnswers} className="w-full">
               Submit Answers
             </Button>
-          </div>
-        )}
+          </div> : null}
 
-        {showResults && score && (
-          <div className="space-y-6">
+        {showResults && score ? <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Results</CardTitle>
@@ -219,11 +216,9 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
                             }`}
                           >
                             {option}
-                            {isCorrectAnswer && (
-                              <Badge variant="outline" className="ml-2">
+                            {isCorrectAnswer ? <Badge variant="outline" className="ml-2">
                                 Correct Answer
-                              </Badge>
-                            )}
+                              </Badge> : null}
                           </div>
                         );
                       })}
@@ -249,8 +244,7 @@ export function NCATrainingModule({ open, onOpenChange }: NCATrainingModuleProps
                 Close
               </Button>
             </div>
-          </div>
-        )}
+          </div> : null}
       </DialogContent>
     </Dialog>
   );

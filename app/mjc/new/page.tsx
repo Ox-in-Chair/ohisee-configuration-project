@@ -289,19 +289,15 @@ export default function NewMJCPage(): React.ReactElement {
         Maintenance Job Card
       </h1>
 
-      {submitSuccess && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+      {submitSuccess ? <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
           {mjcNumber
             ? `MJC submitted successfully! Reference: ${mjcNumber}`
             : 'MJC submitted successfully!'}
-        </div>
-      )}
+        </div> : null}
 
-      {submitError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+      {submitError ? <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
           Error: {submitError}
-        </div>
-      )}
+        </div> : null}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Section 1: Job Card Identification */}
@@ -341,22 +337,16 @@ export default function NewMJCPage(): React.ReactElement {
                   readOnly
                   className={workOrderError ? 'border-yellow-500' : ''}
                 />
-                {workOrderLoading && (
-                  <span className="absolute right-3 top-3 text-sm text-gray-500">
+                {workOrderLoading ? <span className="absolute right-3 top-3 text-sm text-gray-500">
                     Loading...
-                  </span>
-                )}
+                  </span> : null}
               </div>
-              {workOrderError && (
-                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
+              {workOrderError ? <div className="mt-2 p-2 bg-yellow-50 border border-yellow-300 rounded text-sm text-yellow-800">
                   <strong>Warning:</strong> {workOrderError}. You can still submit this MJC, but it will not be linked to a work order.
-                </div>
-              )}
-              {activeWorkOrder && (
-                <div className="mt-2 text-sm text-green-600">
+                </div> : null}
+              {activeWorkOrder ? <div className="mt-2 text-sm text-green-600">
                   Linked to: {activeWorkOrder.product} (Machine: {activeWorkOrder.machine_id})
-                </div>
-              )}
+                </div> : null}
             </div>
             <div className="space-y-2">
               <Label>Work Order Status</Label>
@@ -411,9 +401,7 @@ export default function NewMJCPage(): React.ReactElement {
                   <Label htmlFor="planned">Planned Maintenance</Label>
                 </div>
               </RadioGroup>
-              {errors.maintenance_category && (
-                <p className="text-red-600 text-sm mt-2">{errors.maintenance_category.message}</p>
-              )}
+              {errors.maintenance_category ? <p className="text-red-600 text-sm mt-2">{errors.maintenance_category.message}</p> : null}
             </div>
             <div className="space-y-2">
               <Label>Maintenance Type</Label>
@@ -447,9 +435,7 @@ export default function NewMJCPage(): React.ReactElement {
                   <Label htmlFor="other-type">Other</Label>
                 </div>
               </RadioGroup>
-              {errors.maintenance_type && (
-                <p className="text-red-600 text-sm mt-2">{errors.maintenance_type.message}</p>
-              )}
+              {errors.maintenance_type ? <p className="text-red-600 text-sm mt-2">{errors.maintenance_type.message}</p> : null}
 
               {/* Conditional field when maintenance type is "other" */}
               {maintenanceType === 'other' && (
@@ -499,9 +485,7 @@ export default function NewMJCPage(): React.ReactElement {
                   <Label htmlFor="machine-operational">MACHINE OPERATIONAL</Label>
                 </div>
               </RadioGroup>
-              {errors.machine_status && (
-                <p className="text-red-600 text-sm mt-2">{errors.machine_status.message}</p>
-              )}
+              {errors.machine_status ? <p className="text-red-600 text-sm mt-2">{errors.machine_status.message}</p> : null}
             </div>
             <div className="space-y-2">
               <Label>Urgency Level</Label>
@@ -529,9 +513,7 @@ export default function NewMJCPage(): React.ReactElement {
                   <Label htmlFor="low">Low (&gt;24hrs)</Label>
                 </div>
               </RadioGroup>
-              {errors.urgency_level && (
-                <p className="text-red-600 text-sm mt-2">{errors.urgency_level.message}</p>
-              )}
+              {errors.urgency_level ? <p className="text-red-600 text-sm mt-2">{errors.urgency_level.message}</p> : null}
             </div>
             <div className="space-y-2">
               <Label>Machine Down Time (auto-calculated)</Label>
@@ -570,9 +552,7 @@ export default function NewMJCPage(): React.ReactElement {
                   <Label htmlFor="temp-no">NO (Standard closure)</Label>
                 </div>
               </RadioGroup>
-              {errors.temporary_repair && (
-                <p className="text-red-600 text-sm mt-2">{errors.temporary_repair.message}</p>
-              )}
+              {errors.temporary_repair ? <p className="text-red-600 text-sm mt-2">{errors.temporary_repair.message}</p> : null}
             </div>
             <div className="space-y-2">
               <Label>Follow-up Due Date (auto-calculated if temporary)</Label>
@@ -713,7 +693,7 @@ export default function NewMJCPage(): React.ReactElement {
             <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
               <p className="font-semibold text-blue-800">
                 {hygieneItemsVerified}/10 items verified
-                {allHygieneItemsVerified && ' ✅ All items verified!'}
+                {allHygieneItemsVerified ? ' ✅ All items verified!' : null}
               </p>
             </div>
 
@@ -875,9 +855,7 @@ export default function NewMJCPage(): React.ReactElement {
                 required={allHygieneItemsVerified}
                 data-testid="clearance-signature"
               />
-              {errors.clearance_signature && (
-                <p className="text-red-600 text-sm mt-1">{errors.clearance_signature.message}</p>
-              )}
+              {errors.clearance_signature ? <p className="text-red-600 text-sm mt-1">{errors.clearance_signature.message}</p> : null}
             </div>
             <div className="flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded">
               <Checkbox
@@ -895,9 +873,7 @@ export default function NewMJCPage(): React.ReactElement {
                 ✅ PRODUCTION CLEARED TO RESUME
               </Label>
             </div>
-            {errors.production_cleared && (
-              <p className="text-red-600 text-sm mt-1">{errors.production_cleared.message}</p>
-            )}
+            {errors.production_cleared ? <p className="text-red-600 text-sm mt-1">{errors.production_cleared.message}</p> : null}
           </CardContent>
         </Card>
 

@@ -19,7 +19,7 @@ export interface EnhancedTextareaProps {
   value: string;
   onChange: (value: string) => void;
   onGetHelp?: (() => void) | undefined;
-  qualityScore?: (number | null) | undefined;
+  qualityScore?: (  null) | undefined;
   isCheckingQuality?: boolean | undefined;
   isProcessing?: boolean | undefined;
   showQualityBadge?: boolean | undefined;
@@ -159,13 +159,12 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required ? <span className="text-red-500 ml-1">*</span> : null}
         </Label>
 
         <div className="flex items-center gap-2">
           {/* Voice Input (mobile-friendly) */}
-          {enableVoiceInput && (
-            <VoiceInput
+          {enableVoiceInput ? <VoiceInput
               onTranscript={(text) => {
                 // Append transcribed text to existing value
                 const newValue = value ? `${value} ${text}` : text;
@@ -182,12 +181,10 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
               }}
               disabled={disabled}
               className="hidden sm:inline-flex"
-            />
-          )}
+            /> : null}
 
           {/* Text-to-Speech */}
-          {enableTextToSpeech && value && value.trim().length > 0 && (
-            <TextToSpeech
+          {enableTextToSpeech && value && value.trim().length > 0 ? <TextToSpeech
               text={value}
               disabled={disabled}
               buttonSize="sm"
@@ -196,11 +193,9 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
               {...(enableRewrite && onQualityCheck ? {
                 onQualityCheck: () => onQualityCheck()
               } : {})}
-            />
-          )}
+            /> : null}
 
-          {onGetHelp && (
-            <Button
+          {onGetHelp ? <Button
               type="button"
               variant="outline"
               size="sm"
@@ -221,8 +216,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
                   <span>Get Help</span>
                 </>
               )}
-            </Button>
-          )}
+            </Button> : null}
         </div>
       </div>
 
@@ -249,8 +243,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
           aria-describedby={error ? `${testId}-error` : undefined}
         />
         {/* Mobile Voice Input and Text-to-Speech (shown on small screens) */}
-        {enableVoiceInput && (
-          <div className="absolute bottom-2 right-2 sm:hidden flex items-center gap-1">
+        {enableVoiceInput ? <div className="absolute bottom-2 right-2 sm:hidden flex items-center gap-1">
             <VoiceInput
               onTranscript={(text) => {
                 const newValue = value ? `${value} ${text}` : text;
@@ -269,8 +262,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
               buttonSize="sm"
               buttonVariant="ghost"
             />
-            {enableTextToSpeech && value && value.trim().length > 0 && (
-              <TextToSpeech
+            {enableTextToSpeech && value && value.trim().length > 0 ? <TextToSpeech
                 text={value}
                 disabled={disabled}
                 buttonSize="sm"
@@ -278,15 +270,12 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
                 {...(enableRewrite && onQualityCheck ? {
                   onQualityCheck: () => onQualityCheck()
                 } : {})}
-              />
-            )}
-          </div>
-        )}
+              /> : null}
+          </div> : null}
       </div>
 
       {/* Live Requirement Checklist */}
-      {showChecklist && checklist.length > 0 && (
-        <div
+      {showChecklist && checklist.length > 0 ? <div
           className="mt-2 space-y-1.5 text-xs"
           role="list"
           aria-live="polite"
@@ -315,14 +304,11 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
                 }
               >
                 {item.label}
-                {item.required && !item.checked && (
-                  <span className="text-red-600 ml-1">*</span>
-                )}
+                {item.required && !item.checked ? <span className="text-red-600 ml-1">*</span> : null}
               </span>
             </div>
           ))}
-        </div>
-      )}
+        </div> : null}
 
       {/* Footer: Character counter, quality indicator, error */}
       <div className="flex items-center justify-between gap-4">
@@ -333,42 +319,33 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
             data-testid={`${testId}-char-count`}
           >
             {value.length} / {dynamicMinLength} minimum
-            {dynamicMinLength !== minLength && fieldName === 'nc_description' && context?.ncType && (
-              <span className="text-xs text-gray-500 ml-1">
+            {dynamicMinLength !== minLength && fieldName === 'nc_description' && context?.ncType ? <span className="text-xs text-gray-500 ml-1">
                 (for {context.ncType.replace('-', ' ')})
-              </span>
-            )}
-            {maxLength && ` (${maxLength} max)`}
+              </span> : null}
+            {maxLength ? ` (${maxLength} max)` : null}
           </span>
 
-          {showMinimumNotMet && (
-            <span className="text-xs text-red-600" data-testid={`${testId}-minimum-warning`}>
+          {showMinimumNotMet ? <span className="text-xs text-red-600" data-testid={`${testId}-minimum-warning`}>
               {dynamicMinLength - value.length} characters needed
-            </span>
-          )}
+            </span> : null}
         </div>
 
         {/* Quality indicator */}
-        {showQualityBadge && (
-          <QualityIndicator
+        {showQualityBadge ? <QualityIndicator
             score={qualityScore}
             isChecking={isCheckingQuality}
             threshold={75}
             showDetails={false}
-          />
-        )}
+          /> : null}
       </div>
 
       {/* Error message */}
-      {error && (
-        <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
+      {error ? <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
           {error}
-        </p>
-      )}
+        </p> : null}
 
       {/* Rewrite Assistant */}
-      {enableRewrite && value && value.trim().length > 0 && (
-        <div className="mt-2">
+      {enableRewrite && value && value.trim().length > 0 ? <div className="mt-2">
           <RewriteAssistant
             currentText={value}
             onRewrite={(improvedText) => onChange(improvedText)}
@@ -379,8 +356,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
             buttonSize="sm"
             buttonVariant="outline"
           />
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

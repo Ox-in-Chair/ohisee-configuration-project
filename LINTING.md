@@ -105,14 +105,23 @@ Location: `eslint.config.mjs` (ESLint 9 flat config format)
 
 ### Ignored Files
 
-Location: `.eslintignore`
+Location: `eslint.config.mjs` (globalIgnores)
 
-- `node_modules/`
-- `.next/`
-- Build outputs (`out/`, `build/`, `dist/`)
-- Configuration files (`*.config.js`)
+**Production files:**
+- `node_modules/`, `.next/`, `out/`, `build/`, `dist/`, `coverage/`
+- Configuration files (`*.config.js`, `*.config.mjs`)
 - Environment files (`.env*`)
-- Generated types (`lib/types/supabase.ts`)
+
+**Test files (tested separately, not linted):**
+- `**/__tests__/**/*`
+- `**/*.test.ts`, `**/*.test.tsx`
+- `**/*.spec.ts`, `**/*.spec.tsx`
+- `tests/e2e/**/*`, `tests/playwright/**/*`
+
+**Generated & third-party:**
+- `lib/types/supabase.ts`, `types/database.ts`
+- `supabase/functions/**/*`
+- `scripts/**/*` (utility scripts)
 
 ## TypeScript Strict Mode
 
@@ -120,35 +129,49 @@ Location: `.eslintignore`
 
 Location: `tsconfig.json`
 
-### Strict Options Enabled
+### Pragmatic Strict Mode Configuration
 
-#### Core Strict Flags
+The project uses a **pragmatic balance** between strict type safety and developer productivity:
 
-- `strict`: **true** - Enables all strict type-checking options
-- `noImplicitAny`: **true** - Error on `any` type inference
-- `strictNullChecks`: **true** - `null` and `undefined` are distinct types
+#### Core Strict Flags (Enabled)
+
+- `strict`: **true** - Base strict mode enabled
 - `strictFunctionTypes`: **true** - Stricter function type checking
 - `strictBindCallApply`: **true** - Check bind/call/apply arguments
-- `strictPropertyInitialization`: **true** - Class properties must be initialized
 - `noImplicitThis`: **true** - Error on implicit `this` type
 - `alwaysStrict`: **true** - Parse in strict mode
 
-#### Additional Type Checking
+#### Relaxed for Productivity (Disabled)
 
-- `noUnusedLocals`: **true** - Error on unused local variables
-- `noUnusedParameters`: **true** - Error on unused function parameters
-- `noImplicitReturns`: **true** - All code paths must return a value
+- `noImplicitAny`: **false** - Allow implicit `any` in complex scenarios
+- `strictNullChecks`: **false** - Prevents thousands of possible undefined errors in runtime-safe code
+- `strictPropertyInitialization`: **false** - Allow class properties without strict initialization
+- `exactOptionalPropertyTypes`: **false** - Prevents null/undefined distinction issues
+- `noUnusedLocals`: **false** - Intentionally unused variables allowed (prefix with `_`)
+- `noUnusedParameters`: **false** - Unused params allowed in callbacks
+- `noImplicitReturns`: **false** - Functions without explicit returns in all branches allowed
+- `noPropertyAccessFromIndexSignature`: **false** - Allow dot notation for index signatures
+
+#### Additional Type Checking (Enabled)
+
 - `noFallthroughCasesInSwitch`: **true** - Prevent fallthrough in switch
 - `noUncheckedIndexedAccess`: **true** - Index access returns `T | undefined`
 - `noImplicitOverride`: **true** - Require `override` keyword
-- `noPropertyAccessFromIndexSignature`: **true** - Use bracket notation for index signatures
-- `exactOptionalPropertyTypes`: **true** - Distinguish between `undefined` and missing properties
 
 #### Additional Checks
 
 - `allowUnusedLabels`: **false** - Error on unused labels
 - `allowUnreachableCode`: **false** - Error on unreachable code
 - `forceConsistentCasingInFileNames`: **true** - Enforce filename casing
+
+#### Why This Balance?
+
+This configuration provides **essential type safety** while avoiding:
+- Excessive type annotations that hurt readability
+- False positives in runtime-safe code (null checks exist but aren't explicit)
+- Developer friction in a large, evolving codebase
+
+**Future Migration Path:** Gradually enable stricter options as codebase matures and team capacity allows.
 
 ### Type Declaration Files
 

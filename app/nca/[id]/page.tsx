@@ -182,29 +182,23 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               {nca.nc_type.replace('-', ' ')}
             </p>
           </div>
-          {nca.nc_origin && (
-            <div>
+          {nca.nc_origin ? <div>
               <label className="text-sm font-medium text-gray-700">NC Origin</label>
               <p className="text-gray-900 capitalize">
                 {nca.nc_origin.replace('-', ' ')}
               </p>
-            </div>
-          )}
-          {nca.nc_type === 'other' && nca.nc_type_other && (
-            <div>
+            </div> : null}
+          {nca.nc_type === 'other' && nca.nc_type_other ? <div>
               <label className="text-sm font-medium text-gray-700">Other NC Type</label>
               <p className="text-gray-900">{nca.nc_type_other}</p>
-            </div>
-          )}
-          {nca.procedure_reference && (
-            <div>
+            </div> : null}
+          {nca.procedure_reference ? <div>
               <label className="text-sm font-medium text-gray-700">Procedure Reference</label>
               <p className="text-gray-900">
                 {nca.procedure_reference} {nca.procedure_revision || ''}
-                {nca.procedure_revision_date && ` (${new Date(nca.procedure_revision_date).toLocaleDateString('en-GB')})`}
+                {nca.procedure_revision_date ? ` (${new Date(nca.procedure_revision_date).toLocaleDateString('en-GB')})` : null}
               </p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
 
@@ -215,24 +209,18 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {nca.supplier_name && (
-              <div>
+            {nca.supplier_name ? <div>
                 <label className="text-sm font-medium text-gray-700">Supplier Name</label>
                 <p className="text-gray-900">{nca.supplier_name}</p>
-              </div>
-            )}
-            {nca.supplier_wo_batch && (
-              <div>
+              </div> : null}
+            {nca.supplier_wo_batch ? <div>
                 <label className="text-sm font-medium text-gray-700">WO/Batch Number</label>
                 <p className="text-gray-900 font-mono">{nca.supplier_wo_batch}</p>
-              </div>
-            )}
-            {nca.supplier_reel_box && (
-              <div>
+              </div> : null}
+            {nca.supplier_reel_box ? <div>
                 <label className="text-sm font-medium text-gray-700">Reel/Box Number</label>
                 <p className="text-gray-900 font-mono">{nca.supplier_reel_box}</p>
-              </div>
-            )}
+              </div> : null}
             <div>
               <label className="text-sm font-medium text-gray-700">Sample Available</label>
               <p className="text-gray-900 flex items-center gap-2">
@@ -254,22 +242,18 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
             <label className="text-sm font-medium text-gray-700">Product Description</label>
             <p className="text-gray-900 mt-1">{nca.nc_product_description}</p>
           </div>
-          {nca.quantity && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {nca.quantity ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-700">Quantity</label>
                 <p className="text-gray-900">
                   {nca.quantity} {nca.quantity_unit}
                 </p>
               </div>
-              {nca.carton_numbers && (
-                <div>
+              {nca.carton_numbers ? <div>
                   <label className="text-sm font-medium text-gray-700">Carton Numbers</label>
                   <p className="text-gray-900 font-mono">{nca.carton_numbers}</p>
-                </div>
-              )}
-            </div>
-          )}
+                </div> : null}
+            </div> : null}
         </CardContent>
       </Card>
 
@@ -302,20 +286,16 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           </div>
           {nca.machine_status === 'down' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {nca.machine_down_since && (
-                <div>
+              {nca.machine_down_since ? <div>
                   <label className="text-sm font-medium text-gray-700">Machine Down Since</label>
                   <p className="text-gray-900">
                     {new Date(nca.machine_down_since).toLocaleString('en-GB')}
                   </p>
-                </div>
-              )}
-              {nca.estimated_downtime && (
-                <div>
+                </div> : null}
+              {nca.estimated_downtime ? <div>
                   <label className="text-sm font-medium text-gray-700">Estimated Downtime</label>
                   <p className="text-gray-900">{nca.estimated_downtime} minutes</p>
-                </div>
-              )}
+                </div> : null}
             </div>
           )}
         </CardContent>
@@ -333,18 +313,14 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
                 <label className="text-sm font-medium text-gray-700">Team Leader</label>
                 <p className="text-gray-900">{nca.concession_team_leader}</p>
               </div>
-              {nca.concession_notes && (
-                <div>
+              {nca.concession_notes ? <div>
                   <label className="text-sm font-medium text-gray-700">Notes</label>
                   <p className="text-gray-900 whitespace-pre-wrap">{nca.concession_notes}</p>
-                </div>
-              )}
-              {nca.concession_signature && (
-                <div>
+                </div> : null}
+              {nca.concession_signature ? <div>
                   <label className="text-sm font-medium text-gray-700">Signature</label>
                   <Badge variant="outline">Signed</Badge>
-                </div>
-              )}
+                </div> : null}
             </>
           ) : (
             <p className="text-gray-500 italic">No concession required</p>
@@ -364,14 +340,11 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               {nca.cross_contamination ? 'YES' : 'NO'}
             </Badge>
           </div>
-          {nca.cross_contamination && (
-            <>
-              {nca.back_tracking_person && (
-                <div>
+          {nca.cross_contamination ? <>
+              {nca.back_tracking_person ? <div>
                   <label className="text-sm font-medium text-gray-700">Back Tracking Person</label>
                   <p className="text-gray-900">{nca.back_tracking_person}</p>
-                </div>
-              )}
+                </div> : null}
               <div>
                 <label className="text-sm font-medium text-gray-700">Back Tracking Completed</label>
                 <p className="text-gray-900 flex items-center gap-2">
@@ -388,8 +361,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
                   )}
                 </p>
               </div>
-            </>
-          )}
+            </> : null}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700">Hold Label Completed</label>
@@ -424,8 +396,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
               </p>
             </div>
           </div>
-          {nca.segregation_area && (
-            <div>
+          {nca.segregation_area ? <div>
               <label className="text-sm font-medium text-gray-700">Segregation Area</label>
               <p className="text-gray-900">
                 {nca.segregation_area === 'raw-materials' && 'NC Product Area (Raw Materials)'}
@@ -434,8 +405,7 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
                 {nca.segregation_area === 'other' && (nca.segregation_area_other || 'Other - Description required')}
                 {!['raw-materials', 'wip', 'finished-goods', 'other'].includes(nca.segregation_area) && nca.segregation_area}
               </p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
 
@@ -448,12 +418,12 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           <div>
             <label className="text-sm font-medium text-gray-700">Disposition Actions</label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {nca.disposition_reject && <Badge>Reject</Badge>}
-              {nca.disposition_credit && <Badge>Credit</Badge>}
-              {nca.disposition_uplift && <Badge>Uplift</Badge>}
-              {nca.disposition_rework && <Badge>Rework</Badge>}
-              {nca.disposition_concession && <Badge>Concession</Badge>}
-              {nca.disposition_discard && <Badge>Discard</Badge>}
+              {nca.disposition_reject ? <Badge>Reject</Badge> : null}
+              {nca.disposition_credit ? <Badge>Credit</Badge> : null}
+              {nca.disposition_uplift ? <Badge>Uplift</Badge> : null}
+              {nca.disposition_rework ? <Badge>Rework</Badge> : null}
+              {nca.disposition_concession ? <Badge>Concession</Badge> : null}
+              {nca.disposition_discard ? <Badge>Discard</Badge> : null}
               {!nca.disposition_reject &&
                 !nca.disposition_credit &&
                 !nca.disposition_uplift &&
@@ -464,24 +434,19 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
                 )}
             </div>
           </div>
-          {nca.disposition_rework && nca.rework_instruction && (
-            <div>
+          {nca.disposition_rework && nca.rework_instruction ? <div>
               <label className="text-sm font-medium text-gray-700">Rework Instruction</label>
               <p className="text-gray-900 whitespace-pre-wrap mt-1">{nca.rework_instruction}</p>
-            </div>
-          )}
-          {nca.disposition_authorized_by && (
-            <div>
+            </div> : null}
+          {nca.disposition_authorized_by ? <div>
               <label className="text-sm font-medium text-gray-700">Authorized By</label>
               <p className="text-gray-900">{nca.disposition_authorized_by}</p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
 
       {/* Update Segregation Area After Disposition */}
-      {nca.disposition_signature && (
-        <UpdateSegregationArea
+      {nca.disposition_signature ? <UpdateSegregationArea
           ncaId={id}
           currentSegregationArea={nca.segregation_area}
           currentSegregationAreaOther={nca.segregation_area_other}
@@ -490,11 +455,10 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
           onUpdate={() => {
             // Page will be revalidated by updateNCA action via router.refresh()
           }}
-        />
-      )}
+        /> : null}
 
       {/* Waste Manifest Link (if disposition includes discard) */}
-      {nca.disposition_discard && <WasteManifestLink ncaId={id} />}
+      {nca.disposition_discard ? <WasteManifestLink ncaId={id} /> : null}
 
       {/* Section 9: Root Cause Analysis */}
       <Card className="mb-6" data-testid="nca-detail-section-9">
@@ -511,25 +475,21 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
       </Card>
 
       {/* MJC Link (if equipment-related root cause) */}
-      {nca.root_cause_analysis && (
-        <MJCLink
+      {nca.root_cause_analysis ? <MJCLink
           ncaId={id}
           rootCauseAnalysis={nca.root_cause_analysis}
           machineStatus={nca.machine_status}
-        />
-      )}
+        /> : null}
 
       {/* Complaint Link (if NCA generated from complaint) */}
       <ComplaintLink ncaId={id} />
 
       {/* Recall Flag (if NCA flagged for recall) */}
-      {nca.recall_flagged && (
-        <RecallFlag
+      {nca.recall_flagged ? <RecallFlag
           ncaId={id}
           recallId={nca.recall_id}
           recallFlagged={nca.recall_flagged}
-        />
-      )}
+        /> : null}
 
       {/* Section 10: Corrective Action */}
       <Card className="mb-6" data-testid="nca-detail-section-10">
@@ -553,26 +513,20 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
         <CardContent>
           {nca.status === 'closed' ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {nca.close_out_by && (
-                <div>
+              {nca.close_out_by ? <div>
                   <label className="text-sm font-medium text-gray-700">Closed By</label>
                   <p className="text-gray-900">{nca.close_out_by}</p>
-                </div>
-              )}
-              {nca.close_out_date && (
-                <div>
+                </div> : null}
+              {nca.close_out_date ? <div>
                   <label className="text-sm font-medium text-gray-700">Close Out Date</label>
                   <p className="text-gray-900">
                     {new Date(nca.close_out_date).toLocaleDateString('en-GB')}
                   </p>
-                </div>
-              )}
-              {nca.close_out_signature && (
-                <div>
+                </div> : null}
+              {nca.close_out_signature ? <div>
                   <label className="text-sm font-medium text-gray-700">Signature</label>
                   <Badge variant="outline">Signed</Badge>
-                </div>
-              )}
+                </div> : null}
             </div>
           ) : (
             <p className="text-gray-500 italic">NCA not yet closed</p>
@@ -588,20 +542,16 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
         <CardContent>
           {nca.root_cause_attachments || nca.corrective_action_attachments ? (
             <div className="space-y-2">
-              {nca.root_cause_attachments && (
-                <div>
+              {nca.root_cause_attachments ? <div>
                   <label className="text-sm font-medium text-gray-700">Root Cause Attachments</label>
                   <p className="text-sm text-gray-500">Attachment functionality coming soon</p>
-                </div>
-              )}
-              {nca.corrective_action_attachments && (
-                <div>
+                </div> : null}
+              {nca.corrective_action_attachments ? <div>
                   <label className="text-sm font-medium text-gray-700">
                     Corrective Action Attachments
                   </label>
                   <p className="text-sm text-gray-500">Attachment functionality coming soon</p>
-                </div>
-              )}
+                </div> : null}
             </div>
           ) : (
             <p className="text-gray-500 italic">No attachments</p>
@@ -623,12 +573,10 @@ export default async function NCADetailPage({ params }: NCADetailPageProps) {
             <label className="text-sm font-medium text-gray-700">Last Updated</label>
             <p className="text-gray-900">{new Date(nca.updated_at).toLocaleString('en-GB')}</p>
           </div>
-          {nca.submitted_at && (
-            <div>
+          {nca.submitted_at ? <div>
               <label className="text-sm font-medium text-gray-700">Submitted</label>
               <p className="text-gray-900">{new Date(nca.submitted_at).toLocaleString('en-GB')}</p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
 

@@ -74,7 +74,7 @@ function formatFileSize(bytes: number): string {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100  } ${  sizes[i]}`;
 }
 
 /**
@@ -287,15 +287,12 @@ export function FileUpload({
       )}
 
       {/* Error Display */}
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+      {error ? <div className="p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600">{error}</p>
-        </div>
-      )}
+        </div> : null}
 
       {/* File List */}
-      {entityId && (
-        <div className="space-y-2">
+      {entityId ? <div className="space-y-2">
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
               <Icon name={ICONS.LOADING} size="md" className="text-gray-400 animate-spin" />
@@ -331,12 +328,10 @@ export function FileUpload({
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">No files uploaded yet</p>
           )}
-        </div>
-      )}
+        </div> : null}
 
       {/* Load Files Button (for initial load) */}
-      {entityId && files.length === 0 && !isLoading && (
-        <Button
+      {entityId && files.length === 0 && !isLoading ? <Button
           type="button"
           variant="outline"
           size="sm"
@@ -344,8 +339,7 @@ export function FileUpload({
           className="w-full"
         >
           Load Attachments
-        </Button>
-      )}
+        </Button> : null}
     </div>
   );
 }

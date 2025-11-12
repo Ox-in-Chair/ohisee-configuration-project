@@ -212,8 +212,7 @@ export function TextToSpeech({
         )}
       </Button>
 
-      {isPlaying && (
-        <Button
+      {isPlaying ? <Button
           type="button"
           variant={buttonVariant}
           size={buttonSize}
@@ -223,8 +222,7 @@ export function TextToSpeech({
         >
           <Icon name={ICONS.STOP} size="sm" className="mr-2" />
           <span className="hidden sm:inline">Stop</span>
-        </Button>
-      )}
+        </Button> : null}
     </div>
   );
 }

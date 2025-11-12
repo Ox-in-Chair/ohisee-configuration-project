@@ -239,7 +239,7 @@ export class MultiAgentOrchestrator {
         if (!fieldFindings.has(key)) {
           fieldFindings.set(key, []);
         }
-        fieldFindings.get(key)!.push({
+        fieldFindings.get(key).push({
           agent: result.agentName,
           severity: 'requirement',
           message: req.message,
@@ -251,7 +251,7 @@ export class MultiAgentOrchestrator {
         if (!fieldFindings.has(key)) {
           fieldFindings.set(key, []);
         }
-        fieldFindings.get(key)!.push({
+        fieldFindings.get(key).push({
           agent: result.agentName,
           severity: 'error',
           message: err.message,

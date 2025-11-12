@@ -93,7 +93,7 @@ export async function getAttemptNumber(
     }
 
     // Return next attempt number
-    return ((data as any).attempt_number || 0) + 1;
+    return ((data).attempt_number || 0) + 1;
   } catch (error) {
     console.error('Error getting attempt number:', error);
     // Default to attempt 1 on error

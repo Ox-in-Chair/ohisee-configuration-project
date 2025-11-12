@@ -161,15 +161,12 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+        {error ? <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
             {error}
-          </div>
-        )}
+          </div> : null}
 
         {/* Show prompt if equipment-related but no MJC linked */}
-        {equipmentRelated && mjcs.length === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
+        {equipmentRelated && mjcs.length === 0 ? <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
             <p className="text-sm text-yellow-800 mb-3">
               <strong>Equipment Issue Detected:</strong> The root cause analysis indicates an
               equipment-related issue. Consider creating a Maintenance Job Card.
@@ -242,8 +239,7 @@ export function MJCLink({ ncaId, rootCauseAnalysis, machineStatus }: MJCLinkProp
                 </DialogContent>
               </Dialog>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* Display linked MJCs */}
         {mjcs.length > 0 && (

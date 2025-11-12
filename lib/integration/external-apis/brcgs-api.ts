@@ -34,7 +34,7 @@ export class BRCGSAPIService {
   private apiBaseUrl?: string | undefined;
   private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string  , apiKey?: string  ) {
     this.supabase = supabase || createServerClient();
     this.apiBaseUrl = apiBaseUrl ?? process.env['BRCGS_API_BASE_URL'];
     this.apiKey = apiKey ?? process.env['BRCGS_API_KEY'];

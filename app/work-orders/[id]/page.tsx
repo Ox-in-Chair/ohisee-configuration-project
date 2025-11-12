@@ -61,14 +61,12 @@ export default async function WorkOrderDetailPage({ params }: WorkOrderDetailPag
         <RelatedIssuesTable ncas={ncas} mjcs={mjcs} />
 
         {/* Warning if open issues exist */}
-        {hasOpenIssues && workOrder.status !== 'completed' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        {hasOpenIssues && workOrder.status !== 'completed' ? <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p className="text-sm text-yellow-800">
               <strong>Warning:</strong> This work order has {openNCAs.length} open NCA(s) and{' '}
               {openMJCs.length} open MJC(s). Please resolve all issues before closing the work order.
             </p>
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   );

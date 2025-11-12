@@ -249,11 +249,9 @@ export function VoiceInput({
         )}
       </Button>
 
-      {error && (
-        <div className="absolute top-full mt-1 left-0 bg-red-50 border border-red-200 rounded px-2 py-1 text-xs text-red-700 z-50 whitespace-nowrap">
+      {error ? <div className="absolute top-full mt-1 left-0 bg-red-50 border border-red-200 rounded px-2 py-1 text-xs text-red-700 z-50 whitespace-nowrap">
           {error}
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 }

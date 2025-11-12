@@ -466,7 +466,7 @@ export async function grantHygieneClearance(
 
     // Validate all 10 items are verified
     const checklist = (mjcData as any).hygiene_checklist as HygieneChecklistItem[];
-    if (!checklist || checklist.length !== 10) {
+    if (checklist?.length !== 10) {
       return {
         success: false,
         error: 'Invalid hygiene checklist structure',
@@ -677,8 +677,8 @@ export async function linkMJCToNCA(
     return {
       success: true,
       data: {
-        id: (mjc as any).id,
-        job_card_number: (mjc as any).job_card_number,
+        id: (mjc).id,
+        job_card_number: (mjc).job_card_number,
       },
     };
   } catch (error) {

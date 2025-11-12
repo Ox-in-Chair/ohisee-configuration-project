@@ -27,11 +27,9 @@ export function FormFooter({
           <div>
             Kangopak (Pty) Ltd - BRCGS Certified | Controlled Document - Do Not Copy
           </div>
-          {showPageNumbers && pageNumber && totalPages && (
-            <div className="font-medium">
+          {showPageNumbers && pageNumber && totalPages ? <div className="font-medium">
               Page {pageNumber} of {totalPages}
-            </div>
-          )}
+            </div> : null}
         </div>
         <div className="text-xs text-gray-500">
           This document is a controlled record under the Product Safety and Quality Management

@@ -70,12 +70,10 @@ export const TextareaWithVoice: FC<TextareaWithVoiceProps> = ({
 
   return (
     <div className="space-y-2">
-      {label && (
-        <Label className="text-sm font-medium">
+      {label ? <Label className="text-sm font-medium">
           {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-      )}
+          {props.required ? <span className="text-red-500 ml-1">*</span> : null}
+        </Label> : null}
       <div className="relative">
         <Textarea
           {...props}
@@ -86,22 +84,18 @@ export const TextareaWithVoice: FC<TextareaWithVoiceProps> = ({
         />
         {/* Voice Input and Text-to-Speech buttons */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1">
-          {enableVoiceInput && (
-            <VoiceInput
+          {enableVoiceInput ? <VoiceInput
               onTranscript={handleVoiceTranscript}
               disabled={disabled}
               buttonSize="sm"
               buttonVariant="ghost"
-            />
-          )}
-          {enableTextToSpeech && textareaValue && textareaValue.trim().length > 0 && (
-            <TextToSpeech
+            /> : null}
+          {enableTextToSpeech && textareaValue && textareaValue.trim().length > 0 ? <TextToSpeech
               text={textareaValue}
               disabled={disabled}
               buttonSize="sm"
               buttonVariant="ghost"
-            />
-          )}
+            /> : null}
         </div>
       </div>
     </div>

@@ -113,19 +113,15 @@ export function UpdateSegregationArea({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {error && (
-          <Alert variant="destructive">
+        {error ? <Alert variant="destructive">
             <Icon name={ICONS.WARNING} size="sm" />
             <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          </Alert> : null}
 
-        {success && (
-          <Alert>
+        {success ? <Alert>
             <Icon name={ICONS.SUCCESS_ALT} size="sm" />
             <AlertDescription>Segregation area updated successfully</AlertDescription>
-          </Alert>
-        )}
+          </Alert> : null}
 
         {!isEditing ? (
           <div className="space-y-4">
@@ -140,12 +136,10 @@ export function UpdateSegregationArea({
               </p>
             </div>
 
-            {currentRelocationNotes && (
-              <div>
+            {currentRelocationNotes ? <div>
                 <Label className="text-sm font-medium text-gray-700">Relocation Notes</Label>
                 <p className="text-gray-900 whitespace-pre-wrap mt-1">{currentRelocationNotes}</p>
-              </div>
-            )}
+              </div> : null}
 
             <Button
               type="button"

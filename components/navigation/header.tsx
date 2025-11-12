@@ -83,14 +83,12 @@ export function Header({ className }: HeaderProps) {
           </Button>
 
           {/* User dropdown (simplified for now) */}
-          {userMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-surface shadow-lg z-50">
+          {userMenuOpen ? <div className="absolute right-0 top-full mt-2 w-48 rounded-md border bg-surface shadow-lg z-50">
               <div className="p-2">
                 <div className="px-2 py-1.5 text-sm font-medium">Current User</div>
                 <div className="px-2 py-1 text-xs text-muted-foreground">Operator</div>
               </div>
-            </div>
-          )}
+            </div> : null}
         </div>
       </div>
     </header>

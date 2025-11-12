@@ -391,8 +391,7 @@ export const NCATable = memo(function NCATable({
         </div>
 
         {/* Clear Filters Button */}
-        {hasActiveFilters && (
-          <Button
+        {hasActiveFilters ? <Button
             variant="outline"
             size="sm"
             onClick={handleClearFilters}
@@ -401,8 +400,7 @@ export const NCATable = memo(function NCATable({
           >
             <Icon name={ICONS.CLOSE} size="sm" />
             Clear Filters
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Results Count and Pagination Info */}
@@ -411,7 +409,7 @@ export const NCATable = memo(function NCATable({
           {paginatedNCAs.length > 0 ? (
             <>
               Showing {startIndex + 1} to {endIndex} of {totalCount} NCAs
-              {hasActiveFilters && ` (filtered from ${totalCount} total)`}
+              {hasActiveFilters ? ` (filtered from ${totalCount} total)` : null}
             </>
           ) : (
             <>No NCAs found</>

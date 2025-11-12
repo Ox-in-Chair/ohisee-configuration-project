@@ -116,8 +116,7 @@ export const AIAssistantModal: FC<AIAssistantModalProps> = ({
             </div>
 
             {/* Recommendations */}
-            {suggestion.recommendations && Object.keys(suggestion.recommendations).length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            {suggestion.recommendations && Object.keys(suggestion.recommendations).length > 0 ? <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
                   <Icon name={ICONS.WARNING} size="md" className="text-yellow-600 mt-0.5" />
                   <div>
@@ -133,12 +132,10 @@ export const AIAssistantModal: FC<AIAssistantModalProps> = ({
                     </ul>
                   </div>
                 </div>
-              </div>
-            )}
+              </div> : null}
 
             {/* Procedure References */}
-            {suggestion.procedure_references && suggestion.procedure_references.length > 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            {suggestion.procedure_references && suggestion.procedure_references.length > 0 ? <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start gap-2">
                   <Icon name={ICONS.BOOK_OPEN} size="md" className="text-gray-600 mt-0.5" />
                   <div>
@@ -154,16 +151,13 @@ export const AIAssistantModal: FC<AIAssistantModalProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </div> : null}
 
             {/* Keywords Detected */}
-            {suggestion.keywords_detected && suggestion.keywords_detected.keywords.length > 0 && (
-              <div className="text-sm text-gray-600">
+            {suggestion.keywords_detected && suggestion.keywords_detected.keywords.length > 0 ? <div className="text-sm text-gray-600">
                 <p className="font-medium mb-1">Keywords detected ({suggestion.keywords_detected.category}):</p>
                 <p className="italic">{suggestion.keywords_detected.keywords.join(', ')}</p>
-              </div>
-            )}
+              </div> : null}
 
             {/* Low Confidence Warning */}
             {suggestion.confidence === 'low' && (

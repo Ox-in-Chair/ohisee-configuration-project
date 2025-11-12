@@ -235,8 +235,7 @@ export function FishboneDiagram({
       </Card>
 
       {/* Visual Diagram Preview */}
-      {isComplete && (
-        <Card>
+      {isComplete ? <Card>
           <CardHeader>
             <CardTitle className="text-sm">Analysis Preview</CardTitle>
           </CardHeader>
@@ -246,22 +245,17 @@ export function FishboneDiagram({
                 {formatFishbone(problem, categories)}
               </pre>
             </div>
-            {isComplete && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
+            {isComplete ? <div className="mt-3 flex items-center gap-2 text-sm text-green-600">
                 <Icon name={ICONS.SUCCESS} size="sm" />
                 <span>Analysis complete</span>
-              </div>
-            )}
+              </div> : null}
           </CardContent>
-        </Card>
-      )}
+        </Card> : null}
 
       {/* Complete Button */}
-      {isComplete && onComplete && (
-        <Button type="button" onClick={handleComplete} className="w-full" variant="default">
+      {isComplete && onComplete ? <Button type="button" onClick={handleComplete} className="w-full" variant="default">
           Use This Analysis
-        </Button>
-      )}
+        </Button> : null}
     </div>
   );
 }

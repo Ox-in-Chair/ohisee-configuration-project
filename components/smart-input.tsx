@@ -40,7 +40,7 @@ export interface SmartInputProps {
   enableTextToSpeech?: boolean | undefined; // Enable text-to-speech (default: true)
   enableRewrite?: boolean | undefined; // Enable rewrite assistant (default: false)
   onQualityCheck?: (() => Promise<{ score: number; suggestions: string[] }>) | undefined; // Quality check function for rewrite
-  qualityScore?: (number | null) | undefined; // Current quality score
+  qualityScore?: (  null) | undefined; // Current quality score
   isCheckingQuality?: boolean | undefined; // Is quality check in progress
 }
 
@@ -221,13 +221,12 @@ export const SmartInput: FC<SmartInputProps> = ({
         <div className="flex items-center gap-2">
           <Label className="text-sm font-medium">
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required ? <span className="text-red-500 ml-1">*</span> : null}
           </Label>
           {tooltip}
         </div>
 
-        {onGetHelp && (
-          <Button
+        {onGetHelp ? <Button
             type="button"
             variant="outline"
             size="sm"
@@ -248,8 +247,7 @@ export const SmartInput: FC<SmartInputProps> = ({
                 <span>Get Help</span>
               </>
             )}
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Input with autocomplete */}
@@ -283,8 +281,7 @@ export const SmartInput: FC<SmartInputProps> = ({
           />
           {/* Voice Input and Text-to-Speech buttons */}
           <div className="flex items-center gap-1">
-            {enableVoiceInput && (
-              <VoiceInput
+            {enableVoiceInput ? <VoiceInput
                 onTranscript={(transcript) => {
                   onChange(transcript);
                   // Automatically trigger quality check after voice input if quality check is enabled
@@ -301,10 +298,8 @@ export const SmartInput: FC<SmartInputProps> = ({
                 buttonSize="sm"
                 buttonVariant="outline"
                 className="flex-shrink-0"
-              />
-            )}
-            {enableTextToSpeech && value && value.trim().length > 0 && (
-              <TextToSpeech
+              /> : null}
+            {enableTextToSpeech && value && value.trim().length > 0 ? <TextToSpeech
                 text={value}
                 disabled={disabled}
                 buttonSize="sm"
@@ -315,14 +310,12 @@ export const SmartInput: FC<SmartInputProps> = ({
                     ? () => onQualityCheck()
                     : undefined
                 }
-              />
-            )}
+              /> : null}
           </div>
         </div>
 
         {/* Autocomplete suggestions dropdown */}
-        {showAutocomplete && autocompleteSuggestions.length > 0 && isFocused && (
-          <div
+        {showAutocomplete && autocompleteSuggestions.length > 0 && isFocused ? <div
             className="absolute z-50 w-full mt-0 bg-surface border border-t-0 rounded-b-md shadow-lg max-h-60 overflow-auto animate-slide-in-from-top"
             role="listbox"
             aria-label="Suggestions"
@@ -342,20 +335,16 @@ export const SmartInput: FC<SmartInputProps> = ({
                 {suggestion}
               </button>
             ))}
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* Error message */}
-      {error && (
-        <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
+      {error ? <p className="text-sm text-red-600" id={`${testId}-error`} data-testid={`${testId}-error`}>
           {error}
-        </p>
-      )}
+        </p> : null}
 
       {/* Rewrite Assistant */}
-      {enableRewrite && value && value.trim().length > 0 && (
-        <div className="mt-2">
+      {enableRewrite && value && value.trim().length > 0 ? <div className="mt-2">
           <RewriteAssistant
             currentText={value}
             onRewrite={(improvedText) => onChange(improvedText)}
@@ -366,8 +355,7 @@ export const SmartInput: FC<SmartInputProps> = ({
             buttonSize="sm"
             buttonVariant="outline"
           />
-        </div>
-      )}
+        </div> : null}
     </div>
   );
 };

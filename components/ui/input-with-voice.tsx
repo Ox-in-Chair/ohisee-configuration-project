@@ -69,12 +69,10 @@ export const InputWithVoice: FC<InputWithVoiceProps> = ({
 
   return (
     <div className="space-y-2">
-      {label && (
-        <Label className="text-sm font-medium">
+      {label ? <Label className="text-sm font-medium">
           {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-      )}
+          {props.required ? <span className="text-red-500 ml-1">*</span> : null}
+        </Label> : null}
       <div className="flex items-center gap-2">
         <Input
           {...props}
@@ -84,22 +82,18 @@ export const InputWithVoice: FC<InputWithVoiceProps> = ({
           className={cn('flex-1', className)}
         />
         <div className="flex items-center gap-1 flex-shrink-0">
-          {enableVoiceInput && (
-            <VoiceInput
+          {enableVoiceInput ? <VoiceInput
               onTranscript={handleVoiceTranscript}
               disabled={disabled}
               buttonSize="sm"
               buttonVariant="outline"
-            />
-          )}
-          {enableTextToSpeech && inputValue && inputValue.trim().length > 0 && (
-            <TextToSpeech
+            /> : null}
+          {enableTextToSpeech && inputValue && inputValue.trim().length > 0 ? <TextToSpeech
               text={inputValue}
               disabled={disabled}
               buttonSize="sm"
               buttonVariant="outline"
-            />
-          )}
+            /> : null}
         </div>
       </div>
     </div>

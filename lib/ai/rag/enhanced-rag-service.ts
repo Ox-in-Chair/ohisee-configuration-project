@@ -95,7 +95,7 @@ export class EnhancedRAGService {
 
       return (data || []).map((doc: any, index: number) => ({
         procedure_number: doc.document_number,
-        content: doc.full_text.substring(0, 500) + '...',
+        content: `${doc.full_text.substring(0, 500)  }...`,
         relevance: 1 - (index * 0.1), // Mock relevance score
         brcgs_section: doc.brcgs_section,
       }));

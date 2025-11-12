@@ -183,12 +183,10 @@ export function SignatureCapture({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      {label && (
-        <Label>
+      {label ? <Label>
           {label}
-          {required && <span className="text-destructive ml-1">*</span>}
-        </Label>
-      )}
+          {required ? <span className="text-destructive ml-1">*</span> : null}
+        </Label> : null}
 
       <div className="relative border-2 border-dashed border-gray-300 rounded-lg bg-white">
         <canvas
@@ -204,14 +202,12 @@ export function SignatureCapture({
           </div>
         )}
 
-        {hasSignature && (
-          <div className="absolute top-2 right-2">
+        {hasSignature ? <div className="absolute top-2 right-2">
             <div className="flex items-center gap-2 bg-white/90 px-2 py-1 rounded border border-gray-200">
               <Icon name={ICONS.CHECK} size="sm" className="text-success-600" />
               <span className="text-xs text-gray-600">Signed</span>
             </div>
-          </div>
-        )}
+          </div> : null}
       </div>
 
       <div className="flex items-center justify-between">

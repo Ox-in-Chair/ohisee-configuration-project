@@ -106,7 +106,7 @@ export class DataSyncService {
     customHandler?: (sourceType: SyncSourceType) => Promise<SyncResult>
   ): Promise<SyncResult> {
     const config = this.configs.get(sourceType);
-    if (!config || !config.enabled) {
+    if (!config?.enabled) {
       return {
         success: false,
         status: 'failed',

@@ -37,7 +37,7 @@ export async function getRelatedRecords(
         const nca = await (supabase.from('ncas') as any).select('*').eq('id', recordId).single();
 
         if (nca.data) {
-          const ncaData = nca.data as any;
+          const ncaData = nca.data;
 
           // Get linked MJC
           if (ncaData.linked_mjc_id) {
@@ -48,7 +48,7 @@ export async function getRelatedRecords(
               .single();
 
             if (mjc.data) {
-              const mjcData = mjc.data as any;
+              const mjcData = mjc.data;
               references.push({
                 recordType: 'mjc',
                 recordId: mjcData.id,
@@ -72,7 +72,7 @@ export async function getRelatedRecords(
                 .single();
 
             if (waste.data) {
-              const wasteData = waste.data as any;
+              const wasteData = waste.data;
               references.push({
                 recordType: 'waste-manifest',
                 recordId: wasteData.id,
@@ -96,7 +96,7 @@ export async function getRelatedRecords(
               .single();
 
             if (complaint.data) {
-              const complaintData = complaint.data as any;
+              const complaintData = complaint.data;
               references.push({
                 recordType: 'complaint',
                 recordId: complaintData.id,
@@ -120,7 +120,7 @@ export async function getRelatedRecords(
               .single();
 
             if (recall.data) {
-              const recallData = recall.data as any;
+              const recallData = recall.data;
               references.push({
                 recordType: 'recall',
                 recordId: recallData.id,
@@ -144,7 +144,7 @@ export async function getRelatedRecords(
               .single();
 
             if (wo.data) {
-              const woData = wo.data as any;
+              const woData = wo.data;
               references.push({
                 recordType: 'work-order',
                 recordId: woData.id,
@@ -167,7 +167,7 @@ export async function getRelatedRecords(
         const mjc = await (supabase.from('mjcs') as any).select('*').eq('id', recordId).single();
 
         if (mjc.data) {
-          const mjcData = mjc.data as any;
+          const mjcData = mjc.data;
 
           // Get linked NCA
           if (mjcData.linked_nca_id) {
@@ -178,7 +178,7 @@ export async function getRelatedRecords(
               .single();
 
             if (nca.data) {
-              const ncaData = nca.data as any;
+              const ncaData = nca.data;
               references.push({
                 recordType: 'nca',
                 recordId: ncaData.id,
@@ -202,7 +202,7 @@ export async function getRelatedRecords(
               .single();
 
             if (wo.data) {
-              const woData = wo.data as any;
+              const woData = wo.data;
               references.push({
                 recordType: 'work-order',
                 recordId: woData.id,
@@ -229,7 +229,7 @@ export async function getRelatedRecords(
           .single();
 
         if (complaint.data) {
-          const complaintData = complaint.data as any;
+          const complaintData = complaint.data;
 
           // Get linked NCA
           if (complaintData.linked_nca_id) {
@@ -240,7 +240,7 @@ export async function getRelatedRecords(
               .single();
 
             if (nca.data) {
-              const ncaData = nca.data as any;
+              const ncaData = nca.data;
               references.push({
                 recordType: 'nca',
                 recordId: ncaData.id,
@@ -263,7 +263,7 @@ export async function getRelatedRecords(
         const recall = await (supabase.from('recalls') as any).select('*').eq('id', recordId).single();
 
         if (recall.data) {
-          const recallData = recall.data as any;
+          const recallData = recall.data;
 
           // Get all flagged NCAs
           if (recallData.affected_nca_ids && recallData.affected_nca_ids.length > 0) {

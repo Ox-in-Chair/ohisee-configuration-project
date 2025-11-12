@@ -109,8 +109,7 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
               {manifest.physical_quantity} {manifest.quantity_unit || 'kg'}
             </p>
           </div>
-          {manifest.risk_level && (
-            <div>
+          {manifest.risk_level ? <div>
               <label className="text-sm font-medium text-gray-700">Risk Level</label>
               <Badge
                 variant={
@@ -124,22 +123,17 @@ export function WasteManifestLink({ ncaId }: WasteManifestLinkProps) {
               >
                 {manifest.risk_level.toUpperCase()}
               </Badge>
-            </div>
-          )}
-          {manifest.service_provider && (
-            <div>
+            </div> : null}
+          {manifest.service_provider ? <div>
               <label className="text-sm font-medium text-gray-700">Service Provider</label>
               <p className="text-gray-900">{manifest.service_provider}</p>
-            </div>
-          )}
-          {manifest.disposal_date && (
-            <div>
+            </div> : null}
+          {manifest.disposal_date ? <div>
               <label className="text-sm font-medium text-gray-700">Disposal Date</label>
               <p className="text-gray-900">
                 {new Date(manifest.disposal_date).toLocaleDateString('en-GB')}
               </p>
-            </div>
-          )}
+            </div> : null}
         </div>
         <div className="pt-2 border-t">
           <Button variant="outline" size="sm" asChild>

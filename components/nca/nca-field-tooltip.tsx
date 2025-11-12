@@ -88,12 +88,10 @@ export function NCAFieldTooltip({ fieldName, content, brcgsReference, procedureR
         <TooltipContent className="max-w-xs">
           <div className="space-y-1">
             <p className="text-sm">{tooltipInfo.content}</p>
-            {(tooltipInfo.brcgsReference || tooltipInfo.procedureReference) && (
-              <div className="text-xs text-gray-400 pt-1 border-t border-gray-200">
-                {tooltipInfo.brcgsReference && <div>BRCGS: {tooltipInfo.brcgsReference}</div>}
-                {tooltipInfo.procedureReference && <div>{tooltipInfo.procedureReference}</div>}
-              </div>
-            )}
+            {(tooltipInfo.brcgsReference || tooltipInfo.procedureReference) ? <div className="text-xs text-gray-400 pt-1 border-t border-gray-200">
+                {tooltipInfo.brcgsReference ? <div>BRCGS: {tooltipInfo.brcgsReference}</div> : null}
+                {tooltipInfo.procedureReference ? <div>{tooltipInfo.procedureReference}</div> : null}
+              </div> : null}
           </div>
         </TooltipContent>
       </Tooltip>

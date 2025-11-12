@@ -241,11 +241,9 @@ export function TimelineBuilder({
       </Card>
 
       {/* Complete Button */}
-      {events.length > 0 && onComplete && (
-        <Button type="button" onClick={handleComplete} className="w-full" variant="default">
+      {events.length > 0 && onComplete ? <Button type="button" onClick={handleComplete} className="w-full" variant="default">
           Use This Timeline
-        </Button>
-      )}
+        </Button> : null}
     </div>
   );
 }

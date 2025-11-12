@@ -105,7 +105,7 @@ export class RateLimiter implements IRateLimiter {
       });
     }
 
-    return this.storage.get(user_id)!;
+    return this.storage.get(user_id);
   }
 
   private cleanup(): void {

@@ -145,8 +145,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
       </div>
 
       {/* Temporary Repair Alert (if applicable) */}
-      {mjc.temporary_repair && daysRemaining !== null && (
-        <Card
+      {mjc.temporary_repair && daysRemaining !== null ? <Card
           className="mb-6 border-l-4 border-l-orange-500"
           data-testid="mjc-temp-repair-countdown"
         >
@@ -161,7 +160,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
               <div>
                 <label className="text-sm font-medium text-gray-700">Due Date</label>
                 <p className="text-gray-900" data-testid="mjc-temp-repair-due-date">
-                  {new Date(mjc.close_out_due_date!).toLocaleDateString('en-GB')}
+                  {new Date(mjc.close_out_due_date).toLocaleDateString('en-GB')}
                 </p>
               </div>
               <div>
@@ -188,8 +187,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
               </div>
             )}
           </CardContent>
-        </Card>
-      )}
+        </Card> : null}
 
       {/* Section 1: Job Card Identification */}
       <Card className="mb-6" data-testid="mjc-detail-section-1">
@@ -221,12 +219,10 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
             <label className="text-sm font-medium text-gray-700">Raised By</label>
             <p className="text-gray-900">{mjc.raised_by?.full_name || 'N/A'}</p>
           </div>
-          {mjc.assigned_to_user && (
-            <div>
+          {mjc.assigned_to_user ? <div>
               <label className="text-sm font-medium text-gray-700">Assigned To</label>
               <p className="text-gray-900">{mjc.assigned_to_user.full_name}</p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
 
@@ -286,10 +282,10 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
           <div>
             <label className="text-sm font-medium text-gray-700">Maintenance Type</label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {mjc.maintenance_type_electrical && <Badge variant="outline">Electrical</Badge>}
-              {mjc.maintenance_type_mechanical && <Badge variant="outline">Mechanical</Badge>}
-              {mjc.maintenance_type_pneumatical && <Badge variant="outline">Pneumatical</Badge>}
-              {mjc.maintenance_type_other && <Badge variant="outline">{mjc.maintenance_type_other}</Badge>}
+              {mjc.maintenance_type_electrical ? <Badge variant="outline">Electrical</Badge> : null}
+              {mjc.maintenance_type_mechanical ? <Badge variant="outline">Mechanical</Badge> : null}
+              {mjc.maintenance_type_pneumatical ? <Badge variant="outline">Pneumatical</Badge> : null}
+              {mjc.maintenance_type_other ? <Badge variant="outline">{mjc.maintenance_type_other}</Badge> : null}
             </div>
           </div>
         </CardContent>
@@ -320,20 +316,16 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
           </div>
           {mjc.machine_status === 'down' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mjc.machine_down_since && (
-                <div>
+              {mjc.machine_down_since ? <div>
                   <label className="text-sm font-medium text-gray-700">Machine Down Since</label>
                   <p className="text-gray-900">
                     {new Date(mjc.machine_down_since).toLocaleString('en-GB')}
                   </p>
-                </div>
-              )}
-              {mjc.estimated_downtime && (
-                <div>
+                </div> : null}
+              {mjc.estimated_downtime ? <div>
                   <label className="text-sm font-medium text-gray-700">Estimated Downtime</label>
                   <p className="text-gray-900">{mjc.estimated_downtime} minutes</p>
-                </div>
-              )}
+                </div> : null}
             </div>
           )}
         </CardContent>
@@ -350,14 +342,12 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="destructive">Temporary Repair Applied</Badge>
               </div>
-              {mjc.close_out_due_date && (
-                <div>
+              {mjc.close_out_due_date ? <div>
                   <label className="text-sm font-medium text-gray-700">Permanent Fix Due Date</label>
                   <p className="text-gray-900">
                     {new Date(mjc.close_out_due_date).toLocaleDateString('en-GB')}
                   </p>
-                </div>
-              )}
+                </div> : null}
             </div>
           ) : (
             <div data-testid="mjc-no-temp-repair">
@@ -391,14 +381,11 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
                 <label className="text-sm font-medium text-gray-700">Work Performed</label>
                 <p className="text-gray-900 whitespace-pre-wrap mt-1">{mjc.maintenance_performed}</p>
               </div>
-              {mjc.maintenance_technician && (
-                <div>
+              {mjc.maintenance_technician ? <div>
                   <label className="text-sm font-medium text-gray-700">Technician</label>
                   <p className="text-gray-900">{mjc.maintenance_technician}</p>
-                </div>
-              )}
-              {mjc.work_started_at && mjc.work_completed_at && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div> : null}
+              {mjc.work_started_at && mjc.work_completed_at ? <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-gray-700">Work Started</label>
                     <p className="text-gray-900">
@@ -411,8 +398,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
                       {new Date(mjc.work_completed_at).toLocaleString('en-GB')}
                     </p>
                   </div>
-                </div>
-              )}
+                </div> : null}
             </div>
           ) : (
             <p className="text-gray-500 italic">Maintenance work not yet performed</p>
@@ -467,9 +453,7 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-900 font-medium">{item.item}</p>
-                    {item.notes && (
-                      <p className="text-sm text-gray-600 mt-1">{item.notes}</p>
-                    )}
+                    {item.notes ? <p className="text-sm text-gray-600 mt-1">{item.notes}</p> : null}
                   </div>
                   <Badge
                     variant={item.verified ? 'default' : 'outline'}
@@ -519,27 +503,21 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
                   <label className="text-sm font-medium text-gray-700">QA Supervisor</label>
                   <p className="text-gray-900">{mjc.hygiene_clearance_by}</p>
                 </div>
-                {mjc.hygiene_clearance_at && (
-                  <div>
+                {mjc.hygiene_clearance_at ? <div>
                     <label className="text-sm font-medium text-gray-700">Clearance Date</label>
                     <p className="text-gray-900">
                       {new Date(mjc.hygiene_clearance_at).toLocaleString('en-GB')}
                     </p>
-                  </div>
-                )}
+                  </div> : null}
               </div>
-              {mjc.hygiene_clearance_comments && (
-                <div>
+              {mjc.hygiene_clearance_comments ? <div>
                   <label className="text-sm font-medium text-gray-700">Comments</label>
                   <p className="text-gray-900 whitespace-pre-wrap">{mjc.hygiene_clearance_comments}</p>
-                </div>
-              )}
-              {mjc.hygiene_clearance_signature && (
-                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
+                </div> : null}
+              {mjc.hygiene_clearance_signature ? <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
                   <Icon name={ICONS.SUCCESS_ALT} size="md" className="text-green-600" />
                   <span className="text-green-800 font-medium">Production Clearance Granted</span>
-                </div>
-              )}
+                </div> : null}
             </div>
           ) : (
             <p className="text-gray-500 italic">Awaiting hygiene clearance signature</p>
@@ -584,12 +562,10 @@ export default async function MJCDetailPage({ params }: MJCDetailPageProps) {
             <label className="text-sm font-medium text-gray-700">Last Updated</label>
             <p className="text-gray-900">{new Date(mjc.updated_at).toLocaleString('en-GB')}</p>
           </div>
-          {mjc.submitted_at && (
-            <div>
+          {mjc.submitted_at ? <div>
               <label className="text-sm font-medium text-gray-700">Submitted</label>
               <p className="text-gray-900">{new Date(mjc.submitted_at).toLocaleString('en-GB')}</p>
-            </div>
-          )}
+            </div> : null}
         </CardContent>
       </Card>
     </div>

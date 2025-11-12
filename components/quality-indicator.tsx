@@ -82,25 +82,21 @@ export const QualityIndicator: FC<QualityIndicatorProps> = ({
       >
         {getIcon()}
         <span className="font-semibold">{score}/100</span>
-        {showDetails && (
-          <>
+        {showDetails ? <>
             <span className="mx-1">•</span>
             <span className="text-xs">{getMessage()}</span>
-          </>
-        )}
+          </> : null}
       </Badge>
 
       {/* Optional detailed breakdown */}
-      {showDetails && score < threshold && (
-        <p className="text-xs text-gray-600 mt-1">
+      {showDetails && score < threshold ? <p className="text-xs text-gray-600 mt-1">
           Threshold: {threshold}/100
           {score < threshold && (
             <span className="text-red-600 ml-2">
               ({threshold - score} points needed)
             </span>
           )}
-        </p>
-      )}
+        </p> : null}
     </div>
   );
 };

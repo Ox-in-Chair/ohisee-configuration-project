@@ -260,27 +260,23 @@ export function FiveWhyBuilder({
               rows={3}
               required={required}
             />
-            {isComplete && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
+            {isComplete ? <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
                 <Icon name={ICONS.SUCCESS} size="sm" />
                 <span>Analysis complete</span>
-              </div>
-            )}
+              </div> : null}
           </CardContent>
         </Card>
       )}
 
       {/* Complete Button */}
-      {isComplete && onComplete && (
-        <Button
+      {isComplete && onComplete ? <Button
           type="button"
           onClick={handleComplete}
           className="w-full"
           variant="default"
         >
           Use This Analysis
-        </Button>
-      )}
+        </Button> : null}
     </div>
   );
 }

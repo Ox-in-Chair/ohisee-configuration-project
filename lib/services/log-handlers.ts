@@ -166,7 +166,7 @@ export class FileHandler implements LogHandler {
       await this.rotateIfNeeded(logFile);
 
       // Format log entry as JSON
-      const logLine = JSON.stringify(entry) + '\n';
+      const logLine = `${JSON.stringify(entry)  }\n`;
 
       // Append to file
       await fs.appendFile(logFile, logLine, 'utf-8');
@@ -313,7 +313,7 @@ export class SentryHandler implements LogHandler {
     try {
       // Dynamically import Sentry (optional dependency)
       // Use a function to prevent Next.js from statically analyzing the require
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+       
       const requireSentry = (moduleName: string) => require(moduleName);
       const Sentry = requireSentry('@sentry/nextjs');
       this.sentry = Sentry;

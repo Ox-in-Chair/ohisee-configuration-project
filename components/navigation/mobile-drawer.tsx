@@ -138,7 +138,7 @@ export function MobileDrawer() {
               <ul className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href  }/`);
 
                   return (
                     <li key={item.href}>
@@ -155,11 +155,9 @@ export function MobileDrawer() {
                       >
                         <Icon className="h-5 w-5 shrink-0" />
                         <span className="flex-1">{item.title}</span>
-                        {item.badge && (
-                          <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                        {item.badge ? <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
                             {item.badge}
-                          </span>
-                        )}
+                          </span> : null}
                       </Link>
                     </li>
                   );

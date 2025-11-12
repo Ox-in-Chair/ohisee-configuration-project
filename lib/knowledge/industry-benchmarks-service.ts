@@ -116,7 +116,7 @@ export class IndustryBenchmarksService {
         recommendation = 'Consider implementing faster response protocols to match top performers.';
       } else {
         message = `Your response time: ${userValue.toFixed(1)} days (Industry median: ${median.toFixed(1)} days) - Below industry average`;
-        recommendation = 'Review response time processes. Top performers average ' + (benchmark.percentile_25?.toFixed(1) || 'N/A') + ' days.';
+        recommendation = `Review response time processes. Top performers average ${  benchmark.percentile_25?.toFixed(1) || 'N/A'  } days.`;
       }
     } else if (metricCategory === 'defect_rate') {
       const median = benchmark.percentile_50 || benchmark.benchmark_value;
@@ -126,7 +126,7 @@ export class IndustryBenchmarksService {
         message = `Your defect rate: ${userValue.toFixed(2)}% (Industry median: ${median.toFixed(2)}%) - Good performance`;
       } else {
         message = `Your defect rate: ${userValue.toFixed(2)}% (Industry median: ${median.toFixed(2)}%) - Above industry average`;
-        recommendation = 'Review quality control processes. Top performers maintain defect rates below ' + (benchmark.percentile_25?.toFixed(2) || 'N/A') + '%.';
+        recommendation = `Review quality control processes. Top performers maintain defect rates below ${  benchmark.percentile_25?.toFixed(2) || 'N/A'  }%.`;
       }
     } else {
       message = `Your value: ${userValue.toFixed(2)} (Industry benchmark: ${benchmark.benchmark_value.toFixed(2)})`;

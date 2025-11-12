@@ -163,7 +163,7 @@ export const mjcFormSchema = z
 
     // If production clearance is granted, signature is required
     if (data.production_cleared) {
-      if (!data.clearance_signature || !data.clearance_signature.data || data.clearance_signature.data.trim().length === 0) {
+      if (!data.clearance_signature?.data || data.clearance_signature.data.trim().length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Digital signature is required when granting production clearance',

@@ -68,7 +68,7 @@ export async function createWasteManifestFromNCA(
       };
     }
 
-    const ncaData = nca as any;
+    const ncaData = nca;
 
     // Create waste manifest
     const manifestData = {
@@ -79,7 +79,7 @@ export async function createWasteManifestFromNCA(
       specialized_storage: wasteData.specialized_storage || null,
       document_reference: wasteData.document_reference || '4.10F1',
       physical_quantity: wasteData.physical_quantity || ncaData.quantity || 0,
-      quantity_unit: wasteData.quantity_unit || (ncaData.quantity_unit as any) || 'kg',
+      quantity_unit: wasteData.quantity_unit || (ncaData.quantity_unit) || 'kg',
       service_provider: wasteData.service_provider || null,
       disposal_certificate: wasteData.disposal_certificate || null,
       disposal_date: wasteData.disposal_date || null,

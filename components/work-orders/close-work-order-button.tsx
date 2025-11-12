@@ -72,8 +72,7 @@ export function CloseWorkOrderButton({
             </DialogDescription>
           </DialogHeader>
 
-          {hasOpenIssues && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          {hasOpenIssues ? <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start gap-2">
                 <Icon name={ICONS.ALERT} size="md" className="text-yellow-600 mt-0.5" />
                 <div>
@@ -84,11 +83,9 @@ export function CloseWorkOrderButton({
                   </p>
                 </div>
               </div>
-            </div>
-          )}
+            </div> : null}
 
-          {hasOpenIssues && (
-            <div className="flex items-center gap-2">
+          {hasOpenIssues ? <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="forceClose"
@@ -99,8 +96,7 @@ export function CloseWorkOrderButton({
               <label htmlFor="forceClose" className="text-sm text-gray-700">
                 I understand the risks and want to force close this work order
               </label>
-            </div>
-          )}
+            </div> : null}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isClosing}>

@@ -27,7 +27,7 @@ export function MobileBottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-surface lg:hidden">
       <div className="flex h-16 items-center justify-around safe-area-inset-bottom">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href  }/`);
 
           return (
             <Link
@@ -44,16 +44,12 @@ export function MobileBottomNav() {
             >
               <div className="relative">
                 <Icon name={item.icon} size="lg" />
-                {item.badge && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
+                {item.badge ? <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
                     {item.badge}
-                  </span>
-                )}
+                  </span> : null}
               </div>
               <span className="text-[10px] font-medium">{item.title}</span>
-              {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-              )}
+              {isActive ? <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" /> : null}
             </Link>
           );
         })}

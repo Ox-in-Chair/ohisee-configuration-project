@@ -210,7 +210,7 @@ export async function unflagNCAsForRecall(recallId: string): Promise<{
       };
     }
 
-    const recallData = recall as any;
+    const recallData = recall;
     const ncaIds = recallData.affected_nca_ids || [];
 
     if (ncaIds.length === 0) {

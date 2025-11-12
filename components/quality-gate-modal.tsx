@@ -122,8 +122,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         </div>
 
         {/* Requirements Checklist */}
-        {requirements && requirements.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        {requirements && requirements.length > 0 ? <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start gap-2 mb-3">
               <Icon name={ICONS.FILE_TEXT} size="md" className="text-yellow-600 mt-0.5" />
               <div className="flex-1">
@@ -151,16 +150,12 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                               <p className="text-yellow-800">
                                 <span className="font-medium">{req.field}:</span> {req.message}
                               </p>
-                              {req.reference && (
-                                <p className="text-xs text-yellow-700 mt-1 ml-4">
+                              {req.reference ? <p className="text-xs text-yellow-700 mt-1 ml-4">
                                   Reference: {req.reference}
-                                </p>
-                              )}
-                              {req.exampleFix && (
-                                <p className="text-xs text-yellow-700 mt-1 ml-4 italic">
+                                </p> : null}
+                              {req.exampleFix ? <p className="text-xs text-yellow-700 mt-1 ml-4 italic">
                                   💡 {req.exampleFix}
-                                </p>
-                              )}
+                                </p> : null}
                             </div>
                           </div>
                         )}
@@ -170,12 +165,10 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                 </ul>
               </div>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* Errors */}
-        {errors && errors.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        {errors && errors.length > 0 ? <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start gap-2 mb-2">
               <Icon name={ICONS.ERROR} size="md" className="text-red-600 mt-0.5" />
               <div>
@@ -184,22 +177,18 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                   {errors.map((error, index) => (
                     <li key={index} className="text-sm text-red-800">
                       <span className="font-medium">{error.field}:</span> {error.message}
-                      {error.brcgs_requirement && (
-                        <p className="ml-5 text-xs text-red-700 mt-1">
+                      {error.brcgs_requirement ? <p className="ml-5 text-xs text-red-700 mt-1">
                           BRCGS: {error.brcgs_requirement}
-                        </p>
-                      )}
+                        </p> : null}
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* Warnings / Suggestions (if no requirements shown) */}
-        {warnings && warnings.length > 0 && (!requirements || requirements.length === 0) && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        {warnings && warnings.length > 0 && (!requirements || requirements.length === 0) ? <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-2">
               <Icon name={ICONS.WARNING} size="md" className="text-blue-600 mt-0.5" />
               <div className="flex-1">
@@ -210,22 +199,18 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                       <p className="text-blue-800">
                         <span className="font-medium">{warning.field}:</span> {warning.message}
                       </p>
-                      {warning.suggestion && (
-                        <p className="text-blue-700 ml-4 mt-1 italic">
+                      {warning.suggestion ? <p className="text-blue-700 ml-4 mt-1 italic">
                           💡 {warning.suggestion}
-                        </p>
-                      )}
+                        </p> : null}
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* Compliance Summary */}
-        {compliance && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+        {compliance ? <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
             <div className="flex items-start gap-2">
               <Icon name={ICONS.SHIELD} size="sm" className="text-green-600 mt-0.5" />
               <div>
@@ -235,18 +220,15 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                     ? 'All checked sections meet requirements.'
                     : 'Some sections require attention.'}
                 </p>
-                {compliance.checked_sections && compliance.checked_sections.length > 0 && (
-                  <p className="text-xs text-green-700 mt-1">
+                {compliance.checked_sections && compliance.checked_sections.length > 0 ? <p className="text-xs text-green-700 mt-1">
                     Checked: {compliance.checked_sections.join(', ')}
-                  </p>
-                )}
+                  </p> : null}
               </div>
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* BRCGS Compliance Note */}
-        {(!compliance || !compliance.passed) && (
+        {(!compliance?.passed) && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
             <div className="flex items-start gap-2">
               <Icon name={ICONS.SHIELD} size="sm" className="text-blue-600 mt-0.5" />
@@ -259,8 +241,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
         )}
 
         {/* Manager Approval Justification Field */}
-        {showJustificationField && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        {showJustificationField ? <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <Label htmlFor="justification" className="text-sm font-semibold text-gray-900 mb-2 block">
               Justification for Manager Approval (Required)
             </Label>
@@ -277,8 +258,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
             <p className="text-xs text-gray-600">
               {justification.length}/50 characters minimum. This justification will be logged for audit purposes.
             </p>
-          </div>
-        )}
+          </div> : null}
 
         {/* Actions */}
         <DialogFooter className="flex gap-3 sm:gap-3">
@@ -308,8 +288,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
               >
                 Go Back & Edit
               </Button>
-              {onSubmitAnyway && (
-                <>
+              {onSubmitAnyway ? <>
                   {!showJustificationField ? (
                     <Button
                       variant="outline"
@@ -344,8 +323,7 @@ export const QualityGateModal: FC<QualityGateModalProps> = ({
                       Submit for Manager Approval
                     </Button>
                   )}
-                </>
-              )}
+                </> : null}
             </>
           )}
         </DialogFooter>

@@ -44,7 +44,7 @@ export async function updateSupplierPerformanceFromNCA(
     }
 
     // Only update for supplier-based NCAs
-    const ncaData = nca as any;
+    const ncaData = nca;
     if (ncaData.nc_origin !== 'supplier-based' || !ncaData.supplier_name) {
       return { success: true }; // Not a supplier-based NCA, skip
     }
@@ -372,7 +372,7 @@ export async function getSupplierPerformanceMetrics(
       ncaCountLast12Mo: supplier.nca_count_last_12mo || 0,
       averageClosureTime: null, // TODO: Calculate from closed NCAs
       qualityRating: supplier.quality_rating || null,
-      riskLevel: (supplier.risk_level as any) || null,
+      riskLevel: (supplier.risk_level) || null,
       lastNcaDate: null, // TODO: Get from most recent NCA
       trend: trend.trend,
     };
