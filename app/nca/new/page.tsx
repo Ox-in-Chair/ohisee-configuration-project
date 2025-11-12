@@ -707,7 +707,7 @@ export default function NewNCAPage(): React.ReactElement {
               value={ncDescription}
               onChange={(value) => handleFieldChange('nc_description', value)}
               onGetHelp={() => handleGetHelp('nc_description')}
-              qualityScore={qualityValidation.qualityScore?.score}
+              qualityScore={qualityValidation.qualityScore?.score ?? null}
               isCheckingQuality={qualityValidation.isChecking}
               isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}
@@ -1076,7 +1076,7 @@ export default function NewNCAPage(): React.ReactElement {
               value={rootCauseAnalysis}
               onChange={(value) => handleFieldChange('root_cause_analysis', value)}
               onGetHelp={() => handleGetHelp('root_cause_analysis')}
-              qualityScore={qualityValidation.qualityScore?.score}
+              qualityScore={qualityValidation.qualityScore?.score ?? null}
               isCheckingQuality={qualityValidation.isChecking}
               isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}
@@ -1111,7 +1111,7 @@ export default function NewNCAPage(): React.ReactElement {
               value={correctiveAction}
               onChange={(value) => handleFieldChange('corrective_action', value)}
               onGetHelp={() => handleGetHelp('corrective_action')}
-              qualityScore={qualityValidation.qualityScore?.score}
+              qualityScore={qualityValidation.qualityScore?.score ?? null}
               isCheckingQuality={qualityValidation.isChecking}
               isProcessing={qualityValidation.isSuggesting}
               showQualityBadge={true}

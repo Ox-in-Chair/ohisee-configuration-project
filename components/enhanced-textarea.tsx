@@ -19,7 +19,7 @@ export interface EnhancedTextareaProps {
   value: string;
   onChange: (value: string) => void;
   onGetHelp?: (() => void) | undefined;
-  qualityScore?: (  null) | undefined;
+  qualityScore?: number | null | undefined;
   isCheckingQuality?: boolean | undefined;
   isProcessing?: boolean | undefined;
   showQualityBadge?: boolean | undefined;
