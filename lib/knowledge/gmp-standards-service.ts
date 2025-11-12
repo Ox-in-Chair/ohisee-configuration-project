@@ -89,7 +89,7 @@ export class GMPStandardsService {
    */
   async checkCompliance(
     formData: any,
-    formType: 'nca' | 'mjc'
+    _formType: 'nca' | 'mjc'
   ): Promise<GMPComplianceCheck> {
     const violations: GMPViolation[] = [];
     const recommendations: string[] = [];
@@ -106,9 +106,10 @@ export class GMPStandardsService {
 
       if (hasAllergenMention) {
         const allergenStandards = await this.getStandardsBySection('Allergen');
-        if (allergenStandards.length > 0) {
+        const allergenStandard = allergenStandards[0];
+        if (allergenStandard) {
           violations.push({
-            standard: allergenStandards[0],
+            standard: allergenStandard,
             violation_type: 'allergen',
             severity: 'high',
             description: 'Allergen mentioned in description. Ensure allergen management protocols are followed.',
@@ -125,9 +126,10 @@ export class GMPStandardsService {
 
       if (hasHACCPMention) {
         const haccpStandards = await this.getStandardsBySection('HACCP');
-        if (haccpStandards.length > 0) {
+        const haccpStandard = haccpStandards[0];
+        if (haccpStandard) {
           violations.push({
-            standard: haccpStandards[0],
+            standard: haccpStandard,
             violation_type: 'haccp',
             severity: 'medium',
             description: 'HACCP-related issue identified. Ensure proper hazard analysis is conducted.',
@@ -158,7 +160,7 @@ export class GMPStandardsService {
   /**
    * Get HACCP-based root cause suggestions
    */
-  async getHACCPRootCauseSuggestions(currentAnalysis: string): Promise<string[]> {
+  async getHACCPRootCauseSuggestions(_currentAnalysis: string): Promise<string[]> {
     const haccpStandards = await this.getStandardsBySection('HACCP');
     
     if (haccpStandards.length === 0) {

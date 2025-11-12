@@ -102,7 +102,7 @@ export class MarkdownParser implements IMarkdownParser {
 
     for (const line of lines) {
       const match = line.match(/^([^:]+):\s*(.+)$/);
-      if (match) {
+      if (match && match[1] && match[2]) {
         const key = match[1].trim();
         let value = match[2].trim();
 
@@ -134,43 +134,43 @@ export class MarkdownParser implements IMarkdownParser {
 
     // Extract document number
     const docNumMatch = content.match(/(?:Document Number|document_number):\s*\**([0-9.]+)/i);
-    if (docNumMatch) {
+    if (docNumMatch && docNumMatch[1]) {
       metadata.document_number = docNumMatch[1];
     }
 
     // Extract document name
     const docNameMatch = content.match(/(?:Document Name|document_name):\s*\**([^\n*]+)/i);
-    if (docNameMatch) {
+    if (docNameMatch && docNameMatch[1]) {
       metadata.document_name = docNameMatch[1].trim();
     }
 
     // Extract revision
     const revMatch = content.match(/(?:Revision|revision):\s*\**([0-9]+)/i);
-    if (revMatch) {
+    if (revMatch && revMatch[1]) {
       metadata.revision = parseInt(revMatch[1], 10);
     }
 
     // Extract effective date
     const dateMatch = content.match(/(?:Effective Date|effective_date|date):\s*\**([0-9]{4}-[0-9]{2}-[0-9]{2})/i);
-    if (dateMatch) {
+    if (dateMatch && dateMatch[1]) {
       metadata.effective_date = dateMatch[1];
     }
 
     // Extract summary
     const summaryMatch = content.match(/##\s*Summary\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
-    if (summaryMatch) {
+    if (summaryMatch && summaryMatch[1]) {
       metadata.summary = summaryMatch[1].trim().replace(/\n+/g, ' ').slice(0, 500);
     }
 
     // Extract key requirements
     const reqMatch = content.match(/##\s*Key requirements?\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
-    if (reqMatch) {
+    if (reqMatch && reqMatch[1]) {
       metadata.key_requirements = this.extractListItems(reqMatch[1]);
     }
 
     // Extract integration points
     const intMatch = content.match(/##\s*Integration points?\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
-    if (intMatch) {
+    if (intMatch && intMatch[1]) {
       metadata.integration_points = this.extractListItems(intMatch[1]);
     }
 
@@ -199,7 +199,8 @@ export class MarkdownParser implements IMarkdownParser {
    */
   private normalizeMetadata(raw: any, fileName: string): ProcedureMetadata {
     // Extract document number from filename if not in metadata
-    const docNumberFromFile = fileName.match(/^([0-9.]+)/)?.[1];
+    const docNumberMatch = fileName.match(/^([0-9.]+)/);
+    const docNumberFromFile = docNumberMatch?.[1];
 
     return {
       document_number: raw.document_number || docNumberFromFile || 'UNKNOWN',

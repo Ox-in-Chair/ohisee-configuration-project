@@ -117,7 +117,7 @@ export class DataSyncService {
       };
     }
 
-    const startTime = Date.now();
+    // const startTime = Date.now(); // Tracked for future performance monitoring
 
     try {
       // Use custom handler if provided, otherwise use default
@@ -133,8 +133,8 @@ export class DataSyncService {
         recordsUpdated: result.recordsUpdated,
         recordsInserted: result.recordsInserted,
         recordsDeleted: result.recordsDeleted,
-        errorMessage: result.error,
-        metadata: result.metadata,
+        ...(result.error ? { errorMessage: result.error } : {}),
+        ...(result.metadata ? { metadata: result.metadata } : {}),
       });
 
       return result;
@@ -168,7 +168,7 @@ export class DataSyncService {
    */
   private async defaultSyncHandler(
     sourceType: SyncSourceType,
-    syncType: SyncType
+    _syncType: SyncType
   ): Promise<SyncResult> {
     // This is a placeholder - actual sync logic should be implemented
     // by the specific API integration services

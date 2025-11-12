@@ -13,19 +13,19 @@ export interface AIEnhancedTextareaProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onKangopakCore?: () => void;
-  qualityScore?: number | null;
-  isCheckingQuality?: boolean;
-  isSuggesting?: boolean;
-  showQualityBadge?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  rows?: number;
-  required?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  'data-testid'?: string;
-  error?: string;
+  onKangopakCore?: (() => void) | undefined;
+  qualityScore?: (number | null) | undefined;
+  isCheckingQuality?: boolean | undefined;
+  isSuggesting?: boolean | undefined;
+  showQualityBadge?: boolean | undefined;
+  minLength?: number | undefined;
+  maxLength?: number | undefined;
+  rows?: number | undefined;
+  required?: boolean | undefined;
+  placeholder?: string | undefined;
+  disabled?: boolean | undefined;
+  'data-testid'?: string | undefined;
+  error?: string | undefined;
 }
 
 /**

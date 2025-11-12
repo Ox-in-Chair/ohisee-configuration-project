@@ -37,9 +37,9 @@ export async function generateEndOfDayPDF(
       .in('id', entryIds.workOrderIds),
   ]);
 
-  const ncas = ncasResult.data || [];
-  const mjcs = mjcsResult.data || [];
-  const workOrders = workOrdersResult.data || [];
+  const ncas: any[] = ncasResult.data || [];
+  const mjcs: any[] = mjcsResult.data || [];
+  const workOrders: any[] = workOrdersResult.data || [];
 
   // For now, return a simple text-based report
   // TODO: Implement proper PDF generation with @react-pdf/renderer or puppeteer

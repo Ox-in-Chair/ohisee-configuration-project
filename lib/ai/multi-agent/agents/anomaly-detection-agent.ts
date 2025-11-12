@@ -28,7 +28,7 @@ export class AnomalyDetectionAgent {
       // Check for quantity anomalies
       if (ncaData.nc_description) {
         const quantityMatch = ncaData.nc_description.match(/\b(\d+(?:\.\d+)?)\s*(kg|units|meters|boxes|pallets)\b/i);
-        if (quantityMatch) {
+        if (quantityMatch && quantityMatch[1] && quantityMatch[2]) {
           const quantity = parseFloat(quantityMatch[1]);
           const unit = quantityMatch[2].toLowerCase();
 
@@ -48,7 +48,7 @@ export class AnomalyDetectionAgent {
       // Check for date/time anomalies
       if (ncaData.nc_description) {
         const dateMatch = ncaData.nc_description.match(/\b(\d{1,2}\/\d{1,2}\/\d{2,4})\b/);
-        if (dateMatch) {
+        if (dateMatch && dateMatch[1]) {
           const reportedDate = new Date(dateMatch[1]);
           const today = new Date();
           const daysDiff = Math.abs((today.getTime() - reportedDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -90,14 +90,14 @@ export class AnomalyDetectionAgent {
    */
   private async checkQuantityAnomaly(
     quantity: number,
-    unit: string,
+    _unit: string,
     formType: 'nca' | 'mjc'
   ): Promise<{ direction: 'high' | 'low'; average: number } | null> {
     try {
       const supabase = createServerClient();
 
       // Get historical average (simplified query - in production, use proper aggregation)
-      const { data } = await supabase
+      const { data: _data } = await supabase
         .from(formType === 'nca' ? 'nca_records' : 'mjc_records')
         .select('nc_description')
         .limit(100);
@@ -124,7 +124,7 @@ export class AnomalyDetectionAgent {
    */
   private async checkFrequencyAnomaly(
     formData: NCA | MJC,
-    user: User
+    _user: User
   ): Promise<{ count: number; period: number } | null> {
     try {
       const supabase = createServerClient();

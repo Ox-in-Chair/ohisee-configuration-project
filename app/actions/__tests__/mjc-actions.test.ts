@@ -8,8 +8,6 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   createMockSupabaseClient,
-  createMockUser,
-  createMockNotificationService,
   sampleMJCData,
   sampleMJCMachineDown,
   sampleMJCTemporaryRepair,
@@ -18,7 +16,6 @@ import {
   setupSuccessfulInsert,
   setupFailedInsert,
   setupSuccessfulSelect,
-  setupSuccessfulUpdate,
 } from './mocks';
 
 // Mock dependencies
@@ -30,11 +27,9 @@ jest.mock('next/cache', () => ({
 
 describe('MJC Actions', () => {
   let mockSupabase: jest.Mocked<SupabaseClient>;
-  let mockNotificationService: ReturnType<typeof createMockNotificationService>;
 
   beforeEach(() => {
     mockSupabase = createMockSupabaseClient();
-    mockNotificationService = createMockNotificationService();
 
     // Mock createServerClient to return our mock
     const { createServerClient } = require('@/lib/database/client');

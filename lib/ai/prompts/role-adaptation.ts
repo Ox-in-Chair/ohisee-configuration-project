@@ -91,7 +91,7 @@ Return your assessment as plain text (not JSON).`;
 - Example: "Segregate affected product and complete hold label per 5.7"`;
   }
 
-  private getAdvancedGuidelines(role: string): string {
+  private getAdvancedGuidelines(_role: string): string {
     return `**Language Level: Advanced**
 - Full BRCGS compliance terminology
 - Cite specific regulatory clauses and sections

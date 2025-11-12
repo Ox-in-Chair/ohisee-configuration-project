@@ -16,7 +16,7 @@ import { createServerClient } from '@/lib/database/client';
 import type { NCA, MJC } from '../types';
 import { createPackagingSafetyService } from '@/lib/knowledge/packaging-safety-service';
 import { createGMPStandardsService } from '@/lib/knowledge/gmp-standards-service';
-import { createIndustryBenchmarksService } from '@/lib/knowledge/industry-benchmarks-service';
+// import { createIndustryBenchmarksService } from '@/lib/knowledge/industry-benchmarks-service'; // Reserved for future use
 
 export interface RAGContext {
   procedures: Array<{
@@ -109,9 +109,9 @@ export class EnhancedRAGService {
    * Find similar historical cases using vector similarity
    */
   private async findSimilarCases(
-    query: string,
+    _query: string,
     formType: 'nca' | 'mjc',
-    formData?: Partial<NCA | MJC>
+    _formData?: Partial<NCA | MJC>
   ): Promise<RAGContext['similarCases']> {
     try {
       const tableName = formType === 'nca' ? 'nca_records' : 'mjc_records';
@@ -236,6 +236,9 @@ export class EnhancedRAGService {
       }
 
       const material = materials[0];
+      if (!material) {
+        return null;
+      }
       const safetyInfo = await packagingService.getSafetySuggestions(material.material_code, productDesc);
 
       return {
@@ -279,8 +282,8 @@ export class EnhancedRAGService {
    * Retrieve industry benchmark context
    */
   private async retrieveBenchmarkContext(
-    formData: Partial<NCA | MJC>,
-    formType: 'nca' | 'mjc'
+    _formData: Partial<NCA | MJC>,
+    _formType: 'nca' | 'mjc'
   ): Promise<{ comparisons?: any[]; sources: string[] } | null> {
     // This would be populated when we have actual benchmark data
     // For now, return null as benchmarks are typically calculated after submission
@@ -370,7 +373,7 @@ Rewritten text:`;
   /**
    * Get field-specific instructions based on field name
    */
-  private getFieldSpecificInstructions(field: string, formData: Partial<NCA | MJC>): string {
+  private getFieldSpecificInstructions(field: string, _formData: Partial<NCA | MJC>): string {
     switch (field) {
       case 'nc_description':
         return `**NC DESCRIPTION FIELD** - This field describes WHAT HAPPENED, not what to do about it.
@@ -431,8 +434,8 @@ Rewritten text:`;
    * Call fine-tuned model (placeholder - in production, integrate with actual model)
    */
   private async callFineTunedModel(
-    prompt: string,
-    config?: FineTuningConfig
+    _prompt: string,
+    _config?: FineTuningConfig
   ): Promise<string> {
     // In production, this would:
     // 1. Call fine-tuned model API (e.g., OpenAI fine-tuned model, Anthropic custom model)

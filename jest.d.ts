@@ -27,6 +27,7 @@ declare global {
       toBePartiallyChecked(): R;
       toHaveDescription(text?: string | RegExp): R;
       toHaveErrorMessage(text?: string | RegExp): R;
+      toHaveAccessibleName(name?: string | RegExp): R;
     }
   }
 }

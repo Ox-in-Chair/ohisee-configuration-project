@@ -18,26 +18,26 @@ export interface EnhancedTextareaProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  onGetHelp?: () => void;
-  qualityScore?: number | null;
-  isCheckingQuality?: boolean;
-  isProcessing?: boolean;
-  showQualityBadge?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  rows?: number;
-  required?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  'data-testid'?: string;
-  error?: string;
-  fieldName?: string; // For requirement checklist (e.g., 'nc_description', 'root_cause_analysis')
-  context?: { ncType?: string }; // Context for adaptive placeholders and checklists
-  showChecklist?: boolean; // Show live requirement checklist
-  enableVoiceInput?: boolean; // Enable voice input (default: true)
-  enableTextToSpeech?: boolean; // Enable text-to-speech (default: true)
-  enableRewrite?: boolean; // Enable rewrite assistant (default: false)
-  onQualityCheck?: () => Promise<{ score: number; suggestions: string[] }>; // Quality check function for rewrite
+  onGetHelp?: (() => void) | undefined;
+  qualityScore?: (number | null) | undefined;
+  isCheckingQuality?: boolean | undefined;
+  isProcessing?: boolean | undefined;
+  showQualityBadge?: boolean | undefined;
+  minLength?: number | undefined;
+  maxLength?: number | undefined;
+  rows?: number | undefined;
+  required?: boolean | undefined;
+  placeholder?: string | undefined;
+  disabled?: boolean | undefined;
+  'data-testid'?: string | undefined;
+  error?: string | undefined;
+  fieldName?: string | undefined; // For requirement checklist (e.g., 'nc_description', 'root_cause_analysis')
+  context?: { ncType?: string | undefined } | undefined; // Context for adaptive placeholders and checklists
+  showChecklist?: boolean | undefined; // Show live requirement checklist
+  enableVoiceInput?: boolean | undefined; // Enable voice input (default: true)
+  enableTextToSpeech?: boolean | undefined; // Enable text-to-speech (default: true)
+  enableRewrite?: boolean | undefined; // Enable rewrite assistant (default: false)
+  onQualityCheck?: (() => Promise<{ score: number; suggestions: string[] }>) | undefined; // Quality check function for rewrite
 }
 
 /**
@@ -193,11 +193,9 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
               buttonSize="sm"
               buttonVariant="outline"
               className="hidden sm:inline-flex"
-              onQualityCheck={
-                enableRewrite && onQualityCheck
-                  ? () => onQualityCheck()
-                  : undefined
-              }
+              {...(enableRewrite && onQualityCheck ? {
+                onQualityCheck: () => onQualityCheck()
+              } : {})}
             />
           )}
 
@@ -277,11 +275,9 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
                 disabled={disabled}
                 buttonSize="sm"
                 buttonVariant="ghost"
-                onQualityCheck={
-                  enableRewrite && onQualityCheck
-                    ? () => onQualityCheck()
-                    : undefined
-                }
+                {...(enableRewrite && onQualityCheck ? {
+                  onQualityCheck: () => onQualityCheck()
+                } : {})}
               />
             )}
           </div>
@@ -376,7 +372,7 @@ export const EnhancedTextarea: FC<EnhancedTextareaProps> = ({
           <RewriteAssistant
             currentText={value}
             onRewrite={(improvedText) => onChange(improvedText)}
-            onQualityCheck={onQualityCheck}
+            {...(onQualityCheck ? { onQualityCheck } : {})}
             qualityScore={qualityScore}
             isCheckingQuality={isCheckingQuality}
             disabled={disabled}

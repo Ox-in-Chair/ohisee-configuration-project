@@ -5,7 +5,6 @@
  */
 
 import { createServerClient } from '@/lib/database/client';
-import type { INotificationService } from '@/lib/types/notification';
 
 export interface OverdueNCA {
   id: string;
@@ -44,23 +43,28 @@ export async function getOverdueNCAs(): Promise<OverdueNCA[]> {
   }
 
   // Calculate days overdue for each NCA
-  return data.map((nca: { id: string; nca_number: string; date: string; close_out_due_date: string; nc_type: string; supplier_name: string | null; nc_product_description: string; status: string }) => {
-    const dueDate = new Date(nca.close_out_due_date);
-    const todayDate = new Date(today);
-    const daysOverdue = Math.floor((todayDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+  return data
+    .map((nca: { id: string; nca_number: string; date: string; close_out_due_date: string; nc_type: string; supplier_name: string | null; nc_product_description: string; status: string }) => {
+      if (!nca.close_out_due_date || !today) {
+        return null;
+      }
+      const dueDate = new Date(nca.close_out_due_date);
+      const todayDate = new Date(today);
+      const daysOverdue = Math.floor((todayDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    return {
-      id: nca.id,
-      nca_number: nca.nca_number,
-      date: nca.date,
-      close_out_due_date: nca.close_out_due_date,
-      days_overdue: daysOverdue,
-      nc_type: nca.nc_type,
-      supplier_name: nca.supplier_name,
-      nc_product_description: nca.nc_product_description,
-      status: nca.status,
-    };
-  });
+      return {
+        id: nca.id,
+        nca_number: nca.nca_number,
+        date: nca.date,
+        close_out_due_date: nca.close_out_due_date,
+        days_overdue: daysOverdue,
+        nc_type: nca.nc_type,
+        supplier_name: nca.supplier_name,
+        nc_product_description: nca.nc_product_description,
+        status: nca.status,
+      };
+    })
+    .filter((nca): nca is OverdueNCA => nca !== null);
 }
 
 /**

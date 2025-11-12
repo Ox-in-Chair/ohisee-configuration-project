@@ -125,7 +125,7 @@ export class ProcedureUploadService implements IProcedureUploadService {
         success: true,
         documentId: newDoc.id,
         documentNumber: docNumber,
-        supersededId
+        ...(supersededId && { supersededId }),
       };
 
     } catch (error) {

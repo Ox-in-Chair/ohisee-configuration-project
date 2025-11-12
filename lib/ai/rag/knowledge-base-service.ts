@@ -127,7 +127,7 @@ export class KnowledgeBaseService implements IKnowledgeBaseService {
    * Generate embedding vector for text
    * Uses OpenAI text-embedding-ada-002 or similar
    */
-  private async generateEmbedding(text: string): Promise<number[]> {
+  private async generateEmbedding(_text: string): Promise<number[]> {
     try {
       // Call embedding API (OpenAI, Cohere, or local model)
       // For now, return mock embedding - implement with actual embedding service

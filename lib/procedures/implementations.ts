@@ -3,8 +3,7 @@
  * Node.js-specific implementations of injectable interfaces
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
 import type { IFileReader, ILogger } from './types';
 
 /**

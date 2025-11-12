@@ -96,7 +96,7 @@ export class PackagingSafetyService {
    */
   async getSafetySuggestions(
     materialCode: string,
-    ncDescription: string
+    _ncDescription: string
   ): Promise<PackagingSafetySuggestion | null> {
     const material = await this.getMaterialByCode(materialCode);
     if (!material) {

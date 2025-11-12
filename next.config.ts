@@ -6,14 +6,13 @@ import type { NextConfig } from "next";
 // Conditional bundle analyzer - enable with: ANALYZE=true npm run build
 // Generates interactive treemap visualization of bundle composition
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env['ANALYZE'] === 'true',
 });
 
 // ============================================================================
 // ENVIRONMENT DETECTION
 // ============================================================================
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env['NODE_ENV'] === 'development';
 
 // ============================================================================
 // NEXT.JS CONFIGURATION
@@ -32,12 +31,11 @@ const nextConfig: NextConfig = {
     // removeConsole: isProduction ? { exclude: ['error', 'warn'] } : false,
   },
 
-  // Experimental features for better performance
+    // Experimental features for better performance
   experimental: {
     // Optimize server actions (Next.js 16 feature)
     serverActions: {
       bodySizeLimit: '2mb', // Limit payload size for security
-      allowedOrigins: undefined, // Allow all origins in development
     },
 
     // Optimize package imports for large libraries (reduces bundle size)
@@ -221,7 +219,7 @@ const nextConfig: NextConfig = {
 
   // Development origin configuration
   // Allow cross-origin requests from local network IPs in development
-  allowedDevOrigins: isDevelopment ? ['192.168.0.111'] : undefined,
+  ...(isDevelopment && { allowedDevOrigins: ['192.168.0.111'] }),
 
   // Webpack configuration (if needed - fallback when using --webpack flag)
   // Note: Next.js 16 uses Turbopack by default for better performance
@@ -240,7 +238,7 @@ const nextConfig: NextConfig = {
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^@sentry\/nextjs$/,
-        checkResource(resource: string) {
+        checkResource(_resource: string) {
           // Only ignore if the module doesn't exist
           try {
             require.resolve('@sentry/nextjs');

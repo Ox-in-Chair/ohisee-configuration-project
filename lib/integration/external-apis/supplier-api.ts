@@ -45,13 +45,13 @@ export interface SupplierAPIResponse {
 
 export class SupplierAPIService {
   private supabase: SupabaseClient;
-  private apiBaseUrl?: string;
-  private apiKey?: string;
+  private apiBaseUrl?: string | undefined;
+  private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string, apiKey?: string) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
     this.supabase = supabase || createServerClient();
-    this.apiBaseUrl = apiBaseUrl || process.env.SUPPLIER_API_BASE_URL;
-    this.apiKey = apiKey || process.env.SUPPLIER_API_KEY;
+    this.apiBaseUrl = apiBaseUrl ?? process.env['SUPPLIER_API_BASE_URL'];
+    this.apiKey = apiKey ?? process.env['SUPPLIER_API_KEY'];
   }
 
   /**
@@ -64,7 +64,7 @@ export class SupplierAPIService {
   /**
    * Fetch supplier certifications from API
    */
-  async fetchCertifications(supplierIds?: string[]): Promise<SupplierAPIResponse> {
+  async fetchCertifications(_supplierIds?: string[]): Promise<SupplierAPIResponse> {
     if (!this.isConfigured()) {
       return {
         success: false,
@@ -100,7 +100,7 @@ export class SupplierAPIService {
   /**
    * Fetch supplier performance metrics from API
    */
-  async fetchPerformanceMetrics(supplierIds?: string[]): Promise<SupplierAPIResponse> {
+  async fetchPerformanceMetrics(_supplierIds?: string[]): Promise<SupplierAPIResponse> {
     if (!this.isConfigured()) {
       return {
         success: false,
@@ -164,7 +164,7 @@ export class SupplierAPIService {
       recordsUpdated,
       recordsInserted,
       recordsDeleted: 0,
-      error: errors.length > 0 ? errors.join('; ') : undefined,
+      ...(errors.length > 0 ? { error: errors.join('; ') } : {}),
       metadata: {
         totalCertifications: certifications.length,
         errors: errors.length,
@@ -213,7 +213,7 @@ export class SupplierAPIService {
       recordsUpdated,
       recordsInserted: 0,
       recordsDeleted: 0,
-      error: errors.length > 0 ? errors.join('; ') : undefined,
+      ...(errors.length > 0 ? { error: errors.join('; ') } : {}),
       metadata: {
         totalMetrics: metrics.length,
         errors: errors.length,

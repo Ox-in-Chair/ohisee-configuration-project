@@ -44,7 +44,11 @@ describe('NotificationService - Machine Down Alerts', () => {
       await notificationService.sendMachineDownAlert(mockPayload);
 
       expect(emailClient.sendEmail).toHaveBeenCalledTimes(1);
-      const [emailAddress, subject, body] = (emailClient.sendEmail as jest.Mock).mock.calls[0];
+      const callArgs = (emailClient.sendEmail as jest.Mock).mock.calls[0];
+      if (!callArgs || callArgs.length < 3) {
+        throw new Error('Expected sendEmail to be called with at least 3 arguments');
+      }
+      const [emailAddress, subject, body] = callArgs;
 
       // Verify email sent to operations manager
       expect(emailAddress).toBeDefined();
@@ -115,7 +119,11 @@ describe('NotificationService - Machine Down Alerts', () => {
     it('should format timestamp in human-readable format', async () => {
       await notificationService.sendMachineDownAlert(mockPayload);
 
-      const emailBody = (emailClient.sendEmail as jest.Mock).mock.calls[0][2];
+      const callArgs = (emailClient.sendEmail as jest.Mock).mock.calls[0];
+      if (!callArgs || callArgs.length < 3) {
+        throw new Error('Expected sendEmail to be called with at least 3 arguments');
+      }
+      const emailBody = callArgs[2];
 
       // Should convert ISO timestamp to readable format
       expect(emailBody).toMatch(/\d{4}-\d{2}-\d{2}|\d{1,2}:\d{2}/);

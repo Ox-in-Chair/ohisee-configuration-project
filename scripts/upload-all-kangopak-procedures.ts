@@ -25,8 +25,8 @@ import type { UploadResult, ParsedProcedure } from '../lib/procedures/types';
 // Configuration
 // ============================================================================
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL']!;
+const supabaseKey = process.env['SUPABASE_SERVICE_ROLE_KEY']!;
 const proceduresPath = path.resolve(__dirname, '../../kangopak-procedures');
 
 // ============================================================================
@@ -102,7 +102,7 @@ function groupFilesBySection(files: string[]): Map<string, string[]> {
     const fileName = path.basename(file);
     const sectionMatch = fileName.match(/^([0-9.]+)/);
 
-    if (!sectionMatch) continue;
+    if (!sectionMatch || !sectionMatch[1]) continue;
 
     const sectionNum = sectionMatch[1].split('.')[0];
 

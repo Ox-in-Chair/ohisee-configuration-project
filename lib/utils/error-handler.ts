@@ -109,8 +109,9 @@ function isSupabaseError(error: any): error is SupabaseError {
 
 /**
  * Format structured log message
+ * @internal - Currently unused but kept for future logging enhancements
  */
-function formatLogMessage(
+function _formatLogMessage(
   message: string,
   context: ErrorLogContext
 ): string {
@@ -135,8 +136,9 @@ function formatLogMessage(
 
 /**
  * Format metadata for logging
+ * @internal - Currently unused but kept for future logging enhancements
  */
-function formatMetadata(metadata?: Record<string, unknown>): string {
+function _formatMetadata(metadata?: Record<string, unknown>): string {
   if (!metadata || Object.keys(metadata).length === 0) {
     return '';
   }
@@ -268,14 +270,14 @@ export function logSupabaseError(
     errorMessage = error.message;
 
     // Add Supabase-specific details to metadata
-    if (error.code) {
-      metadata.code = error.code;
+    if (error['code']) {
+      metadata.code = error['code'];
     }
-    if (error.details) {
-      metadata.details = error.details;
+    if (error['details']) {
+      metadata.details = error['details'];
     }
-    if (error.hint) {
-      metadata.hint = error.hint;
+    if (error['hint']) {
+      metadata.hint = error['hint'];
     }
   } else {
     errorMessage = extractErrorMessage(error);

@@ -194,25 +194,25 @@ export interface HazardClassification {
 export interface ValidationResult {
   readonly valid: boolean;
   readonly ready_for_submission: boolean;
-  readonly requirements?: ReadonlyArray<Requirement>; // What must be addressed (missing info)
+  readonly requirements?: ReadonlyArray<Requirement> | undefined; // What must be addressed (missing info)
   readonly errors: ReadonlyArray<ValidationError>; // Critical errors that block submission
-  readonly warnings?: ReadonlyArray<ValidationWarning>; // Suggestions for improvement
+  readonly warnings?: ReadonlyArray<ValidationWarning> | undefined; // Suggestions for improvement
   readonly quality_assessment: QualityScore;
-  readonly compliance?: ComplianceResult; // Summary of compliance check
+  readonly compliance?: ComplianceResult | undefined; // Summary of compliance check
 }
 
 export interface Requirement {
   readonly field: string; // e.g., "Corrective Action"
   readonly message: string; // e.g., "Include at least one verification method with timeline."
-  readonly reference?: string; // e.g., "BRCGS 5.7.2" or internal policy reference
-  readonly exampleFix?: string; // e.g., "Example: 'QA will verify on next batch (due 10-Oct)'."
+  readonly reference?: string | undefined; // e.g., "BRCGS 5.7.2" or internal policy reference
+  readonly exampleFix?: string | undefined; // e.g., "Example: 'QA will verify on next batch (due 10-Oct)'."
 }
 
 export interface ValidationError {
   readonly field: string;
   readonly message: string;
-  readonly severity?: 'critical' | 'error';
-  readonly brcgs_requirement?: string;
+  readonly severity?: ('critical' | 'error') | undefined;
+  readonly brcgs_requirement?: string | undefined;
 }
 
 export interface ValidationWarning {

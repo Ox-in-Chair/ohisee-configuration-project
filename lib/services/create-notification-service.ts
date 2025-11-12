@@ -13,7 +13,7 @@ import type { INotificationService } from '@/lib/types/notification';
  * Returns no-op service if credentials not available (graceful degradation)
  */
 export function createProductionNotificationService(): INotificationService {
-  const hasResend = !!process.env.RESEND_API_KEY;
+  const hasResend = !!process.env['RESEND_API_KEY'];
 
   // If Resend configured, use real client
   if (hasResend) {

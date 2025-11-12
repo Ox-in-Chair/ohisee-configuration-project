@@ -61,7 +61,8 @@ export class MultiAgentOrchestrator {
     );
 
     const results = await Promise.all(agentPromises);
-    const executionTime = Date.now() - startTime;
+    // Execution time tracked for future performance monitoring
+    // const executionTime = Date.now() - startTime;
 
     // Log agent decisions for audit (if explainable AI enabled)
     if (this.config.enableContentCompletion !== false || 
@@ -173,8 +174,8 @@ export class MultiAgentOrchestrator {
    */
   private aggregateResults(
     results: Array<AgentResult & { agentName: string }>,
-    formData: NCA | MJC,
-    formType: 'nca' | 'mjc'
+    _formData: NCA | MJC,
+    _formType: 'nca' | 'mjc'
   ): {
     result: ValidationResult;
     conflicts: AgentConflict[];
@@ -263,8 +264,10 @@ export class MultiAgentOrchestrator {
       if (findings.length > 1) {
         const severities = new Set(findings.map(f => f.severity));
         if (severities.size > 1) {
+          const fieldParts = fieldKey.split(':');
+          const fieldName = fieldParts[1] || fieldKey;
           conflicts.push({
-            field: fieldKey.split(':')[1],
+            field: fieldName,
             conflictingAgents: findings.map(f => f.agent),
             conflictingFindings: findings,
             resolution: 'pending',
@@ -281,7 +284,7 @@ export class MultiAgentOrchestrator {
    */
   private resolveConflicts(
     conflicts: AgentConflict[],
-    formData: NCA | MJC
+    _formData: NCA | MJC
   ): {
     requirements: any[];
     errors: any[];

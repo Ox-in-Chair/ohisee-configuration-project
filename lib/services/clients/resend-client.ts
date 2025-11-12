@@ -58,9 +58,9 @@ export function createResendClient(): IEmailClient {
   // Lazy load Resend SDK to avoid bundling in client-side code
   const { Resend } = require('resend');
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@kangopak.co.za';
-  const fromName = process.env.RESEND_FROM_NAME || 'OHiSee System';
+  const apiKey = process.env['RESEND_API_KEY'];
+  const fromEmail = process.env['RESEND_FROM_EMAIL'] || 'noreply@kangopak.co.za';
+  const fromName = process.env['RESEND_FROM_NAME'] || 'OHiSee System';
 
   if (!apiKey) {
     throw new Error(

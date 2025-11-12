@@ -73,8 +73,8 @@ export const MJCTable = memo(function MJCTable({
   // Filter state management (initialize from URL params)
   const [filterState, setFilterState] = useState<MJCFilterState>({
     ...defaultMJCFilterState,
-    status: (initialStatus as MJCStatus) || 'all',
-    urgency: (initialUrgency as MJCUrgencyLevel) || 'all',
+    status: (initialStatus && initialStatus !== 'all' ? (initialStatus as MJCStatus) : null),
+    urgency: (initialUrgency && initialUrgency !== 'all' ? (initialUrgency as MJCUrgencyLevel) : null),
     searchQuery: initialSearch || '',
     sortField: (initialSort as MJCSortField) || 'created_at',
     sortDirection: initialSortDir || 'desc',

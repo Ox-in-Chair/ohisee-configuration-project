@@ -27,21 +27,21 @@ export interface SmartInputProps {
   onGetHelp?: () => void;
   isProcessing?: boolean;
   required?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  'data-testid'?: string;
-  error?: string;
-  fieldName?: string; // For field-specific features (e.g., 'nc_product_description', 'supplier_name')
-  type?: 'text' | 'email' | 'tel' | 'url';
-  showSuggestions?: boolean; // Show autocomplete suggestions
-  suggestions?: string[]; // External suggestions (e.g., from AI)
-  tooltip?: React.ReactNode; // Optional tooltip component to display next to label
-  enableVoiceInput?: boolean; // Enable voice input (default: true)
-  enableTextToSpeech?: boolean; // Enable text-to-speech (default: true)
-  enableRewrite?: boolean; // Enable rewrite assistant (default: false)
-  onQualityCheck?: () => Promise<{ score: number; suggestions: string[] }>; // Quality check function for rewrite
-  qualityScore?: number | null; // Current quality score
-  isCheckingQuality?: boolean; // Is quality check in progress
+  placeholder?: string | undefined;
+  disabled?: boolean | undefined;
+  'data-testid'?: string | undefined;
+  error?: string | undefined;
+  fieldName?: string | undefined; // For field-specific features (e.g., 'nc_product_description', 'supplier_name')
+  type?: ('text' | 'email' | 'tel' | 'url') | undefined;
+  showSuggestions?: boolean | undefined; // Show autocomplete suggestions
+  suggestions?: string[] | undefined; // External suggestions (e.g., from AI)
+  tooltip?: React.ReactNode | undefined; // Optional tooltip component to display next to label
+  enableVoiceInput?: boolean | undefined; // Enable voice input (default: true)
+  enableTextToSpeech?: boolean | undefined; // Enable text-to-speech (default: true)
+  enableRewrite?: boolean | undefined; // Enable rewrite assistant (default: false)
+  onQualityCheck?: (() => Promise<{ score: number; suggestions: string[] }>) | undefined; // Quality check function for rewrite
+  qualityScore?: (number | null) | undefined; // Current quality score
+  isCheckingQuality?: boolean | undefined; // Is quality check in progress
 }
 
 /**

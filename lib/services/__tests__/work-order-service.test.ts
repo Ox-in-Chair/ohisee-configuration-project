@@ -29,7 +29,7 @@ describe('WorkOrderService', () => {
         updated_at: '2025-01-10T10:00:00Z',
       };
 
-      const mockSingle = jest.fn().mockResolvedValue({
+      const mockSingle = jest.fn<() => Promise<{ data: WorkOrder | null; error: { code: string; message: string } | null }>>().mockResolvedValue({
         data: mockWorkOrder,
         error: null,
       });
@@ -125,7 +125,7 @@ describe('WorkOrderService', () => {
         updated_at: '2025-01-10T11:00:00Z',
       };
 
-      const mockSingle = jest.fn().mockResolvedValue({
+      const mockSingle = jest.fn<() => Promise<{ data: WorkOrder | null; error: { code: string; message: string } | null }>>().mockResolvedValue({
         data: mockWorkOrder,
         error: null,
       });
@@ -166,7 +166,7 @@ describe('WorkOrderService', () => {
         updated_at: '2025-01-10T12:00:00Z',
       };
 
-      const mockSingle = jest.fn().mockResolvedValue({
+      const mockSingle = jest.fn<() => Promise<{ data: WorkOrder | null; error: { code: string; message: string } | null }>>().mockResolvedValue({
         data: mockWorkOrder,
         error: null,
       });

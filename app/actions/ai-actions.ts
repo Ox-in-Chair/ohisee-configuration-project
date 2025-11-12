@@ -620,16 +620,23 @@ export async function recordAISuggestionFeedback(
 
     // Update ai_assistance_log with user decision
     // Type assertion needed due to Supabase RPC type inference
-    const rpcParams = {
+    const rpcParams: {
+      p_log_id: string;
+      p_suggestion_accepted: boolean;
+      p_suggestion_modified: boolean;
+      p_final_user_value: string | null;
+      p_quality_rating: number | null;
+      p_user_feedback: string | null;
+    } = {
       p_log_id: suggestionId,
       p_suggestion_accepted: accepted,
       p_suggestion_modified: edited_text !== undefined,
       p_final_user_value: edited_text ?? null,
       p_quality_rating: rating ?? null,
       p_user_feedback: null
-    } as any;
+    };
 
-    await supabase.rpc('update_ai_interaction_outcome', rpcParams);
+    await supabase.rpc('update_ai_interaction_outcome', rpcParams as never);
 
     return {
       success: true

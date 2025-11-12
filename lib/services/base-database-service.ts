@@ -52,7 +52,7 @@ export interface OperationResponse {
  * @template TInsert - Database insert type
  * @template TUpdate - Database update type
  */
-export abstract class BaseDatabaseService<TRow, TInsert, TUpdate> {
+export abstract class BaseDatabaseService<TRow, _TInsert, _TUpdate> {
   protected client: SupabaseClient<Database>;
   protected tableName: string;
 
@@ -65,7 +65,7 @@ export abstract class BaseDatabaseService<TRow, TInsert, TUpdate> {
    * Apply pagination to query
    * Converts page/pageSize to offset/limit
    */
-  protected applyPagination<T>(
+  protected applyPagination(
     query: any,
     page?: number,
     pageSize: number = 10
@@ -80,7 +80,7 @@ export abstract class BaseDatabaseService<TRow, TInsert, TUpdate> {
   /**
    * Apply sorting to query
    */
-  protected applySorting<T>(
+  protected applySorting(
     query: any,
     sortBy: string = 'created_at',
     sortDir: 'asc' | 'desc' = 'desc'
@@ -91,7 +91,7 @@ export abstract class BaseDatabaseService<TRow, TInsert, TUpdate> {
   /**
    * Apply status filter to query
    */
-  protected applyStatusFilter<T>(
+  protected applyStatusFilter(
     query: any,
     status?: string
   ): any {

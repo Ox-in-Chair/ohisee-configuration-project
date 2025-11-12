@@ -9,7 +9,6 @@
 import {
   NCA_STATUS,
   MJC_STATUS,
-  MACHINE_STATUS,
   URGENCY_LEVEL,
   MAINTENANCE_CATEGORY,
   BRCGS_PROCEDURES,
@@ -185,7 +184,7 @@ export const DASHBOARD_FILTER_DEFAULTS = {
   machineId: null,
 
   // Work Order Filter
-  woId: null,
+  woId: null as string | null,
 
   // Search Query
   searchQuery: '',
@@ -233,7 +232,7 @@ export const AI_SUGGESTION_DEFAULTS = {
 export const NOTIFICATION_DEFAULTS = {
   read: false,
   sent_at: new Date().toISOString(),
-  read_at: null,
+  read_at: null as string | null,
   notification_type: 'info' as const,
 } as const;
 
@@ -245,7 +244,7 @@ export const NOTIFICATION_DEFAULTS = {
  * Get current date in ISO format (YYYY-MM-DD)
  */
 export function getCurrentDate(): string {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0]!;
 }
 
 /**
@@ -268,7 +267,7 @@ export function getCurrentTime(): string {
 export function calculateTemporaryRepairDueDate(): string {
   const today = new Date();
   today.setDate(today.getDate() + 14);
-  return today.toISOString().split('T')[0];
+  return today.toISOString().split('T')[0]!;
 }
 
 /**
@@ -277,7 +276,7 @@ export function calculateTemporaryRepairDueDate(): string {
 export function calculateNCAClosureDeadline(): string {
   const today = new Date();
   today.setDate(today.getDate() + 20);
-  return today.toISOString().split('T')[0];
+  return today.toISOString().split('T')[0]!;
 }
 
 /**

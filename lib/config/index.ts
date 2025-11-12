@@ -25,6 +25,13 @@
 // RE-EXPORT CONSTANTS
 // ============================================================================
 
+// Import for internal use in getConfig function
+import {
+  AI_CONFIG,
+  DB_CONFIG,
+  FEATURES,
+} from './constants';
+
 export {
   // User Roles
   USER_ROLES,
@@ -175,6 +182,9 @@ export {
 // ============================================================================
 // RE-EXPORT PHASE 7 CONFIGURATION
 // ============================================================================
+
+// Import for internal use in getConfig function
+import { getPhase7Config } from './phase7-config';
 
 export {
   type Phase7Config,

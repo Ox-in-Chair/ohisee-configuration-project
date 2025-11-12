@@ -8,7 +8,7 @@
 
 import { createServerClient } from '@/lib/database/client';
 import { getUserIdFromAuth } from '@/lib/database/auth-utils';
-import type { MJCInsert, MJCUpdate, Signature, HygieneChecklistItem } from '@/types/database';
+import type { MJCInsert, Signature, HygieneChecklistItem } from '@/types/database';
 import type { MJCFormData } from '@/lib/validations/mjc-schema';
 import { revalidatePath } from 'next/cache';
 import { createProductionNotificationService } from '@/lib/services/create-notification-service';
@@ -19,7 +19,7 @@ import { MJCDatabaseService } from '@/lib/services/mjc-database-service';
 /**
  * Calculate temporary repair due date (14 days from now)
  */
-function calculateDueDate(): string {
+function calculateDueDate(): string | null {
   const date = new Date();
   date.setDate(date.getDate() + 14);
   return date.toISOString().split('T')[0];
@@ -43,10 +43,9 @@ function transformHygieneChecklist(formData: MJCFormData): HygieneChecklistItem[
     { label: 'Quality check performed on first production output', verified: formData.hygiene_check_10 },
   ];
 
-  return items.map((item, index) => ({
+  return items.map((item) => ({
     item: item.label,
     verified: item.verified,
-    notes: undefined,
   }));
 }
 
@@ -76,7 +75,7 @@ function transformFormDataToInsert(
     created_by: userId,
 
     // Work Order Link
-    wo_id: formData.wo_id || null,
+    wo_id: formData.wo_id ?? null,
 
     // Section 1: Department (TODO: Get from user profile)
     department: 'maintenance', // Default for now
@@ -86,7 +85,7 @@ function transformFormDataToInsert(
     machine_id: null, // TODO: Link to machines table if valid UUID
 
     // Section 3: Maintenance Type
-    maintenance_category: formData.maintenance_category,
+    maintenance_category: formData.maintenance_category as any,
     maintenance_type_electrical: formData.maintenance_type === 'electrical',
     maintenance_type_mechanical: formData.maintenance_type === 'mechanical',
     maintenance_type_pneumatical: formData.maintenance_type === 'pneumatical',
@@ -95,8 +94,8 @@ function transformFormDataToInsert(
       : null,
 
     // Section 4: Machine Status & Urgency
-    machine_status: formData.machine_status,
-    urgency: formData.urgency_level,
+    machine_status: formData.machine_status as any,
+    urgency: formData.urgency_level as any,
     machine_down_since: formData.machine_down_time || null,
     estimated_downtime: null, // TODO: Calculate from machine_down_time
 
@@ -189,7 +188,7 @@ export async function createMJC(
       if (!validation.valid) {
         return {
           success: false,
-          error: validation.error,
+          error: validation.error || 'Hygiene checklist validation failed',
         };
       }
     }
@@ -309,9 +308,9 @@ export async function saveDraftMJC(
 
       // Include any fields that are provided
       machine_equipment: formData.machine_equipment_id || '',
-      maintenance_category: formData.maintenance_category || 'reactive',
-      machine_status: formData.machine_status || 'operational',
-      urgency: formData.urgency_level || 'low',
+      maintenance_category: (formData.maintenance_category || 'reactive') as any,
+      machine_status: (formData.machine_status || 'operational') as any,
+      urgency: (formData.urgency_level || 'low') as any,
       temporary_repair: formData.temporary_repair === 'yes',
       description_required: formData.maintenance_description || '',
     };
@@ -409,7 +408,7 @@ export async function listMJCs(filters?: {
       status: filters?.status as any,
       urgency: filters?.urgency as any,
       pageSize: filters?.limit || 10,
-      page,
+      page: page ?? 1,
     });
 
     if (error) {
@@ -551,7 +550,7 @@ export async function grantHygieneClearance(
 export async function createMJCFromNCA(
   ncaId: string,
   mjcData: Partial<MJCFormData>,
-  userId: string
+  _userId: string
 ): Promise<ActionResponse<{ id: string; job_card_number: string }>> {
   try {
     const supabase = createServerClient();

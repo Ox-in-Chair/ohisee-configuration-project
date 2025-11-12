@@ -255,13 +255,13 @@ export class AdaptivePolicyService {
    */
   private suggestRelaxedParameters(
     rule: PolicyRule,
-    analytics: PolicyAnalytics
+    _analytics: PolicyAnalytics
   ): Record<string, any> {
     const params = { ...rule.parameters };
 
     // Example: Reduce minimum length by 10% if rule is too strict
-    if (rule.ruleType === 'minLength' && params.minLength) {
-      params.minLength = Math.max(50, Math.floor(params.minLength * 0.9));
+    if (rule.ruleType === 'minLength' && params['minLength']) {
+      params['minLength'] = Math.max(50, Math.floor(params['minLength'] * 0.9));
     }
 
     return params;
@@ -282,7 +282,7 @@ export class AdaptivePolicyService {
       return '1.0.0';
     }
 
-    const [major, minor, patch] = data.version.split('.').map(Number);
+    const [major, minor] = data.version.split('.').map(Number);
     return `${major}.${minor + 1}.0`; // Increment minor version
   }
 

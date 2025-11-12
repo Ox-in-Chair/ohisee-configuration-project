@@ -4,7 +4,7 @@
  * Returns structured feedback without AI references - appears as standard system validation
  */
 
-import type { NCA, MJC } from '@/lib/ai/types';
+import type { NCA } from '@/lib/ai/types';
 
 export interface ValidationResult {
   valid: boolean;

@@ -33,7 +33,7 @@ export function getDescriptionCompletenessMessage(
     'other': 100,
   };
 
-  const requiredMin = minLengths[ncType] || 100;
+  // const requiredMin = minLengths[ncType] || 100; // Reserved for future use
 
   return {
     message: `Description incomplete: please add ${missingRequirements.join(', ')}.`,

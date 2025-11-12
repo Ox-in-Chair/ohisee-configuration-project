@@ -31,13 +31,13 @@ export interface BRCGSAPIResponse {
 
 export class BRCGSAPIService {
   private supabase: SupabaseClient;
-  private apiBaseUrl?: string;
-  private apiKey?: string;
+  private apiBaseUrl?: string | undefined;
+  private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string, apiKey?: string) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
     this.supabase = supabase || createServerClient();
-    this.apiBaseUrl = apiBaseUrl || process.env.BRCGS_API_BASE_URL;
-    this.apiKey = apiKey || process.env.BRCGS_API_KEY;
+    this.apiBaseUrl = apiBaseUrl ?? process.env['BRCGS_API_BASE_URL'];
+    this.apiKey = apiKey ?? process.env['BRCGS_API_KEY'];
   }
 
   /**
@@ -52,7 +52,7 @@ export class BRCGSAPIService {
    * 
    * Note: This is a placeholder. Replace with actual API call when available.
    */
-  async fetchUpdates(since?: Date): Promise<BRCGSAPIResponse> {
+  async fetchUpdates(_since?: Date): Promise<BRCGSAPIResponse> {
     if (!this.isConfigured()) {
       return {
         success: false,
@@ -153,7 +153,7 @@ export class BRCGSAPIService {
       recordsUpdated,
       recordsInserted,
       recordsDeleted: 0,
-      error: errors.length > 0 ? errors.join('; ') : undefined,
+      ...(errors.length > 0 ? { error: errors.join('; ') } : {}),
       metadata: {
         totalUpdates: updates.length,
         errors: errors.length,
@@ -174,7 +174,7 @@ export class BRCGSAPIService {
         recordsUpdated: 0,
         recordsInserted: 0,
         recordsDeleted: 0,
-        error: apiResponse.error,
+        ...(apiResponse.error ? { error: apiResponse.error } : {}),
       };
     }
 

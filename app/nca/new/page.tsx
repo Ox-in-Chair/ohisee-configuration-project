@@ -1271,10 +1271,10 @@ export default function NewNCAPage(): React.ReactElement {
             initialProblem={ncDescription || 'Non-conformance issue'}
             minDepth={3}
             maxDepth={5}
-            onChange={(problem, whys) => {
+            onChange={(_problem, _whys) => {
               // Preview updates
             }}
-            onComplete={(problem, whys, rootCause) => {
+            onComplete={(_problem, _whys, rootCause) => {
               setValue('root_cause_analysis', rootCause);
               setShowFiveWhy(false);
             }}
@@ -1292,10 +1292,10 @@ export default function NewNCAPage(): React.ReactElement {
             </DialogDescription>
           </DialogHeader>
           <TimelineBuilder
-            onChange={(events, formattedText) => {
+            onChange={(_events, _formattedText) => {
               // Preview updates
             }}
-            onComplete={(events, formattedText) => {
+            onComplete={(_events, formattedText) => {
               setValue('nc_description', formattedText);
               setShowTimeline(false);
             }}
@@ -1320,10 +1320,10 @@ export default function NewNCAPage(): React.ReactElement {
           </DialogHeader>
           <FishboneDiagram
             initialProblem={ncDescription || 'Non-conformance issue'}
-            onChange={(problem, categories, formattedText) => {
+            onChange={(_problem, _categories, _formattedText) => {
               // Preview updates
             }}
-            onComplete={(problem, categories, formattedText) => {
+            onComplete={(_problem, _categories, formattedText) => {
               setValue('root_cause_analysis', formattedText);
               setShowFishbone(false);
             }}

@@ -25,7 +25,7 @@ export interface UserExplanationProps {
 }
 
 export const UserExplanation: FC<UserExplanationProps> = ({
-  field,
+  field: _field,
   message,
   explanation,
   ruleReference,

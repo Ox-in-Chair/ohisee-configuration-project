@@ -177,11 +177,13 @@ process.env.ANTHROPIC_API_KEY
 ### 1. Unused Variables (TS6133)
 
 **Error:**
+
 ```
 error TS6133: 'variableName' is declared but its value is never read.
 ```
 
 **Fix:**
+
 ```typescript
 // Option 1: Remove the variable
 // const unusedVar = 'value'; // DELETE THIS
@@ -197,11 +199,13 @@ console.log(usedVar);
 ### 2. Index Signature Access (TS4111)
 
 **Error:**
+
 ```
 error TS4111: Property 'key' comes from an index signature, so it must be accessed with ['key'].
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -215,11 +219,13 @@ const value = process.env['NEXT_PUBLIC_SUPABASE_URL'];
 ### 3. Possibly Undefined (TS2532, TS18048)
 
 **Error:**
+
 ```
 error TS2532: Object is possibly 'undefined'.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 const length = array.length;
@@ -242,11 +248,13 @@ const length = array!.length;
 ### 4. Exact Optional Property Types (TS2375, TS2379)
 
 **Error:**
+
 ```
 error TS2375: Type '{ prop: string | undefined }' is not assignable to type '{ prop?: string }' with 'exactOptionalPropertyTypes: true'.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 const obj: { prop?: string } = {
@@ -267,11 +275,13 @@ const obj: { prop?: string } = {
 ### 5. No Explicit Any (TS7006)
 
 **Error:**
+
 ```
 error TS7006: Parameter 'item' implicitly has an 'any' type.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 function processItem(item) {
@@ -292,11 +302,13 @@ function processItem<T extends { value: number }>(item: T): number {
 ### 6. String to Union Type (TS2322)
 
 **Error:**
+
 ```
 error TS2322: Type 'string' is not assignable to type '"option1" | "option2"'.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 const category: MaintenanceCategory = formData.category;
@@ -317,11 +329,13 @@ const category: MaintenanceCategory = isMaintenanceCategory(formData.category)
 ### 7. Missing Return Type (TS7010)
 
 **Error:**
+
 ```
 error TS7010: 'functionName', which lacks return-type annotation, implicitly has an 'any' return type.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 async function fetchData(id) {
@@ -347,11 +361,13 @@ async function fetchData(id: string): Promise<ActionResponse<Data>> {
 ### 8. Floating Promises (TS6133)
 
 **Error:**
+
 ```
 error TS6133: 'promise' is a floating Promise.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 async function saveData() {
@@ -372,11 +388,13 @@ async function saveData(): Promise<void> {
 ### 9. React Hook Dependencies (react-hooks/exhaustive-deps)
 
 **Warning:**
+
 ```
 React Hook useEffect has a missing dependency: 'dependency'.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 useEffect(() => {
@@ -401,11 +419,13 @@ useEffect(() => {
 ### 10. Type Assertion Instead of Any
 
 **Error:**
+
 ```
 error TS2571: Object is of type 'unknown'.
 ```
 
 **Fix:**
+
 ```typescript
 // ❌ WRONG
 try {
@@ -601,6 +621,7 @@ const value = someComplexFunction();
 ```
 
 **Always include:**
+
 - Clear comment explaining why
 - Reference to tracking issue
 - Timeline for fix

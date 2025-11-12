@@ -14,7 +14,7 @@ export class ContentCompletionAgent {
    */
   async analyze(
     formData: NCA | MJC,
-    user: User,
+    _user: User,
     formType: 'nca' | 'mjc'
   ): Promise<AgentResult> {
     const requirements: AgentResult['requirements'] = [];
@@ -37,14 +37,14 @@ export class ContentCompletionAgent {
             errors.push({
               field: issue.field,
               message: issue.message,
-              brcgs_requirement: issue.brcgsReference,
+              ...(issue.brcgsReference && { brcgs_requirement: issue.brcgsReference }),
             });
           } else {
             requirements.push({
               field: issue.field,
               message: issue.message,
-              reference: issue.brcgsReference,
-              exampleFix: issue.exampleFix,
+              ...(issue.brcgsReference && { reference: issue.brcgsReference }),
+              ...(issue.exampleFix && { exampleFix: issue.exampleFix }),
             });
           }
         });

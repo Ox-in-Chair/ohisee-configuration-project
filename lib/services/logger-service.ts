@@ -109,12 +109,13 @@ export class LoggerService {
    * Log debug message (verbose development information)
    */
   debug(message: string, metadata?: Record<string, unknown>): void {
+    const mergedMetadata = this.mergeMetadata(metadata);
     this.log({
       level: 'debug',
       message,
       timestamp: new Date().toISOString(),
       context: this.name,
-      metadata: this.mergeMetadata(metadata),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     });
   }
 
@@ -122,12 +123,13 @@ export class LoggerService {
    * Log info message (general informational events)
    */
   info(message: string, metadata?: Record<string, unknown>): void {
+    const mergedMetadata = this.mergeMetadata(metadata);
     this.log({
       level: 'info',
       message,
       timestamp: new Date().toISOString(),
       context: this.name,
-      metadata: this.mergeMetadata(metadata),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     });
   }
 
@@ -135,12 +137,13 @@ export class LoggerService {
    * Log warning message (potential issues that don't prevent operation)
    */
   warn(message: string, metadata?: Record<string, unknown>): void {
+    const mergedMetadata = this.mergeMetadata(metadata);
     this.log({
       level: 'warn',
       message,
       timestamp: new Date().toISOString(),
       context: this.name,
-      metadata: this.mergeMetadata(metadata),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     });
   }
 
@@ -152,13 +155,15 @@ export class LoggerService {
     error?: Error | unknown,
     metadata?: Record<string, unknown>
   ): void {
+    const serializedError = this.serializeError(error);
+    const mergedMetadata = this.mergeMetadata(metadata);
     this.log({
       level: 'error',
       message,
       timestamp: new Date().toISOString(),
       context: this.name,
-      error: this.serializeError(error),
-      metadata: this.mergeMetadata(metadata),
+      ...(serializedError ? { error: serializedError } : {}),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     });
   }
 
@@ -170,13 +175,15 @@ export class LoggerService {
     error?: Error | unknown,
     metadata?: Record<string, unknown>
   ): void {
+    const serializedError = this.serializeError(error);
+    const mergedMetadata = this.mergeMetadata(metadata);
     this.log({
       level: 'fatal',
       message,
       timestamp: new Date().toISOString(),
       context: this.name,
-      error: this.serializeError(error),
-      metadata: this.mergeMetadata(metadata),
+      ...(serializedError ? { error: serializedError } : {}),
+      ...(mergedMetadata ? { metadata: mergedMetadata } : {}),
     });
   }
 
@@ -268,9 +275,9 @@ export class LoggerService {
     if (error instanceof Error) {
       return {
         message: error.message,
-        stack: error.stack,
-        name: error.name,
-        code: (error as any).code,
+        ...(error.stack ? { stack: error.stack } : {}),
+        ...(error.name ? { name: error.name } : {}),
+        ...((error as any).code ? { code: (error as any).code } : {}),
       };
     }
 

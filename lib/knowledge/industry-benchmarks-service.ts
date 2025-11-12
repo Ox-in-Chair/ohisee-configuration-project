@@ -10,16 +10,16 @@ export interface IndustryBenchmark {
   id: string;
   metric_name: string;
   metric_category: 'response_time' | 'defect_rate' | 'cost' | 'quality_score' | 'other';
-  industry_sector?: string;
+  industry_sector?: string | undefined;
   benchmark_value: number;
-  percentile_25?: number;
-  percentile_50?: number; // median
-  percentile_75?: number;
-  percentile_90?: number;
-  data_source?: string;
-  sample_size?: number;
-  period_start?: string;
-  period_end?: string;
+  percentile_25?: number | undefined;
+  percentile_50?: number | undefined; // median
+  percentile_75?: number | undefined;
+  percentile_90?: number | undefined;
+  data_source?: string | undefined;
+  sample_size?: number | undefined;
+  period_start?: string | undefined;
+  period_end?: string | undefined;
 }
 
 export interface BenchmarkComparison {
@@ -31,7 +31,7 @@ export interface BenchmarkComparison {
     percentile: number; // user's percentile (estimated)
   };
   message: string;
-  recommendation?: string;
+  recommendation?: string | undefined;
 }
 
 export class IndustryBenchmarksService {
@@ -180,16 +180,16 @@ export class IndustryBenchmarksService {
       id: data.id,
       metric_name: data.metric_name,
       metric_category: data.metric_category,
-      industry_sector: data.industry_sector,
+      ...(data.industry_sector && { industry_sector: data.industry_sector }),
       benchmark_value: Number(data.benchmark_value),
-      percentile_25: data.percentile_25 ? Number(data.percentile_25) : undefined,
-      percentile_50: data.percentile_50 ? Number(data.percentile_50) : undefined,
-      percentile_75: data.percentile_75 ? Number(data.percentile_75) : undefined,
-      percentile_90: data.percentile_90 ? Number(data.percentile_90) : undefined,
-      data_source: data.data_source,
-      sample_size: data.sample_size,
-      period_start: data.period_start,
-      period_end: data.period_end,
+      ...(data.percentile_25 != null ? { percentile_25: Number(data.percentile_25) } : {}),
+      ...(data.percentile_50 != null ? { percentile_50: Number(data.percentile_50) } : {}),
+      ...(data.percentile_75 != null ? { percentile_75: Number(data.percentile_75) } : {}),
+      ...(data.percentile_90 != null ? { percentile_90: Number(data.percentile_90) } : {}),
+      ...(data.data_source && { data_source: data.data_source }),
+      ...(data.sample_size != null && { sample_size: data.sample_size }),
+      ...(data.period_start && { period_start: data.period_start }),
+      ...(data.period_end && { period_end: data.period_end }),
     };
   }
 }

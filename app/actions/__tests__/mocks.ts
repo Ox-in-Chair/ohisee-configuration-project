@@ -34,8 +34,8 @@ export function createMockSupabaseClient(): jest.Mocked<SupabaseClient> {
       order: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
       range: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: null, error: null }),
-      then: jest.fn((resolve) =>
+      single: jest.fn().mockResolvedValue({ data: null, error: null } as any),
+      then: jest.fn((resolve: (value: any) => void) =>
         resolve({ data: null, error: null, count: 0 })
       ),
     };
@@ -56,12 +56,12 @@ export function createMockSupabaseClient(): jest.Mocked<SupabaseClient> {
     getUser: jest.fn().mockResolvedValue({
       data: { user: { id: 'test-user-id' } },
       error: null,
-    }),
+    } as any),
     getSession: jest.fn().mockResolvedValue({
       data: { session: { user: { id: 'test-user-id' } } },
       error: null,
-    }),
-    signOut: jest.fn().mockResolvedValue({ error: null }),
+    } as any),
+    signOut: jest.fn().mockResolvedValue({ error: null } as any),
   };
 
   return {
@@ -114,27 +114,27 @@ export const sampleNCAData: NCAFormData = {
 
   // Section 5: Machine Status
   machine_status: 'operational',
-  machine_down_since: null,
-  estimated_downtime: null,
+  machine_down_since: undefined,
+  estimated_downtime: undefined,
 
   // Section 6: Concession (optional)
-  concession_team_leader: null,
-  concession_signature: null,
-  concession_notes: null,
+  concession_team_leader: undefined,
+  concession_signature: undefined,
+  concession_notes: undefined,
 
   // Section 7: Immediate Correction
   cross_contamination: false,
-  back_tracking_person: null,
-  back_tracking_signature: null,
+  back_tracking_person: undefined,
+  back_tracking_signature: undefined,
   back_tracking_completed: false,
   hold_label_completed: true,
   nca_logged: true,
   segregation_area: 'quarantine',
-  segregation_area_other: null,
+  segregation_area_other: undefined,
 
   // Section 8: Disposition
   disposition_action: 'reject',
-  rework_instruction: null,
+  rework_instruction: undefined,
   disposition_authorized_by: 'QA Manager',
   disposition_signature: {
     type: 'digital',
@@ -144,18 +144,18 @@ export const sampleNCAData: NCAFormData = {
   },
 
   // Section 9: Root Cause
-  root_cause_analysis: null,
+  root_cause_analysis: undefined,
 
   // Section 10: Corrective Action
-  corrective_action: null,
+  corrective_action: undefined,
 
   // Section 11: Close Out
-  close_out_by: null,
-  close_out_signature: null,
-  close_out_date: null,
+  close_out_by: undefined,
+  close_out_signature: undefined,
+  close_out_date: undefined,
 
   // Work Order Link
-  wo_id: null,
+  wo_id: undefined,
 };
 
 /**
@@ -202,7 +202,7 @@ export const sampleNCACrossContamination: NCAFormData = {
 export const sampleMJCData: MJCFormData = {
   // Section 1: Identification
   department: 'maintenance',
-  wo_id: null,
+  wo_id: undefined,
 
   // Section 2: Machine/Equipment
   machine_equipment_id: 'POUCH-LINE-01',
@@ -210,27 +210,27 @@ export const sampleMJCData: MJCFormData = {
   // Section 3: Maintenance Type
   maintenance_category: 'reactive',
   maintenance_type: 'mechanical',
-  maintenance_type_other: null,
+  maintenance_type_other: undefined,
 
   // Section 4: Machine Status & Urgency
   machine_status: 'operational',
   urgency_level: 'medium',
-  machine_down_time: null,
+  machine_down_time: undefined,
 
   // Section 5: Temporary Repair
   temporary_repair: 'no',
-  due_date: null,
+  due_date: undefined,
 
   // Section 6: Description (minimum 100 characters)
   maintenance_description:
     'Replace worn conveyor belt on Pouching Line 01. Belt showing signs of wear with visible fraying on edges. No immediate risk but requires replacement to prevent future breakdown. Replacement belt available in stores. Estimated work time: 2 hours.',
 
   // Section 7: Maintenance Performed
-  maintenance_performed: null,
-  maintenance_technician_signature: null,
+  maintenance_performed: undefined,
+  maintenance_technician_signature: undefined,
 
   // Section 8: Additional Comments
-  additional_comments: null,
+  additional_comments: undefined,
 
   // Section 9: Hygiene Checklist (all 10 items)
   hygiene_check_1: false,
@@ -245,8 +245,8 @@ export const sampleMJCData: MJCFormData = {
   hygiene_check_10: false,
 
   // Section 10: Hygiene Clearance
-  clearance_qa_supervisor: null,
-  clearance_signature: null,
+  clearance_qa_supervisor: undefined,
+  clearance_signature: undefined,
   production_cleared: false,
 };
 
@@ -359,10 +359,10 @@ export function createMockMJCRecord(overrides?: Record<string, any>) {
  */
 export function createMockNotificationService() {
   return {
-    sendMachineDownAlert: jest.fn().mockResolvedValue(undefined),
-    sendSupplierNCANotification: jest.fn().mockResolvedValue(undefined),
-    sendHygieneClearanceRequest: jest.fn().mockResolvedValue(undefined),
-    sendMJCMachineDownAlert: jest.fn().mockResolvedValue(undefined),
+    sendMachineDownAlert: jest.fn().mockResolvedValue(undefined as any),
+    sendSupplierNCANotification: jest.fn().mockResolvedValue(undefined as any),
+    sendHygieneClearanceRequest: jest.fn().mockResolvedValue(undefined as any),
+    sendMJCMachineDownAlert: jest.fn().mockResolvedValue(undefined as any),
   };
 }
 
@@ -375,7 +375,7 @@ export function setupSuccessfulInsert(
 ) {
   const mockChain = {
     select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: returnData, error: null }),
+    single: jest.fn().mockResolvedValue({ data: returnData, error: null } as any),
   };
 
   (mockClient.from as jest.Mock).mockReturnValue({
@@ -397,7 +397,7 @@ export function setupFailedInsert(
     single: jest.fn().mockResolvedValue({
       data: null,
       error: { message: errorMessage, code: 'DB_ERROR' },
-    }),
+    } as any),
   };
 
   (mockClient.from as jest.Mock).mockReturnValue({
@@ -422,7 +422,7 @@ export function setupSuccessfulSelect(
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: returnData, error: null }),
+    single: jest.fn().mockResolvedValue({ data: returnData, error: null } as any),
   };
 
   (mockClient.from as jest.Mock).mockReturnValue({
@@ -442,7 +442,7 @@ export function setupSuccessfulUpdate(
   const mockChain = {
     eq: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: returnData, error: null }),
+    single: jest.fn().mockResolvedValue({ data: returnData, error: null } as any),
   };
 
   (mockClient.from as jest.Mock).mockReturnValue({

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icons';
 import { ICONS } from '@/lib/config/icons';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 
 interface MJCDetailPageProps {
   params: Promise<{

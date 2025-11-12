@@ -13,7 +13,7 @@ export class ContextAlignmentAgent {
    */
   async analyze(
     formData: NCA | MJC,
-    user: User,
+    _user: User,
     formType: 'nca' | 'mjc'
   ): Promise<AgentResult> {
     const requirements: AgentResult['requirements'] = [];

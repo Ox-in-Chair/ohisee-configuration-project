@@ -151,8 +151,8 @@ Refined draft:`;
    * Generate refinement options for user
    */
   private generateRefinementOptions(
-    draft: string,
-    request: GenerationRequest
+    _draft: string,
+    _request: GenerationRequest
   ): string[] {
     return [
       'Make it more detailed',
@@ -195,8 +195,8 @@ Refined draft:`;
    * Call generation model (placeholder - in production, integrate with LLM)
    */
   private async callGenerationModel(
-    prompt: string,
-    request: GenerationRequest
+    _prompt: string,
+    _request: GenerationRequest
   ): Promise<string> {
     // In production, this would:
     // 1. Call LLM API (Anthropic, OpenAI, etc.)

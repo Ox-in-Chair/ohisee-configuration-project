@@ -34,13 +34,13 @@ export interface BenchmarkAPIResponse {
 
 export class BenchmarkAPIService {
   private supabase: SupabaseClient;
-  private apiBaseUrl?: string;
-  private apiKey?: string;
+  private apiBaseUrl?: string | undefined;
+  private apiKey?: string | undefined;
 
-  constructor(supabase?: SupabaseClient, apiBaseUrl?: string, apiKey?: string) {
+  constructor(supabase?: SupabaseClient, apiBaseUrl?: string | undefined, apiKey?: string | undefined) {
     this.supabase = supabase || createServerClient();
-    this.apiBaseUrl = apiBaseUrl || process.env.BENCHMARK_API_BASE_URL;
-    this.apiKey = apiKey || process.env.BENCHMARK_API_KEY;
+    this.apiBaseUrl = apiBaseUrl ?? process.env['BENCHMARK_API_BASE_URL'];
+    this.apiKey = apiKey ?? process.env['BENCHMARK_API_KEY'];
   }
 
   /**
@@ -54,10 +54,10 @@ export class BenchmarkAPIService {
    * Fetch benchmark data from API
    */
   async fetchBenchmarks(
-    industrySector?: string,
-    metricCategory?: string,
-    periodStart?: Date,
-    periodEnd?: Date
+    _industrySector?: string,
+    _metricCategory?: string,
+    _periodStart?: Date,
+    _periodEnd?: Date
   ): Promise<BenchmarkAPIResponse> {
     if (!this.isConfigured()) {
       return {
@@ -165,7 +165,7 @@ export class BenchmarkAPIService {
       recordsUpdated,
       recordsInserted,
       recordsDeleted: 0,
-      error: errors.length > 0 ? errors.join('; ') : undefined,
+      ...(errors.length > 0 ? { error: errors.join('; ') } : {}),
       metadata: {
         totalBenchmarks: benchmarks.length,
         errors: errors.length,
@@ -191,7 +191,7 @@ export class BenchmarkAPIService {
         recordsUpdated: 0,
         recordsInserted: 0,
         recordsDeleted: 0,
-        error: apiResponse.error,
+        ...(apiResponse.error ? { error: apiResponse.error } : {}),
       };
     }
 

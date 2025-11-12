@@ -29,9 +29,9 @@ export interface UserEnforcementPattern {
 export interface AdaptiveEnforcementResult {
   enforcementLevel: 'soft' | 'moderate' | 'strict' | 'manager-approval';
   requirements: Requirement[];
-  errors: Array<{ field: string; message: string; brcgs_requirement?: string }>;
-  warnings?: Array<{ field: string; message: string; suggestion?: string }>;
-  escalationReason?: string;
+  errors: Array<{ field: string; message: string; brcgs_requirement?: string | undefined }>;
+  warnings?: Array<{ field: string; message: string; suggestion?: string | undefined }> | undefined;
+  escalationReason?: string | undefined;
   requiresManagerApproval: boolean;
 }
 
@@ -65,15 +65,15 @@ export function adaptValidationToEnforcementLevel(
         requirements.push({
           field: issue.field,
           message: issue.message,
-          reference: issue.brcgsReference,
-          exampleFix: issue.exampleFix,
+          ...(issue.brcgsReference && { reference: issue.brcgsReference }),
+          ...(issue.exampleFix && { exampleFix: issue.exampleFix }),
         });
       } else {
         requirements.push({
           field: issue.field,
           message: issue.message,
-          reference: issue.brcgsReference,
-          exampleFix: issue.exampleFix,
+          ...(issue.brcgsReference && { reference: issue.brcgsReference }),
+          ...(issue.exampleFix && { exampleFix: issue.exampleFix }),
         });
       }
     } else if (enforcementLevel === 'moderate') {
@@ -82,15 +82,15 @@ export function adaptValidationToEnforcementLevel(
         errors.push({
           field: issue.field,
           message: `${issue.message} This is required for compliance.`,
-          brcgs_requirement: issue.brcgsReference,
+          ...(issue.brcgsReference && { brcgs_requirement: issue.brcgsReference }),
         });
       } else {
         // Warnings become requirements
         requirements.push({
           field: issue.field,
           message: `${issue.message} Please address this before submitting.`,
-          reference: issue.brcgsReference,
-          exampleFix: issue.exampleFix,
+          ...(issue.brcgsReference && { reference: issue.brcgsReference }),
+          ...(issue.exampleFix && { exampleFix: issue.exampleFix }),
         });
       }
     } else if (enforcementLevel === 'strict') {
@@ -98,14 +98,14 @@ export function adaptValidationToEnforcementLevel(
       errors.push({
         field: issue.field,
         message: `${issue.message} This must be addressed before submission.`,
-        brcgs_requirement: issue.brcgsReference,
+        ...(issue.brcgsReference && { brcgs_requirement: issue.brcgsReference }),
       });
     } else {
       // Fourth+ attempt: Manager approval required
       errors.push({
         field: issue.field,
         message: `${issue.message} Manager approval will be required to proceed.`,
-        brcgs_requirement: issue.brcgsReference,
+        ...(issue.brcgsReference && { brcgs_requirement: issue.brcgsReference }),
       });
     }
   });
@@ -198,7 +198,7 @@ export function detectContentPattern(
 /**
  * Generate escalation message for user
  */
-export function getEscalationMessage(attemptNumber: number, enforcementLevel: string): string {
+export function getEscalationMessage(attemptNumber: number, _enforcementLevel: string): string {
   if (attemptNumber === 1) {
     return 'Please review the requirements below and update your submission.';
   }

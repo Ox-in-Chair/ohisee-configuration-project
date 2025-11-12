@@ -16,8 +16,8 @@ export interface Explanation {
   field: string;
   decision: 'pass' | 'fail' | 'warning';
   reason: string; // Plain language explanation
-  ruleReference?: string;
-  example?: string;
+  ruleReference?: string | undefined;
+  example?: string | undefined;
   confidence: number;
 }
 
@@ -38,11 +38,11 @@ export interface SupervisorInsight {
 export interface DecisionTrace {
   timestamp: Date;
   formType: 'nca' | 'mjc';
-  formId?: string;
+  formId?: string | undefined;
   userId: string;
   validationResult: ValidationResult;
   explanations: Explanation[];
-  agentTraces?: AgentResult[];
+  agentTraces?: AgentResult[] | undefined;
   policyVersion: string;
 }
 
@@ -184,7 +184,7 @@ export class TransparencyService {
   private generatePlainLanguageReason(
     field: string,
     requirement: Requirement | ValidationError,
-    isError: boolean
+    _isError: boolean
   ): string {
     const message = requirement.message;
 

@@ -17,13 +17,13 @@ import type { IAnthropicClient } from './ai-service.interface';
  */
 export function createAIService(config?: Partial<AIConfig>): AIService {
   // Validate required environment variables
-  const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  const anthropicApiKey = process.env['ANTHROPIC_API_KEY'];
   if (!anthropicApiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is required');
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+  const supabaseKey = process.env['SUPABASE_SERVICE_ROLE_KEY'];
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Supabase environment variables are required');
   }

@@ -42,12 +42,12 @@ export interface Phase7Config {
  */
 export function getPhase7Config(): Phase7Config {
   // Check environment variables for overrides
-  const envEnabled = process.env.PHASE7_ENABLED !== 'false';
-  const multiAgentEnabled = process.env.PHASE7_MULTI_AGENT !== 'false';
-  const ragEnabled = process.env.PHASE7_RAG !== 'false';
-  const userGuidedEnabled = process.env.PHASE7_USER_GUIDED !== 'false';
-  const adaptivePolicyEnabled = process.env.PHASE7_ADAPTIVE_POLICY !== 'false';
-  const explainableEnabled = process.env.PHASE7_EXPLAINABLE_AI !== 'false';
+  const envEnabled = process.env['PHASE7_ENABLED'] !== 'false';
+  const multiAgentEnabled = process.env['PHASE7_MULTI_AGENT'] !== 'false';
+  const ragEnabled = process.env['PHASE7_RAG'] !== 'false';
+  const userGuidedEnabled = process.env['PHASE7_USER_GUIDED'] !== 'false';
+  const adaptivePolicyEnabled = process.env['PHASE7_ADAPTIVE_POLICY'] !== 'false';
+  const explainableEnabled = process.env['PHASE7_EXPLAINABLE_AI'] !== 'false';
 
   return {
     multiAgent: {
@@ -57,16 +57,16 @@ export function getPhase7Config(): Phase7Config {
         anomalyDetection: true,
         contextAlignment: true,
       },
-      conflictResolution: (process.env.PHASE7_CONFLICT_RESOLUTION as any) || 'priority',
+      conflictResolution: (process.env['PHASE7_CONFLICT_RESOLUTION'] as any) || 'priority',
       parallelExecution: true,
     },
     rag: {
       enabled: envEnabled && ragEnabled,
       fineTuning: {
-        enabled: process.env.PHASE7_FINE_TUNING === 'true',
-        modelId: process.env.PHASE7_FINE_TUNED_MODEL_ID,
-        temperature: process.env.PHASE7_TEMPERATURE ? parseFloat(process.env.PHASE7_TEMPERATURE) : 0.3,
-        maxTokens: process.env.PHASE7_MAX_TOKENS ? parseInt(process.env.PHASE7_MAX_TOKENS) : 4096,
+        enabled: process.env['PHASE7_FINE_TUNING'] === 'true',
+        ...(process.env['PHASE7_FINE_TUNED_MODEL_ID'] ? { modelId: process.env['PHASE7_FINE_TUNED_MODEL_ID'] } : {}),
+        temperature: process.env['PHASE7_TEMPERATURE'] ? parseFloat(process.env['PHASE7_TEMPERATURE']) : 0.3,
+        maxTokens: process.env['PHASE7_MAX_TOKENS'] ? parseInt(process.env['PHASE7_MAX_TOKENS']) : 4096,
       },
     },
     userGuided: {

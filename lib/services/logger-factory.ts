@@ -75,7 +75,7 @@ export class LoggerFactory {
 
     return new LoggerService(name, handlers, {
       minLevel,
-      baseContext: options.baseContext,
+      ...(options.baseContext ? { baseContext: options.baseContext } : {}),
     });
   }
 
@@ -190,7 +190,7 @@ export class LoggerFactory {
    */
   private static isSentryConfigured(): boolean {
     // Check for Sentry DSN in environment
-    return !!process.env.SENTRY_DSN || !!process.env.NEXT_PUBLIC_SENTRY_DSN;
+    return !!process.env['SENTRY_DSN'] || !!process.env['NEXT_PUBLIC_SENTRY_DSN'];
   }
 }
 

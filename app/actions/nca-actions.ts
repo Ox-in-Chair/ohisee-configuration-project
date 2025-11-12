@@ -8,7 +8,7 @@
 
 import { createServerClient } from '@/lib/database/client';
 import { getUserIdFromAuth } from '@/lib/database/auth-utils';
-import type { NCAInsert, NCAUpdate, Signature } from '@/types/database';
+import type { NCAInsert, NCAUpdate, Signature, NCType } from '@/types/database';
 import type { NCAFormData } from '@/lib/validations/nca-schema';
 import { revalidatePath } from 'next/cache';
 import type { INotificationService, NotificationPayload, SupplierNCANotificationPayload } from '@/lib/types/notification';
@@ -42,9 +42,9 @@ function transformFormDataToInsert(
     wo_id: formData.wo_id || null,
 
     // Section 2: Classification
-    nc_type: formData.nc_type,
+    nc_type: formData.nc_type as any,
     nc_type_other: formData.nc_type_other || null,
-    nc_origin: formData.nc_origin || (formData.nc_type === 'raw-material' ? 'supplier-based' : null),
+    nc_origin: (formData.nc_origin || (formData.nc_type === 'raw-material' ? 'supplier-based' : null)) as any,
     
     // Procedure Reference (locked on creation)
     procedure_reference: formData.procedure_reference || '5.7',
@@ -58,26 +58,44 @@ function transformFormDataToInsert(
     supplier_reel_box: formData.supplier_reel_box || null,
     sample_available: formData.sample_available,
     quantity: formData.quantity ?? null,
-    quantity_unit: formData.quantity_unit ?? null,
+    quantity_unit: (formData.quantity_unit ?? null) as any,
     carton_numbers: formData.carton_numbers || null,
 
     // Section 4: Description
     nc_description: formData.nc_description,
 
     // Section 5: Machine Status
-    machine_status: formData.machine_status,
+    machine_status: formData.machine_status as 'operational' | 'down',
     machine_down_since: formData.machine_down_since || null,
     estimated_downtime: formData.estimated_downtime ?? null,
 
     // Section 6: Concession
     concession_team_leader: formData.concession_team_leader || null,
-    concession_signature: transformSignature(formData.concession_signature),
+    concession_signature: transformSignature(
+      formData.concession_signature
+        ? {
+            type: formData.concession_signature.type as 'manual' | 'digital',
+            data: formData.concession_signature.data,
+            name: formData.concession_signature.name,
+            timestamp: formData.concession_signature.timestamp,
+          }
+        : null
+    ),
     concession_notes: formData.concession_notes || null,
 
     // Section 7: Immediate Correction
     cross_contamination: formData.cross_contamination,
     back_tracking_person: formData.back_tracking_person || null,
-    back_tracking_signature: transformSignature(formData.back_tracking_signature),
+    back_tracking_signature: transformSignature(
+      formData.back_tracking_signature
+        ? {
+            type: formData.back_tracking_signature.type as 'manual' | 'digital',
+            data: formData.back_tracking_signature.data,
+            name: formData.back_tracking_signature.name,
+            timestamp: formData.back_tracking_signature.timestamp,
+          }
+        : null
+    ),
     back_tracking_completed: formData.back_tracking_completed,
     hold_label_completed: formData.hold_label_completed,
     nca_logged: formData.nca_logged,
@@ -93,7 +111,16 @@ function transformFormDataToInsert(
     disposition_discard: formData.disposition_action === 'discard',
     rework_instruction: formData.rework_instruction || null,
     disposition_authorized_by: formData.disposition_authorized_by || null,
-    disposition_signature: transformSignature(formData.disposition_signature),
+    disposition_signature: transformSignature(
+      formData.disposition_signature
+        ? {
+            type: formData.disposition_signature.type as 'manual' | 'digital',
+            data: formData.disposition_signature.data,
+            name: formData.disposition_signature.name,
+            timestamp: formData.disposition_signature.timestamp,
+          }
+        : null
+    ),
 
     // Section 9: Root Cause
     root_cause_analysis: formData.root_cause_analysis || null,
@@ -105,7 +132,16 @@ function transformFormDataToInsert(
 
     // Section 11: Close Out
     close_out_by: formData.close_out_by || null,
-    close_out_signature: transformSignature(formData.close_out_signature),
+    close_out_signature: transformSignature(
+      formData.close_out_signature
+        ? {
+            type: formData.close_out_signature.type as 'manual' | 'digital',
+            data: formData.close_out_signature.data,
+            name: formData.close_out_signature.name,
+            timestamp: formData.close_out_signature.timestamp,
+          }
+        : null
+    ),
     close_out_date: formData.close_out_date || null,
 
     // Status - default to submitted
@@ -421,10 +457,10 @@ export async function saveDraftNCA(
       status: 'draft',
 
       // Include any fields that are provided
-      nc_type: formData.nc_type || 'other',
+      nc_type: (formData.nc_type || 'other') as NCType,
       nc_product_description: formData.nc_product_description || '',
       nc_description: formData.nc_description || '',
-      machine_status: formData.machine_status || 'operational',
+      machine_status: (formData.machine_status || 'operational') as 'operational' | 'down',
     };
 
     const ncaService = new NCADatabaseService(supabase);

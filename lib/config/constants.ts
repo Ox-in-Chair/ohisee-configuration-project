@@ -408,8 +408,8 @@ export type WorkOrderStatus = (typeof WORK_ORDER_STATUS)[keyof typeof WORK_ORDER
  * Get all values from a const object as an array
  * Useful for Zod enum creation
  */
-export function getConstValues<T extends Record<string, string>>(obj: T): Array<T[keyof T]> {
-  return Object.values(obj);
+export function getConstValues<T extends Record<string, string>>(obj: T): T[keyof T][] {
+  return Object.values(obj) as T[keyof T][];
 }
 
 /**

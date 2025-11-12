@@ -70,7 +70,7 @@ describe('QualityIndicator', () => {
     });
 
     it('should show check circle icon for passing scores', () => {
-      const { container } = render(<QualityIndicator score={80} threshold={75} />);
+      render(<QualityIndicator score={80} threshold={75} />);
 
       // Check circle icon should be present (CheckCircle2 component)
       const badge = screen.getByTestId('quality-indicator');
