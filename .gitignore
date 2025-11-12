@@ -50,3 +50,6 @@ next-env.d.ts
 
 # cursor ide
 /.cursor
+
+# lint output
+lint-output*.txt
