@@ -71,6 +71,28 @@ export function FishboneDiagram({
         }))
   );
 
+  // Format fishbone as text
+  const formatFishbone = useCallback((prob: string, cats: FishboneCategory[]): string => {
+    if (!prob.trim()) return '';
+
+    let text = `Problem: ${prob}\n\n`;
+    text += 'Cause-and-Effect Analysis (Fishbone Diagram):\n\n';
+
+    cats.forEach((cat) => {
+      if (cat.causes.some((c) => c.trim().length > 0)) {
+        text += `${cat.name}:\n`;
+        cat.causes
+          .filter((c) => c.trim().length > 0)
+          .forEach((cause, index) => {
+            text += `  ${index + 1}. ${cause}\n`;
+          });
+        text += '\n';
+      }
+    });
+
+    return text;
+  }, []);
+
   // Add cause to category
   const addCause = useCallback(
     (categoryId: string) => {
@@ -124,30 +146,8 @@ export function FishboneDiagram({
       const formatted = formatFishbone(value, categories);
       onChange?.(value, categories, formatted);
     },
-    [categories, onChange]
+    [categories, onChange, formatFishbone]
   );
-
-  // Format fishbone as text
-  const formatFishbone = useCallback((prob: string, cats: FishboneCategory[]): string => {
-    if (!prob.trim()) return '';
-
-    let text = `Problem: ${prob}\n\n`;
-    text += 'Cause-and-Effect Analysis (Fishbone Diagram):\n\n';
-
-    cats.forEach((cat) => {
-      if (cat.causes.some((c) => c.trim().length > 0)) {
-        text += `${cat.name}:\n`;
-        cat.causes
-          .filter((c) => c.trim().length > 0)
-          .forEach((cause, index) => {
-            text += `  ${index + 1}. ${cause}\n`;
-          });
-        text += '\n';
-      }
-    });
-
-    return text;
-  }, []);
 
   // Check if complete
   const isComplete =

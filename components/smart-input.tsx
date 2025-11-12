@@ -94,10 +94,10 @@ export const SmartInput: FC<SmartInputProps> = ({
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
 
-  // Memoize external suggestions based on content to prevent unnecessary re-renders
+  // Memoize external suggestions to prevent unnecessary re-renders
   const stableExternalSuggestions = useMemo(() => {
     return externalSuggestions;
-  }, [JSON.stringify(externalSuggestions)]);
+  }, [externalSuggestions]);
 
   // Use ref to track previous values and prevent infinite loops
   const prevValueRef = useRef<string>('');
@@ -107,8 +107,12 @@ export const SmartInput: FC<SmartInputProps> = ({
   // Clear suggestions when conditions aren't met (separate effect to avoid loop)
   useEffect(() => {
     if (!showSuggestions || !isFocused || !value || value.length < 2) {
-      setAutocompleteSuggestions(prev => (prev.length > 0 ? [] : prev));
-      setShowAutocomplete(prev => (prev ? false : prev));
+      // Use setTimeout to avoid synchronous setState in effect
+      const timeoutId = setTimeout(() => {
+        setAutocompleteSuggestions(prev => (prev.length > 0 ? [] : prev));
+        setShowAutocomplete(prev => (prev ? false : prev));
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [showSuggestions, isFocused, value]);
 

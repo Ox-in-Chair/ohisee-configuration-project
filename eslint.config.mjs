@@ -22,7 +22,16 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "*.config.js",
     "*.config.mjs",
+    "next.config.js",
+    "tailwind.config.js",
+    "postcss.config.js",
     ".env*",
+    "!.env.example",
+    // Lock files
+    "*.lock",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
     // Test files and E2E tests
     "**/__tests__/**/*",
     "**/*.test.ts",

@@ -62,10 +62,9 @@ export function TextToSpeech({
   // Check if Speech Synthesis is supported
   useEffect(() => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      setIsSupported(true);
       synthRef.current = window.speechSynthesis;
-    } else {
-      setIsSupported(false);
+      // Use setTimeout to avoid synchronous setState in effect
+      setTimeout(() => setIsSupported(true), 0);
     }
   }, []);
 
@@ -125,7 +124,7 @@ export function TextToSpeech({
 
     utteranceRef.current = utterance;
     synthRef.current.speak(utterance);
-  }, [text, language, disabled, isSupported, rate, pitch, volume, onPlay, onEnd]);
+  }, [text, language, disabled, isSupported, rate, pitch, volume, onPlay, onEnd, onQualityCheck]);
 
   // Pause speech
   const pause = useCallback(() => {

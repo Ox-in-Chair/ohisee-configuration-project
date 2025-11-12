@@ -220,11 +220,16 @@ export const NCATable = memo(function NCATable({
 
   // Update filter state and URL when debounced search changes
   useEffect(() => {
-    setFilterState(prev => ({
-      ...prev,
-      searchQuery: debouncedSearchQuery,
-    }));
-    updateURLParams({ search: debouncedSearchQuery, page: 1 });
+    // Use setTimeout to avoid synchronous setState in effect
+    const timeoutId = setTimeout(() => {
+      setFilterState(prev => ({
+        ...prev,
+        searchQuery: debouncedSearchQuery,
+      }));
+      updateURLParams({ search: debouncedSearchQuery, page: 1 });
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
   }, [debouncedSearchQuery, updateURLParams]);
 
   /**

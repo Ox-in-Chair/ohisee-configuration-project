@@ -48,20 +48,26 @@ export function VoiceInput({
   timeout = 60000, // Default 60 seconds, configurable up to 5 minutes
 }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported, setIsSupported] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      return !!SpeechRecognition;
+    }
+    return false;
+  });
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSpeechTimeRef = useRef<number>(Date.now());
+  const lastSpeechTimeRef = useRef<number>(0);
 
-  // Check if Speech Recognition is supported
+  // Set up Speech Recognition
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && isSupported) {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
       if (SpeechRecognition) {
-        setIsSupported(true);
         recognitionRef.current = new SpeechRecognition();
         const recognition = recognitionRef.current;
         if (!recognition) return;
@@ -138,12 +144,10 @@ export function VoiceInput({
             timeoutRef.current = null;
           }
         };
-      } else {
-        setIsSupported(false);
-        setError('Speech recognition not supported in this browser');
       }
     }
-  }, [language, continuous, onTranscript, onError]);
+    // Note: Error for unsupported browser is handled via initial state check
+  }, [language, continuous, onTranscript, onError, isSupported, isListening]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

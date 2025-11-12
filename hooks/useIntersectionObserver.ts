@@ -35,8 +35,8 @@ export function useIntersectionObserver(
 
     // Check if IntersectionObserver is supported (SSR safety)
     if (typeof IntersectionObserver === 'undefined') {
-      // Fallback: immediately mark as visible
-      setIsVisible(true);
+      // Fallback: immediately mark as visible (defer to avoid setState in effect)
+      setTimeout(() => setIsVisible(true), 0);
       return;
     }
 

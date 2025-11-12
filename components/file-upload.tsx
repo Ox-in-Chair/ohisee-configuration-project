@@ -6,7 +6,7 @@
  * Architecture: Uses Server Actions via dependency injection
  */
 
-import { useState, useRef, DragEvent, ChangeEvent } from 'react';
+import { useState, useRef, useCallback, DragEvent, ChangeEvent } from 'react';
 import { Icon } from '@/components/ui/icons';
 import { ICONS } from '@/lib/config/icons';
 import { Button } from '@/components/ui/button';
@@ -100,7 +100,7 @@ export function FileUpload({
   /**
    * Load files when entity ID changes
    */
-  const loadFiles = async () => {
+  const loadFiles = useCallback(async () => {
     if (!entityId) return;
 
     setIsLoading(true);
@@ -119,7 +119,8 @@ export function FileUpload({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [entityId, onList]);
+
 
   /**
    * Handle file upload

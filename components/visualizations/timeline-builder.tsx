@@ -58,6 +58,30 @@ export function TimelineBuilder({
     return `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }, []);
 
+  // Format timeline as text
+  const formatTimeline = useCallback((eventList: TimelineEvent[]): string => {
+    if (eventList.length === 0) return '';
+
+    // Sort by timestamp
+    const sorted = [...eventList].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+    let text = 'Timeline of Events:\n\n';
+    sorted.forEach((event, index) => {
+      const date = new Date(event.timestamp);
+      const dateStr = date.toLocaleString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      text += `${index + 1}. [${dateStr}] ${event.location ? `Location: ${event.location} - ` : ''}${event.description}\n`;
+    });
+
+    return text;
+  }, []);
+
   // Add a new event
   const addEvent = useCallback(() => {
     const newEvent: TimelineEvent = {
@@ -82,7 +106,7 @@ export function TimelineBuilder({
       const formatted = formatTimeline(updated);
       onChange?.(updated, formatted);
     },
-    [events, onChange]
+    [events, onChange, formatTimeline]
   );
 
   // Update an event
@@ -93,32 +117,8 @@ export function TimelineBuilder({
       const formatted = formatTimeline(updated);
       onChange?.(updated, formatted);
     },
-    [events, onChange]
+    [events, onChange, formatTimeline]
   );
-
-  // Format timeline as text
-  const formatTimeline = useCallback((eventList: TimelineEvent[]): string => {
-    if (eventList.length === 0) return '';
-
-    // Sort by timestamp
-    const sorted = [...eventList].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-
-    let text = 'Timeline of Events:\n\n';
-    sorted.forEach((event, index) => {
-      const date = new Date(event.timestamp);
-      const dateStr = date.toLocaleString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-
-      text += `${index + 1}. [${dateStr}] ${event.location ? `Location: ${event.location} - ` : ''}${event.description}\n`;
-    });
-
-    return text;
-  }, []);
 
   // Get event type icon
   const getEventIcon = (type: TimelineEvent['type']) => {
