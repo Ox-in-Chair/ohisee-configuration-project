@@ -312,9 +312,10 @@ export class SentryHandler implements LogHandler {
 
     try {
       // Dynamically import Sentry (optional dependency)
-      // This will only execute at runtime, not during build
+      // Use a function to prevent Next.js from statically analyzing the require
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const Sentry = require('@sentry/nextjs');
+      const requireSentry = (moduleName: string) => require(moduleName);
+      const Sentry = requireSentry('@sentry/nextjs');
       this.sentry = Sentry;
       this.initialized = true;
     } catch (error) {

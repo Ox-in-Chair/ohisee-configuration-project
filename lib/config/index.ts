@@ -293,27 +293,6 @@ export function validateConfiguration(): { valid: boolean; errors: string[] } {
 // ============================================================================
 
 /**
- * Export all types for external use
- */
-export type {
-  // Already exported above, but re-exported here for clarity
-  UserRole,
-  NCAStatus,
-  MJCStatus,
-  MachineStatus,
-  WorkOrderStatus,
-  NCOrigin,
-  NCType,
-  DispositionAction,
-  MaintenanceCategory,
-  MaintenanceType,
-  UrgencyLevel,
-  QuantityUnit,
-  SegregationArea,
-  SignatureType,
-};
-
-/**
  * Configuration type for the entire application
  */
 export type AppConfig = ReturnType<typeof getConfig>;

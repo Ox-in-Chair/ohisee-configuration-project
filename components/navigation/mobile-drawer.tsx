@@ -2,6 +2,18 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Home,
+  Plus,
+  FileText,
+  Wrench,
+  LayoutDashboard,
+  Users,
+  Calendar,
+  MessageSquare,
+  AlertTriangle,
+  Trash2,
+} from 'lucide-react';
 import { useNavigation } from '@/lib/context/navigation-context';
 import { cn } from '@/lib/utils';
 import { Icon } from '@/components/ui/icons';

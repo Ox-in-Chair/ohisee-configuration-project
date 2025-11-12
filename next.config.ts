@@ -219,6 +219,10 @@ const nextConfig: NextConfig = {
   // NEXT_TURBOPACK_EXPERIMENTAL_USE_SYSTEM_TLS_CERTS=1
   turbopack: {},
 
+  // Development origin configuration
+  // Allow cross-origin requests from local network IPs in development
+  allowedDevOrigins: isDevelopment ? ['192.168.0.111'] : undefined,
+
   // Webpack configuration (if needed - fallback when using --webpack flag)
   // Note: Next.js 16 uses Turbopack by default for better performance
   webpack: (config, { dev, isServer }) => {
@@ -230,6 +234,23 @@ const nextConfig: NextConfig = {
         aggregateTimeout: 300, // Delay before rebuilding
       };
     }
+
+    // Make @sentry/nextjs optional (ignore if not installed)
+    const webpack = require('webpack');
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^@sentry\/nextjs$/,
+        checkResource(resource: string) {
+          // Only ignore if the module doesn't exist
+          try {
+            require.resolve('@sentry/nextjs');
+            return false; // Module exists, don't ignore
+          } catch {
+            return true; // Module doesn't exist, ignore it
+          }
+        },
+      })
+    );
 
     // Production-only optimizations
     if (!dev && !isServer) {

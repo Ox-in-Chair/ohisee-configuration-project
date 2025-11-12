@@ -2,6 +2,19 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Home,
+  Plus,
+  FileText,
+  TrendingUp,
+  Wrench,
+  LayoutDashboard,
+  Users,
+  Calendar,
+  MessageSquare,
+  AlertTriangle,
+  Trash2,
+} from 'lucide-react';
 import { useNavigation } from '@/lib/context/navigation-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
